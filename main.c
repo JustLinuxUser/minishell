@@ -110,18 +110,6 @@ void parse_op(t_deque_tt* tokens, char** str) {
                                         .tt = operators[op_idx].t});
 }
 
-void parse_env_var(t_deque_tt* tokens, char** str) {
-    assert(**str == '$');
-    (*str)++;
-    char* start = *str;
-    while (**str && !is_special_char(**str) && !is_space(**str)) {
-        (*str)++;
-    }
-	deque_tt_push_end(
-		tokens,
-		(t_token){.start = start, .len = *str - start, .tt = TT_ENVVAR});
-}
-
 int parse_dquoted_word(t_deque_tt* tokens, char** str) {
     assert(**str == '"');
     (*str)++;
@@ -156,41 +144,21 @@ int parse_squoted_word(t_deque_tt* tokens, char** str) {
     return (0);
 }
 
-void parse_sep(t_deque_tt* tokens, char** str) {
-    char* start = *str;
-    assert(is_space(**str));
-    while (is_space(**str)) {
-        (*str)++;
-    }
-    deque_tt_push_end(
-        tokens, (t_token){.start = start, .len = *str - start, .tt = TT_SEP});
-}
-
 // If returns 0, it finished properly, if it returns a ptr, make a prompt
 // with that str
 char* tokenizer(char* str, t_deque_tt* ret) {
     char* prompt = 0;
 
     while (*str) {
-        if (*str == '$')
-            parse_env_var(ret, &str);
-        else if (*str == '"') {
-            if (parse_dquoted_word(ret, &str))
-                prompt = "dquote> ";
-        } else if (*str == '\'') {
-            if (parse_squoted_word(ret, &str))
-                prompt = "squote> ";
-        } else if (*str == '\'' || *str == '"' || *str == '$' ||
-                   !(is_special_char(*str))) {
+        if (*str == '\'' || *str == '"' || *str == '$' ||
+            !(is_special_char(*str))) {
             prompt = parse_word(ret, &str);
-        } else if (*str == ' ' || *str == '\t') {
-            str++;
         } else if (*str == '\n') {
             deque_tt_push_end(
                 ret, (t_token){.start = str, .len = 1, .tt = TT_NEWLINE});
             str++;
         } else if (is_space(*str)) {
-			parse_sep(ret, &str);
+            str++;
         } else {
             parse_op(ret, &str);
         }
@@ -229,16 +197,14 @@ char* tt_to_str(t_tt tt) {
             return ("TT_HEREDOC");
         case TT_NEWLINE:
             return ("TT_NEWLINE");
-        case TT_BSWORD:
-            return ("TT_BSWORD");
-        case TT_DQUOTE:
-            return ("TT_DQUOTE");
-        case TT_SQUOTE:
-            return ("TT_SQUOTE");
+        case TT_SQWORD:
+            return ("TT_QWORD");
+        case TT_DQWORD:
+            return ("TT_DQWORD");
         case TT_ENVVAR:
             return ("TT_ENVVAR");
-        case TT_SEP:
-            return ("TT_SEP");
+        case TT_DQENVVAR:
+            return ("TT_DQENVVAR");
         case TT_NONE:
             assert(false);
             break;
@@ -248,10 +214,12 @@ char* tt_to_str(t_tt tt) {
 
 void print_tokens(t_deque_tt tokens) {
     t_token curr;
+    printf("------- PRINTING TOKENS --------\n");
     for (int i = 0; i < tokens.len; i++) {
         curr = *deque_tt_idx(&tokens, i);
         printf("%s: >%.*s<\n", tt_to_str(curr.tt), curr.len, curr.start);
     }
+    printf("------- DONE --------\n");
 }
 
 typedef struct s_exe_cmd {
@@ -328,9 +296,15 @@ int main(int argc, char** argv, char** envp) {
     while (res == R_MoreInput) {
         while (prompt) {
             tt.len = 0;
+			tt.start = 0;
+			tt.end = 0;
             line = readline(prompt);
             if (line == 0)
-                continue;
+			{
+				printf("Ctrl-D\n");
+				res = R_FatalError;
+				break;
+			}
             dyn_str_pushstr(&state.prompt, line);
             free(line);
             if (state.prompt.len == 0)
@@ -341,22 +315,31 @@ int main(int argc, char** argv, char** envp) {
                 continue;
             }
             dyn_str_push(&state.prompt, '\n');
+            printf("prompt: %s\n", state.prompt.buff);
             prompt = tokenizer(state.prompt.buff, &tt);
         }
-        print_tokens(tt);
-        t_ast_node node = parse_tokens(&res, &tt);
-        if (res == R_OK) {
-            print_node(node);
-            printf("\n");
-            print_ast_dot(node);
-            free_ast(node);
-        } else {
-            prompt = "op> ";
-            free_ast(node);
-        }
+		if (tt.len)
+		{
+			print_tokens(tt);
+			t_ast_node node = parse_tokens(&res, &tt);
+			if (res == R_OK) {
+				print_node(node);
+				printf("\n");
+				print_ast_dot(node);
+				state.tree = node;
+				execute_top_level(&state);
+				free_ast(node);
+			} else {
+				prompt = "op> ";
+				free_ast(node);
+			}
+		} else {
+			break;
+		}
     }
 
     free(state.prompt.buff);
     free_env(&state.env);
     free(tt.buff);
+	return (res);
 }

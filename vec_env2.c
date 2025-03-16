@@ -41,6 +41,20 @@ t_env* env_get(t_vec_env* env, char* key) {
     return (0);
 }
 
+t_env* env_nget(t_vec_env* env, char* key, int len) {
+    t_env* curr;
+    int i;
+
+    i = env->len - 1;
+    while (i >= 0) {
+        curr = vec_env_idx(env, i);
+        if (ft_strncmp(key, curr->key, len) == 0 && curr->key[len] == 0)
+            return (curr);
+        i--;
+    }
+    return (0);
+}
+
 void free_env(t_vec_env *env)
 {
 	size_t	i;

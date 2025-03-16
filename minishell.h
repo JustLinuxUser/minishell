@@ -4,6 +4,7 @@
 #include "libft/dsa/dyn_str.h"
 #include <stdbool.h>
 #include "vec_env.h"
+#include "vec_str.h"
 
 typedef enum s_res {
     R_OK,
@@ -14,11 +15,6 @@ typedef enum s_res {
 typedef enum e_tt {
 	TT_NONE = 0,
     TT_WORD,			// asfkaslfkj
-	TT_BSWORD,			// \n
-	TT_DQUOTE,			// "fafd"
-	TT_SQUOTE,			// 'fadf'
-	TT_ENVVAR,			// $FFKFF
-	TT_SEP,				//    	
     TT_REDIRECT_LEFT, 	// <
     TT_REDIRECT_RIGHT,	// >
     TT_APPEND,			// >>
@@ -31,20 +27,20 @@ typedef enum e_tt {
 	TT_HEREDOC,			// << | <<-
     TT_NEWLINE,			// '\n'
     TT_END,
+
+	TT_SQWORD,
+	TT_DQWORD,
+
+	TT_ENVVAR,
+	TT_DQENVVAR,
 } t_tt;
 
 typedef struct s_token {
     char* start;
     int len;
     t_tt tt;
-	int quoted;
 } t_token;
 
-typedef struct state_s {
-	t_dyn_str	prompt;
-	int			parse_idx;
-	t_vec_env	env;
-} t_state;
 
 typedef enum e_ast_t {
 	AST_SIMPLE_LIST,
@@ -52,18 +48,16 @@ typedef enum e_ast_t {
 
 	AST_AND,
 	AST_OR,
-	AST_SEMICOLON,
-	AST_NEWLINE,
 	AST_REDIRECT,
 	AST_SIMPLE_COMMAND,
 	AST_SUBSHELL,
-	AST_REDIRECT_LIST,
 	AST_COMPOUND_LIST,
 
-	AST_ASSIGNMENT,
 	AST_COMMAND,
 	AST_WORD,
+	AST_ASSIGNMENT_WORD,
 	AST_TOKEN,
+
 }	t_ast_t;
 
 typedef struct s_ast_node t_ast_node;
@@ -89,6 +83,13 @@ typedef struct s_deque_tt
 	int		end;
 	t_token	*buff;
 }	t_deque_tt;
+
+typedef struct state_s {
+	t_dyn_str	prompt;
+	int			parse_idx;
+	t_vec_env	env;
+	t_ast_node	tree;
+} t_state;
 
 int		deque_tt_init(t_deque_tt *ret, int size);
 void	deque_tt_double_if_needed(t_deque_tt *ret);
@@ -120,5 +121,10 @@ void		free_ast(t_ast_node node);
 
 t_vec_env env_to_vec_env(char** envp);
 t_env* env_get(t_vec_env* env, char* key);
+t_env* env_nget(t_vec_env* env, char* key, int len);
 void free_env(t_vec_env *env);
+bool is_special_char(char c);
+bool is_space(char c);
+
+void execute_top_level(t_state *state);
 #endif
