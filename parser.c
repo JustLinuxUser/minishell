@@ -481,8 +481,15 @@ void reparse_assignment_word(t_ast_node* word) {
 
     if (word->children.buff[0].token.tt == TT_WORD) {
         t_token* first_token = &word->children.buff[0].token;
+		if (!first_token->len || !is_var_name_p1(first_token->start[0])) {
+			return;
+		}
         char* eq = ft_strchr(first_token->start, '=');
         if (eq && eq <= first_token->start + first_token->len) {
+			for(int i = 0; first_token->start + i < eq; i++) {
+				if (!is_var_name_p2(first_token->start[i]))
+					return;
+			}
             vec_nd_push(&new_root.children,
                         create_subtoken_node(*first_token, 0,
                                              eq - first_token->start, TT_WORD));
