@@ -63,6 +63,10 @@ t_ast_node unexpected(t_res* res, t_ast_node ret, t_deque_tt* tokens) {
 
 t_ast_node parse_compound_list(t_res* res, t_deque_tt* tokens) {
     t_ast_node ret = {.node_type = AST_COMPOUND_LIST};
+	while (deque_tt_peek(tokens).tt == TT_NEWLINE)
+		deque_tt_pop_start(tokens);
+	if (deque_tt_peek(tokens).tt == TT_END)
+		return (*res = R_MoreInput, ret);
     vec_nd_push(&ret.children, parse_pipeline(res, tokens));
     if (*res != R_OK)
         return (ret);
@@ -72,14 +76,16 @@ t_ast_node parse_compound_list(t_res* res, t_deque_tt* tokens) {
                                  .token = deque_tt_pop_start(tokens)});
         if (*res != R_OK)
             return (ret);
-        if (ret.children.buff[ret.children.len - 1].token.tt == TT_SEMICOLON &&
+        if ((ret.children.buff[ret.children.len - 1].token.tt == TT_SEMICOLON
+			|| ret.children.buff[ret.children.len - 1].token.tt == TT_NEWLINE)
+			&&
             deque_tt_peek(tokens).tt == TT_BRACE_RIGHT) {
             return (ret);
         }
         while (deque_tt_peek(tokens).tt == TT_NEWLINE)
             deque_tt_pop_start(tokens);
         if (deque_tt_peek(tokens).tt == TT_END)
-            return (unexpected(res, ret, tokens));
+            return (*res = R_MoreInput, ret);
         vec_nd_push(&ret.children, parse_pipeline(res, tokens));
         if (*res != R_OK)
             return (ret);

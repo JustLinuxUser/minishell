@@ -31,5 +31,5 @@ simple_command_element: {(WORD | ASSIGNMENT_WORD | redirection)}+;
    It must end with a newline or semicolon.
    Lists are used within commands such as if, for, while.  */
 
-rcompound_list 	: r_pipeline {('&&' | '||' | ';' | '\n') (\n*) r_pipeline} {;}(\n*)
+rcompound_list 	: (\n*) r_pipeline {('&&' | '||' | ';' | '\n') (\n*) r_pipeline} {;}(\n*)
 %%
