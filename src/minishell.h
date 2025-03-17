@@ -61,15 +61,6 @@ typedef enum e_ast_t {
 
 }	t_ast_t;
 
-typedef struct s_ast_node t_ast_node;
-
-typedef struct s_vec_nd
-{
-	size_t		cap;
-	size_t		len;
-	t_ast_node	*buff;
-}	t_vec_nd;
-
 typedef struct redir_s {
 	bool	direction_in;
 	int		fd;
@@ -84,12 +75,24 @@ typedef struct s_vec_redir
 	redir_t		*buff;
 }	t_vec_redir;
 
+typedef struct s_ast_node t_ast_node;
+
+typedef struct s_vec_nd
+{
+	size_t		cap;
+	size_t		len;
+	t_ast_node	*buff;
+}	t_vec_nd;
+
 typedef struct s_ast_node {
     t_ast_t node_type;
     t_token token;
-	t_vec_nd children;
 	redir_t *redir;
+
+	t_vec_nd children;
 } t_ast_node;
+
+
 
 typedef struct s_deque_tt
 {

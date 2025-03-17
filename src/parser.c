@@ -302,8 +302,8 @@ t_ast_node parse_tokens(t_res* res, t_deque_tt* tokens) {
         assert(tt == TT_END);
         assert(tokens->len == 0);
     }
-    flatten(&ret);
+    // flatten(& ret);
     reparse_words(&ret);
-    reparse_assignment_words(&ret);
+    // reparse_assignment_words(&ret);
     return (ret);
 }

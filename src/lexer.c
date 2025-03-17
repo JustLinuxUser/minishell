@@ -21,6 +21,7 @@ int advance_dquoted(char** str) {
     (*str)++;
     char prev = 0;
     while (**str && (**str != '\"' || prev == '\\')) {
+		prev = **str;
         (*str)++;
     }
     if (**str != '\"')
@@ -34,6 +35,7 @@ int advance_squoted(char** str) {
     (*str)++;
     char prev = 0;
     while (**str && (**str != '\'' || prev == '\\')) {
+		prev = **str;
         (*str)++;
     }
     if (**str != '\'')

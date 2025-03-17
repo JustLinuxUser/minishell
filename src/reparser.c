@@ -41,14 +41,19 @@ void reparse_dquote(t_ast_node* ret, int* i, t_token t) {
     assert(t.start[(*i)++] == '"');
 
     int prev_start = *i;
-    while (*i < t.len && t.start[*i] != '"') {
+	char prev = 0;
+    while (*i < t.len && (t.start[*i] != '"' || prev == '\\')) {
         if (t.start[*i] == '$') {
             vec_nd_push(&ret->children,
                         create_subtoken_node(t, prev_start, *i, TT_DQWORD));
             reparse_envvar(ret, i, t, TT_DQENVVAR);
             prev_start = *i;
             continue;
-        }
+        } else if (t.start[*i] == '"'){
+            vec_nd_push(&ret->children,
+                        create_subtoken_node(t, prev_start, *i, TT_DQWORD));
+		}
+		prev = t.start[*i];
         (*i)++;
     }
     vec_nd_push(&ret->children,

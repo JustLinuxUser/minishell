@@ -164,7 +164,7 @@ int main(int argc, char** argv, char** envp) {
                 printf("\n");
                 print_ast_dot(node);
                 state.tree = node;
-                execute_top_level(&state);
+                // execute_top_level(&state);
                 free_ast(node);
             } else {
                 prompt = "op> ";
