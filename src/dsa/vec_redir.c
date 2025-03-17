@@ -6,22 +6,17 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:51:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/17 18:38:29 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/17 19:20:11 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include "../minishell.h"
 #include "../libft/utils/utils.h"
-#define VEC_REDIR_INIT_CAP 10
 
 int	vec_redir_init(t_vec_redir *ret)
 {
-	ret->buff = malloc(sizeof(redir_t) * VEC_REDIR_INIT_CAP);
-	if (ret->buff == 0)
-		return (1);
-	ret->len = 0;
-	ret->cap = VEC_REDIR_INIT_CAP;
+	*ret = (t_vec_redir){0};
 	return (0);
 }
 
@@ -31,6 +26,7 @@ int	vec_redir_double(t_vec_redir *v)
 	size_t	i;
 
 	v->cap *= 2;
+	v->cap += 1;
 	temp = malloc(sizeof(redir_t) * v->cap);
 	if (temp == 0)
 		return (1);

@@ -6,22 +6,17 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:51:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/17 18:38:38 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/17 19:24:15 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include "vec_str.h"
 #include "../libft/utils/utils.h"
-#define VEC_STR_INIT_CAP 10
 
 int	vec_str_init(t_vec_str *ret)
 {
-	ret->buff = malloc(sizeof(char *) * VEC_STR_INIT_CAP);
-	if (ret->buff == 0)
-		return (1);
-	ret->len = 0;
-	ret->cap = VEC_STR_INIT_CAP;
+	*ret = (t_vec_str){0};
 	return (0);
 }
 
@@ -31,6 +26,7 @@ int	vec_str_double(t_vec_str *v)
 	size_t	i;
 
 	v->cap *= 2;
+	v->cap += 1;
 	temp = malloc(sizeof(char *) * v->cap);
 	if (temp == 0)
 		return (1);

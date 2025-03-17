@@ -6,22 +6,17 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:51:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/17 18:37:43 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/17 19:19:42 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include "vec_env.h"
 #include "../libft/utils/utils.h"
-#define VEC_ENV_INIT_CAP 10
 
 int	vec_env_init(t_vec_env *ret)
 {
-	ret->buff = malloc(sizeof(t_env) * VEC_ENV_INIT_CAP);
-	if (ret->buff == 0)
-		return (1);
-	ret->len = 0;
-	ret->cap = VEC_ENV_INIT_CAP;
+	*ret = (t_vec_env){0};
 	return (0);
 }
 
@@ -30,7 +25,7 @@ int	vec_env_double(t_vec_env *v)
 	t_env	*temp;
 	size_t	i;
 
-	v->cap *= 2;
+	v->cap = v->cap * 2 + 1;
 	temp = malloc(sizeof(t_env) * v->cap);
 	if (temp == 0)
 		return (1);
