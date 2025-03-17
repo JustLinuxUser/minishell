@@ -1,37 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   vec_env.c                                          :+:      :+:    :+:   */
+/*   vec_str.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:51:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/02/22 00:06:05 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/17 18:38:38 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
-#include "vec_env.h"
-#include "libft/utils/utils.h"
-#define VEC_ENV_INIT_CAP 10
+#include "vec_str.h"
+#include "../libft/utils/utils.h"
+#define VEC_STR_INIT_CAP 10
 
-int	vec_env_init(t_vec_env *ret)
+int	vec_str_init(t_vec_str *ret)
 {
-	ret->buff = malloc(sizeof(t_env) * VEC_ENV_INIT_CAP);
+	ret->buff = malloc(sizeof(char *) * VEC_STR_INIT_CAP);
 	if (ret->buff == 0)
 		return (1);
 	ret->len = 0;
-	ret->cap = VEC_ENV_INIT_CAP;
+	ret->cap = VEC_STR_INIT_CAP;
 	return (0);
 }
 
-int	vec_env_double(t_vec_env *v)
+int	vec_str_double(t_vec_str *v)
 {
-	t_env	*temp;
+	char *	*temp;
 	size_t	i;
 
 	v->cap *= 2;
-	temp = malloc(sizeof(t_env) * v->cap);
+	temp = malloc(sizeof(char *) * v->cap);
 	if (temp == 0)
 		return (1);
 	i = -1;
@@ -42,23 +42,23 @@ int	vec_env_double(t_vec_env *v)
 	return (0);
 }
 
-int	vec_env_push(t_vec_env *v, t_env el)
+int	vec_str_push(t_vec_str *v, char * el)
 {
 	if (v->len == v->cap)
-		if (vec_env_double(v))
+		if (vec_str_double(v))
 			return (1);
 	v->buff[v->len++] = el;
 	return (0);
 }
 
-t_env	vec_env_pop(t_vec_env *v)
+char *	vec_str_pop(t_vec_str *v)
 {
 	ft_assert(v->len > 0);
 	return (v->buff[--v->len]);
 }
 
-t_env	*vec_env_idx(t_vec_env *v, size_t idx)
+char *	vec_str_idx(t_vec_str *v, size_t idx)
 {
 	ft_assert(idx < v->len);
-	return (&v->buff[idx]);
+	return (v->buff[idx]);
 }

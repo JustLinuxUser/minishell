@@ -3,8 +3,8 @@
 
 #include "libft/dsa/dyn_str.h"
 #include <stdbool.h>
-#include "vec_env.h"
-#include "vec_str.h"
+#include "dsa/vec_env.h"
+#include "dsa/vec_str.h"
 
 typedef enum s_res {
     R_OK,
@@ -39,6 +39,7 @@ typedef struct s_token {
     char* start;
     int len;
     t_tt tt;
+	bool allocated;
 } t_token;
 
 
@@ -69,10 +70,25 @@ typedef struct s_vec_nd
 	t_ast_node	*buff;
 }	t_vec_nd;
 
+typedef struct redir_s {
+	bool	direction_in;
+	int		fd;
+	char	*fname;
+	bool	should_delete;
+} redir_t;
+
+typedef struct s_vec_redir
+{
+	size_t	cap;
+	size_t	len;
+	redir_t		*buff;
+}	t_vec_redir;
+
 typedef struct s_ast_node {
     t_ast_t node_type;
     t_token token;
 	t_vec_nd children;
+	redir_t *redir;
 } t_ast_node;
 
 typedef struct s_deque_tt
@@ -89,7 +105,17 @@ typedef struct state_s {
 	int			parse_idx;
 	t_vec_env	env;
 	t_ast_node	tree;
+	char		**argv;
 } t_state;
+
+// lexer.c
+char* tokenizer(char* str, t_deque_tt* ret);
+
+int	vec_redir_init(t_vec_redir *ret);
+int	vec_redir_double(t_vec_redir *v);
+int	vec_redir_push(t_vec_redir *v, redir_t el);
+redir_t	vec_redir_pop(t_vec_redir *v);
+redir_t	vec_redir_idx(t_vec_redir *v, size_t idx);
 
 int		deque_tt_init(t_deque_tt *ret, int size);
 void	deque_tt_double_if_needed(t_deque_tt *ret);
@@ -114,10 +140,21 @@ t_ast_node	*vec_nd_idx(t_vec_nd *v, size_t idx);
 void		vec_nd_push_vec(t_vec_nd *ret, t_vec_nd *second);
 void		vec_nd_free(t_vec_nd *ret);
 t_ast_node parse_tokens(t_res *res, t_deque_tt* tokens);
+
+// tree_utils.c
 void		print_node(t_ast_node node);
 void		print_ast_dot(t_ast_node node);
+void ast_postorder_traversal(t_ast_node* node, void (*f)(t_ast_node* node));
+
 char*		tt_to_str(t_tt tt);
 void		free_ast(t_ast_node node);
+
+// reparser.c
+void reparse_assignment_words(t_ast_node* node);
+void reparse_words(t_ast_node* node);
+
+t_ast_node create_subtoken_node(t_token t, int offset, int end_offset, t_tt tt);
+
 
 t_vec_env env_to_vec_env(char** envp);
 t_env* env_get(t_vec_env* env, char* key);

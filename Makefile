@@ -3,37 +3,30 @@ TARGET := minishell
 SRCS_DIR := .
 OUT_DIR := build
 
-SOURCES := ${wildcard *.c}
-# deque_tt2.c\
-# deque_tt.c\
-# executor.c\
-# main.c\
-# parser.c\
-# prompt.c\
-# vec_env2.c\
-# vec_env.c\
-# vec_nd2.c\
-# vec_nd.c
+SOURCES := ${wildcard src/**/*.c src/*.c}
 
-HEADERS := ${wildcard *.h}
+HEADERS := ${wildcard src/**/*.h src/*.h}
 
 OBJS := ${SOURCES:%.c=${OUT_DIR}/%.o}
 
 CFLAGS := -Wall -Wextra -g3 -ggdb -fsanitize=address -fno-inline-small-functions
 
-LIBS := -L libft -lft -lreadline
+LIBFT_A := src/libft/libft.a
+
+LIBS := -L src/libft -lft -lreadline
 
 CC := gcc
 
 all: ${TARGET} ${headers}
 
-libft/libft.a: libft
-	cd libft && make
+src/libft/libft.a: src/libft
+	cd src/libft && make
 
-${TARGET}: Makefile build ${OBJS} libft/libft.a
+${TARGET}: Makefile build ${OBJS} ${LIBFT_A}
 	${CC} ${CFLAGS} -o ${TARGET} ${OBJS} ${LIBS}
 
 ${OUT_DIR}/%.o: ${SRCS_DIR}/%.c ${HEADERES} 
+	mkdir -p $$(dirname $@)
 	${CC} ${CFLAGS} -c $< -o $@
 
 ${OUT_DIR}:
@@ -41,7 +34,7 @@ ${OUT_DIR}:
 
 clean:
 	rm -rf ${OUT_DIR}
-	make -C libft fclean
+	make -C src/libft fclean
 
 fclean: clean
 	rm -rf ${TARGET}

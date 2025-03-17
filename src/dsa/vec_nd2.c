@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void vec_nd_push_vec(t_vec_nd *ret, t_vec_nd *second)
 {

@@ -6,13 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 00:31:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/02/08 18:22:51 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/17 18:37:17 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
-#include "minishell.h"
-#include "libft/utils/utils.h"
+#include "../minishell.h"
+#include "../libft/utils/utils.h"
 
 int	deque_tt_init(t_deque_tt *ret, int size)
 {

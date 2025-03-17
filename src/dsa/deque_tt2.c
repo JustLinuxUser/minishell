@@ -6,13 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 00:31:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/02/08 21:52:09 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/17 18:35:56 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
-#include "libft/utils/utils.h"
-#include "libft/libft.h"
+#include "../minishell.h"
+#include "../libft/utils/utils.h"
+#include "../libft/libft.h"
 
 void	deque_tt_double_if_needed(t_deque_tt *ret)
 {

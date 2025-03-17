@@ -1,5 +1,5 @@
-#include "libft/libft.h"
-#include "minishell.h"
+#include "../libft/libft.h"
+#include "../minishell.h"
 #include "vec_env.h"
 
 t_env str_to_env(char* str) {
