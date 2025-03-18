@@ -114,8 +114,6 @@ void signal_handling(void) {
 
 int main(int argc, char** argv, char** envp) {
     (void)argc;
-    (void)argv;
-    (void)envp;
 
     t_state state;
     char* line;
@@ -126,9 +124,7 @@ int main(int argc, char** argv, char** envp) {
     deque_tt_init(&tt, 100);
     dyn_str_init(&state.prompt);
     state.env = env_to_vec_env(envp);
-
-    printf("env: %s\n", vec_env_idx(&state.env, 0)->key);
-    printf("path: %s\n", env_get(&state.env, "PATH")->value);
+	state.argv = argv;
 
     prompt = "prompt> ";
     t_res res = R_MoreInput;
@@ -153,7 +149,6 @@ int main(int argc, char** argv, char** envp) {
                 continue;
             }
             dyn_str_push(&state.prompt, '\n');
-            printf("prompt: %s\n", state.prompt.buff);
             prompt = tokenizer(state.prompt.buff, &tt);
         }
         if (tt.len) {
@@ -164,7 +159,7 @@ int main(int argc, char** argv, char** envp) {
                 printf("\n");
                 print_ast_dot(node);
                 state.tree = node;
-                // execute_top_level(&state);
+                execute_top_level(&state);
                 free_ast(node);
             } else {
                 prompt = "op> ";

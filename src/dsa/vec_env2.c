@@ -27,6 +27,21 @@ t_vec_env env_to_vec_env(char** envp) {
     return (ret);
 }
 
+char** env_to_envp(t_vec_env* env) {
+	char ** ret;
+
+	ret = ft_calloc(env->len + 1, sizeof(char *));
+	for (size_t i = 0; i < env->len; i++) {
+		t_dyn_str s;
+		dyn_str_init(&s);
+		dyn_str_pushstr(&s, env->buff[i].key);
+		dyn_str_push(&s, '=');
+		dyn_str_pushstr(&s, env->buff[i].value);
+		ret[i] = s.buff;
+	}
+	return (ret);
+}
+
 t_env* env_get(t_vec_env* env, char* key) {
     t_env* curr;
     int i;
@@ -39,6 +54,28 @@ t_env* env_get(t_vec_env* env, char* key) {
         i--;
     }
     return (0);
+}
+int env_set(t_vec_env* env, t_env new) {
+	t_env *old;
+
+	ft_assert(new.key != 0);
+	old = env_get(env, new.key);
+	if (old) {
+		free(old->value);
+		old->value = new.value;
+	} else {
+		return vec_env_push(env, new);
+	}
+	return (0);
+}
+
+void env_extend(t_vec_env *dest, t_vec_env *src)
+{
+	while (src->len)
+	{
+		env_set(dest, vec_env_pop(src));
+	}
+	free(src->buff);
 }
 
 t_env* env_nget(t_vec_env* env, char* key, int len) {

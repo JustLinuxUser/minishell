@@ -5,10 +5,6 @@ char* node_name(t_ast_t tn) {
     switch (tn) {
         case AST_COMMAND_PIPELINE:
             return ("AST_COMMAND_PIPELINE");
-        case AST_AND:
-            return ("AST_AND");
-        case AST_OR:
-            return ("AST_OR");
         case AST_REDIRECT:
             return ("AST_REDIRECT");
         case AST_WORD:

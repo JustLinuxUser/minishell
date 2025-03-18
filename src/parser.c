@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parser.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/18 00:07:42 by anddokhn          #+#    #+#             */
+/*   Updated: 2025/03/18 05:00:54 by anddokhn         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -183,9 +195,7 @@ t_ast_node parse_pipeline(t_res* res, t_deque_tt* tokens) {
     if (*res != R_OK)
         return (ret);
     while (deque_tt_peek(tokens).tt == TT_PIPE) {
-        vec_nd_push(&ret.children,
-                    (t_ast_node){.node_type = AST_TOKEN,
-                                 .token = deque_tt_pop_start(tokens)});
+		deque_tt_pop_start(tokens);
         while (deque_tt_peek(tokens).tt == TT_NEWLINE)
             deque_tt_pop_start(tokens);
         if (deque_tt_peek(tokens).tt == TT_END)
@@ -302,8 +312,8 @@ t_ast_node parse_tokens(t_res* res, t_deque_tt* tokens) {
         assert(tt == TT_END);
         assert(tokens->len == 0);
     }
-    // flatten(& ret);
+    flatten(& ret);
     reparse_words(&ret);
-    // reparse_assignment_words(&ret);
+    reparse_assignment_words(&ret);
     return (ret);
 }
