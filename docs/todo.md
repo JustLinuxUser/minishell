@@ -26,9 +26,9 @@
 [x] Execution of commands
 [ ] Builtins
 
-[ ] Make sure that all the vec / deque data types can be initialized  with = {0}
+[x] Make sure that all the vec / deque data types can be initialized  with = {0}
     [x] In minishell
-    [ ] in libft
+    [x] in libft
 
 [ ] Expansion of the special env vars
 [ ] Glob expansion
