@@ -125,6 +125,7 @@ int main(int argc, char** argv, char** envp) {
     dyn_str_init(&state.prompt);
     state.env = env_to_vec_env(envp);
 	state.argv = argv;
+	state.last_cmd_status = 0;
 
     prompt = "prompt> ";
     t_res res = R_MoreInput;

@@ -19,10 +19,25 @@ bool is_var_name_p2(char c)
 	return (false);
 }
 
+bool reparse_special_envvar(t_ast_node* ret, int* i, t_token t, t_tt tt) {
+    int prev_start = *i;
+	char c;
+
+	c = t.start[*i];
+	if (c != '?' && c != '$')
+		return (false);
+	(*i)++;
+	vec_nd_push(&ret->children,
+			 create_subtoken_node(t, prev_start, *i, tt));
+	return (true);
+}
+
 void reparse_envvar(t_ast_node* ret, int* i, t_token t, t_tt tt) {
     assert(t.start[(*i)++] == '$');
 
     int prev_start = *i;
+	if (reparse_special_envvar(ret, i, t, tt))
+		return;
 	if (*i < t.len && is_var_name_p1(t.start[*i]))
 		(*i)++;
     while (*i < t.len && is_var_name_p2(t.start[*i])) {

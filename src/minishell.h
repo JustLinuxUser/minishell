@@ -1,10 +1,14 @@
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
-#include "libft/dsa/dyn_str.h"
-#include <stdbool.h>
-#include "dsa/vec_env.h"
-#include "dsa/vec_str.h"
+# include "dsa/vec_exe_res.h"
+# include "libft/dsa/dyn_str.h"
+# include <stdbool.h>
+# include "dsa/vec_env.h"
+# include "dsa/vec_str.h"
+
+# define COMMAND_NOT_FOUND 127
+# define EXE_PERM_DENIED 126
 
 typedef enum s_res {
     R_OK,
@@ -107,7 +111,14 @@ typedef struct state_s {
 	t_vec_env	env;
 	t_ast_node	tree;
 	char		**argv;
+	int			last_cmd_status;
 } t_state;
+
+typedef struct executable_cmd_s {
+	t_vec_env pre_assigns;
+	t_vec_str argv;
+	char *fname;
+} executable_cmd_t;
 
 // lexer.c
 char* tokenizer(char* str, t_deque_tt* ret);
@@ -165,4 +176,19 @@ bool is_special_char(char c);
 bool is_space(char c);
 
 void execute_top_level(t_state *state);
+
+
+// builtins
+int (*builtin_func(char *name)) (t_state *state, t_vec_str argv);
+
+// executor
+typedef struct executable_node_s {
+	int			infd;
+	int			outfd;
+	t_ast_node	*node;
+	t_vec_redir redirs;
+	bool		modify_parent_context;
+} t_executable_node;
+
+t_exe_res execute_command(t_state* state, t_executable_node exe);
 #endif

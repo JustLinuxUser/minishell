@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 00:07:42 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/18 05:00:54 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/18 07:09:47 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -312,7 +312,7 @@ t_ast_node parse_tokens(t_res* res, t_deque_tt* tokens) {
         assert(tt == TT_END);
         assert(tokens->len == 0);
     }
-    flatten(& ret);
+    // flatten(& ret);
     reparse_words(&ret);
     reparse_assignment_words(&ret);
     return (ret);

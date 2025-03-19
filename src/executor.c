@@ -6,11 +6,10 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/18 05:36:15 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/19 05:46:22 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft/dsa/deque_int.h"
 #include "minishell.h"
 
 #include <assert.h>
@@ -25,6 +24,8 @@
 #include "libft/dsa/dyn_str.h"
 #include "libft/ft_printf/ft_printf.h"
 #include "libft/libft.h"
+#include "dsa/vec_exe_res.h"
+
 
 void expand_word(t_state* state,
                  t_ast_node node,
@@ -213,10 +214,7 @@ void tilde_expand_simple_command(t_state* state, t_ast_node* node) {
                 expand_tilde_word(state, &curr->children.buff[1]);
             }
         } else {
-            printf("Unimplemented node: \n");
-            print_node(*curr);
-            printf("\n");
-            assert("Unimplemented" == 0);
+            assert("Unreachable!!" == 0);
         }
     }
 }
@@ -245,17 +243,16 @@ char* exe_path(char** path_dirs, char* exe_name) {
     return (free(temp.buff), NULL);
 }
 
-struct new_cmd_run_s {
-    bool is_buitin;
-    int in_fd;
-    int out_fd;
-    t_vec_str envp;
-    t_vec_str args;
-    char* exe_path;
-} new_cmd_run_t;
-
-void cmd_not_found(t_state* state, char* cmd) {
+void err_cmd_not_found(t_state* state, char* cmd) {
     ft_eprintf("%s: %s: command not found\n", state->argv[0], cmd);
+}
+
+void err_no_path_var(t_state* state, char* cmd) {
+    ft_eprintf("%s: %s: No such file or directory\n", state->argv[0], cmd);
+}
+
+void err_cmd_other(t_state* state, char* cmd) {
+    ft_eprintf("%s: %s: %s\n", state->argv[0], cmd, strerror(errno));
 }
 
 void free_tab(char** tab) {
@@ -267,31 +264,35 @@ void free_tab(char** tab) {
     free(tab);
 }
 
+// returns status
 int actually_run(t_state* state, t_vec_str* args) {
     assert(args->len >= 1);
     ft_eprintf("executing cmd: %s\n", args->buff[0]);
+	if (builtin_func(args->buff[0])) {
+		exit(builtin_func(args->buff[0])(state, *args));
+	}
     t_env* path = env_get(&state->env, "PATH");
     if (!path || !path->value) {
-        ft_eprintf("No path found");
-        cmd_not_found(state, args->buff[0]);
-        return (-1);  // TODO: should be replaced with a valid code, and made a
-                      // define for it
+        err_no_path_var(state, args->buff[0]);
+        return (COMMAND_NOT_FOUND);
     }
     char** path_dirs = ft_split(path->value, ':');
     char* path_of_exe = exe_path(path_dirs, args->buff[0]);
 
     free_tab(path_dirs);
     if (!path_of_exe) {
-        ft_eprintf("Not found in path\n");
-        cmd_not_found(state, args->buff[0]);
-        return (-1);  // TODO: should be replaced with a valid code, and made a
-                      // define for it
+        err_cmd_not_found(state, args->buff[0]);
+        return (COMMAND_NOT_FOUND);
     }
     vec_str_push(args, 0);  // nullterm
     char** envp = env_to_envp(&state->env);
     execve(path_of_exe, args->buff, envp);
-    ft_eprintf("ERROR: %s\n", strerror(errno));
-    return (0);
+	err_cmd_other(state, args->buff[0]);
+	free_tab(args->buff);
+	free_tab(envp);
+	free_ast(state->tree);
+	free(path_of_exe);
+    return (EXE_PERM_DENIED);
 }
 
 char* expand_word_single(t_state* state, t_ast_node* curr) {
@@ -308,24 +309,51 @@ char* expand_word_single(t_state* state, t_ast_node* curr) {
     return (temp);
 }
 
-// returns the PID if any, and -1 if none
-int execute_simple_command(t_state* state,
-                           t_ast_node* node,
-                           int infd,
-                           int outfd) {
-    t_vec_str args;
+int redirect_from_ast_redir(t_state *state, t_ast_node *curr, redir_t *ret)
+{
+	assert(curr->node_type == AST_REDIRECT);
+	if (curr->redir)
+	{
+		*ret =  *curr->redir;
+		return (0);
+	}
+	t_tt tt = curr->children.buff[0].token.tt;
+	assert(tt != TT_HEREDOC && "Unimplemented heredocs");
+	ret->direction_in = tt == TT_REDIRECT_LEFT || tt == TT_HEREDOC;
+
+	ret->fname = expand_word_single(state, vec_nd_idx(&curr->children, 1));
+	if (!ret->fname) {
+		return (-1);  // TODO: Get the proper exit code
+	}
+	if (tt == TT_REDIRECT_LEFT)
+		ret->fd = open(ret->fname, O_RDONLY);
+	else if (tt == TT_REDIRECT_RIGHT)
+		ret->fd =
+			open(ret->fname, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	else if (tt == TT_APPEND)
+		ret->fd =
+			open(ret->fname, O_WRONLY | O_CREAT | O_APPEND, 0666);
+	if (ret->fd < 0)
+		return (-1);  // TODO: Get the proper exit code
+	ret->should_delete = false;
+	return (0);
+}
+
+ int expand_simple_command(t_state* state, t_ast_node* node, executable_cmd_t *ret, t_vec_redir * redirects) {
+	 *ret = (executable_cmd_t){};
+
     bool found_first = false;
     t_vec_env pre_assigns;
-    t_vec_redir redirects = {};
 
     vec_env_init(&pre_assigns);
-    vec_str_init(&args);
+    vec_str_init(&ret->argv);
     tilde_expand_simple_command(state, node);
+
     t_ast_node* curr;
     for (size_t i = 0; i < node->children.len; i++) {
         curr = &node->children.buff[i];
         if (curr->node_type == AST_WORD) {
-            expand_word(state, *curr, &args, false);
+            expand_word(state, *curr, &ret->argv, false);
             found_first = true;
         } else if (curr->node_type == AST_ASSIGNMENT_WORD) {
             if (!found_first) {
@@ -333,129 +361,144 @@ int execute_simple_command(t_state* state,
             } else {
                 assignment_word_to_word(curr);
                 print_node(*curr);
-                expand_word(state, *curr, &args, false);
+                expand_word(state, *curr, &ret->argv, false);
             }
         } else if (curr->node_type == AST_REDIRECT) {
-            redir_t redir = {};
-            t_tt tt = curr->children.buff[0].token.tt;
-            assert(tt != TT_HEREDOC && "Unimplemented heredocs");
-            redir.direction_in = tt == TT_REDIRECT_LEFT || tt == TT_HEREDOC;
-
-            redir.fname =
-                expand_word_single(state, vec_nd_idx(&curr->children, 1));
-            if (!redir.fname) {
-                return (-1);  // TODO: Get the proper exit code
-            }
-            if (tt == TT_REDIRECT_LEFT)
-                redir.fd = open(redir.fname, O_RDONLY);
-            else if (tt == TT_REDIRECT_RIGHT)
-                redir.fd =
-                    open(redir.fname, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-            else if (tt == TT_APPEND)
-                redir.fd =
-                    open(redir.fname, O_WRONLY | O_CREAT | O_APPEND, 0666);
-            if (redir.fd < 0)
-                return (-1);  // TODO: Get the proper exit code
-            redir.should_delete = false;
-            vec_redir_push(&redirects, redir);
+			redir_t redir;
+			if (redirect_from_ast_redir(state, curr, &redir)) {
+				ft_eprintf("Error expanding redirect!!\n");
+				return (1);
+			}
+			vec_redir_push(redirects, redir);
         } else {
             assert("Unimplemented" == 0);
         }
     }
+	return (0);
+}
 
-    for (size_t i = 0; i < pre_assigns.len; i++) {
-        printf("env: >%s=%s<\n", pre_assigns.buff[i].key,
-               pre_assigns.buff[i].value);
+void free_executable_cmd(executable_cmd_t cmd)
+{
+    for (size_t i = 0; i < cmd.pre_assigns.len; i++) {
+        free(cmd.pre_assigns.buff[i].value);
+        free(cmd.pre_assigns.buff[i].key);
     }
 
-    for (size_t i = 0; i < args.len; i++) {
-        printf("arg: >%s<\n", args.buff[i]);
+    for (size_t i = 0; i < cmd.argv.len; i++) {
+        free(cmd.argv.buff[i]);
     }
+    free(cmd.pre_assigns.buff);
+    free(cmd.argv.buff);
+}
+
+void set_up_redirection(t_executable_node exe)
+{
+	dup2(exe.infd, 0);
+	dup2(exe.outfd, 1);
+	if (exe.infd != 0)
+		close(exe.infd);
+	if (exe.outfd != 1)
+		close(exe.outfd);
+	for (size_t i = 0; i < exe.redirs.len; i++) {
+		if (exe.redirs.buff[i].direction_in) {
+			dup2(exe.redirs.buff[i].fd, 0);
+		} else {
+			dup2(exe.redirs.buff[i].fd, 1);
+		}
+	}
+}
+
+// returns the PID if any, and -1 if none
+t_exe_res execute_simple_command(t_state* state,
+                           t_executable_node exe) {
+	executable_cmd_t cmd;
+	if (expand_simple_command(state, exe.node, &cmd, &exe.redirs))
+	{
+		ft_eprintf("Failed to expand the command!\n");
+		return (res_status(-1)); // TODO: Fix this
+	}
+    for (size_t i = 0; i < cmd.pre_assigns.len; i++) {
+        printf("env: >%s=%s<\n", cmd.pre_assigns.buff[i].key,
+               cmd.pre_assigns.buff[i].value);
+    }
+
+    for (size_t i = 0; i < cmd.argv.len; i++) {
+        printf("arg: >%s<\n", cmd.argv.buff[i]);
+    }
+
+
+	if (builtin_func(cmd.argv.buff[0]) && exe.modify_parent_context) {
+		int stdin_bak = dup(0);
+		int stdout_bak = dup(1);
+		set_up_redirection(exe);
+
+		int status = builtin_func(cmd.argv.buff[0])(state, cmd.argv);
+
+		dup2(stdin_bak, 0);
+		dup2(stdout_bak, 1);
+		close(stdin_bak);
+		close(stdout_bak);
+		free_executable_cmd(cmd);
+		return (res_status(status));
+	}
 
     int pid = fork();
     if (pid == 0) {
-        dup2(infd, 0);
-        dup2(outfd, 1);
-        if (infd != 0)
-            close(infd);
-        if (outfd != 1)
-            close(outfd);
-        for (size_t i = 0; i < redirects.len; i++) {
-            if (redirects.buff[i].direction_in) {
-                dup2(redirects.buff[i].fd, 0);
-            } else {
-                dup2(redirects.buff[i].fd, 1);
-            }
-        }
-        env_extend(&state->env, &pre_assigns);
-        actually_run(state, &args);
+		set_up_redirection(exe);
+        env_extend(&state->env, &cmd.pre_assigns);
+        exit(actually_run(state, &cmd.argv));
     }
-    for (size_t i = 0; i < pre_assigns.len; i++) {
-        free(pre_assigns.buff[i].value);
-        free(pre_assigns.buff[i].key);
-    }
-
-    for (size_t i = 0; i < args.len; i++) {
-        free(args.buff[i]);
-    }
-    free(pre_assigns.buff);
-    free(args.buff);
-
-    for (size_t i = 0; i < redirects.len; i++) {
-        free(redirects.buff[i].fname);
-    }
-    free(redirects.buff);
-    return (pid);
+	free_executable_cmd(cmd);
+	return (res_pid(pid));
 }
 
-int execute_pipeline(t_state* state, t_ast_node* node, int infd, int outfd) {
-    int curr_in = infd;
-    int curr_out;
+// Always returns status
+int execute_pipeline(t_state* state, t_executable_node exe) {
+	t_executable_node curr_exe = {};
+
+    curr_exe.infd = exe.infd;
+	curr_exe.modify_parent_context = exe.node->children.len == 1; // if its just one, it's ok
+
     int pp[2];
     size_t i = 0;
-    t_deque_int pids;
+    t_vec_exe_res results = {};
+    t_exe_res res;
 
-    deque_int_init(&pids, 10);
-
-    int pid;
-
-    for (; i < node->children.len - 1; i++) {
-        if (node->children.buff[i].node_type == AST_SIMPLE_COMMAND) {
+    for (; i < exe.node->children.len - 1; i++) {
+		curr_exe.node = vec_nd_idx(&exe.node->children, i);
+        if (curr_exe.node->node_type == AST_COMMAND) {
             pipe(pp);
-            curr_out = pp[1];
-            pid = execute_simple_command(state, &node->children.buff[i],
-                                         curr_in, curr_out);
-            deque_int_push_end(&pids, pid);
-            close(curr_out);
-            ft_eprintf("curr_in: %i\n", curr_in);
-            close(curr_in);
-            curr_in = pp[0];
-            ft_eprintf("curr_in: %i\n", curr_in);
+            curr_exe.outfd = pp[1];
+            res = execute_command(state, curr_exe);
+            vec_exe_res_push(&results, res);
+            close(curr_exe.outfd);
+            curr_exe.infd = pp[0];
         } else {
+			ft_eprintf("Got unexpected: \n");
+			print_node(*curr_exe.node);
             assert("Unimplemented" == 0);
         }
     }
-    if (node->children.buff[i].node_type == AST_SIMPLE_COMMAND) {
-        pid = execute_simple_command(state, &node->children.buff[i], curr_in,
-                                     outfd);
-        deque_int_push_end(&pids, pid);
-        // close(curr_out);
-        // close(outfd);
+  if (exe.node->children.buff[i].node_type == AST_COMMAND) {
+		curr_exe.node = vec_nd_idx(&exe.node->children, i);
+        res = execute_command(state, curr_exe);
+		vec_exe_res_push(&results, res);
     } else {
         assert("Unimplemented" == 0);
     }
     int status;
-    while (pids.len) {
-        pid = deque_int_pop_start(&pids);
-        assert(pid > 0);
-        waitpid(pid, &status, 0);
+	i = 0;
+    while (i < results.len) {
+        res = vec_exe_res_idx(&results, i);
+		status = exe_res_to_status(res);
+		i++;
     }
-    free(pids.buff);
+    free(results.buff);
     return (status);
     return (0);
 }
 
-int execute_tree_node(t_state* state, t_ast_node* node);
+int execute_tree_node(t_state* state, t_executable_node exe);
 
 bool should_execute(int prev_status, t_tt prev_op) {
     assert(prev_op == TT_SEMICOLON || prev_op == TT_NEWLINE ||
@@ -469,36 +512,71 @@ bool should_execute(int prev_status, t_tt prev_op) {
 	return (false);
 }
 
-int execute_simple_list(t_state* state, t_ast_node* node) {
+int execute_simple_list(t_state* state, t_executable_node exe) {
     int status = 0;
     t_tt op = TT_SEMICOLON;
-    for (size_t i = 0; i < node->children.len; i++) {
+	t_executable_node exe_curr;
+    for (size_t i = 0; i < exe.node->children.len; i++) {
+		exe_curr = exe;
+		exe_curr.node = &exe.node->children.buff[i];
 		if (should_execute(status, op))
-			status = execute_tree_node(state, &node->children.buff[i]);
+			status = execute_tree_node(state, exe_curr);
         i++;
-        if (i < node->children.len) {
-			op = node->children.buff[i].token.tt;
+        if (i < exe.node->children.len) {
+			op = exe.node->children.buff[i].token.tt;
         }
     }
     return status;
 }
 
-int execute_tree_node(t_state* state, t_ast_node* node) {
-    int status;
-    int pid;
+// returns pid
+t_exe_res execute_subshell(t_state *state, t_executable_node exe)
+{
+    int pid = fork();
+    if (pid == 0) {
+		set_up_redirection(exe);
+		exe.node = &exe.node->children.buff[0];
+		exit(execute_tree_node(state, exe));
+    }
+	return (res_pid(pid));
+}
 
-    switch (node->node_type) {
+// gives back pid;
+t_exe_res execute_command(t_state* state, t_executable_node exe) {
+	assert(exe.node->children.len >= 1);
+	if (exe.node->children.buff[0].node_type == AST_SIMPLE_COMMAND) {
+		exe.node = &exe.node->children.buff[0];
+		return (execute_simple_command(state, exe));
+	}
+	assert(exe.node->children.buff[0].node_type == AST_SUBSHELL);
+	for (size_t i = 1; i < exe.node->children.len; i++) {
+		t_ast_node *curr = vec_nd_idx(&exe.node->children, i);
+		assert(curr->node_type == AST_REDIRECT);
+		redir_t redir;
+		if (redirect_from_ast_redir(state, curr, &redir))
+		{
+			ft_eprintf("Failed to expand redir\n");
+			return res_status(1);// TODO: Get the proper exit code
+		}
+		vec_redir_push(&exe.redirs, redir);
+	}
+	exe.node = vec_nd_idx(&exe.node->children, 0);
+	exe.modify_parent_context = true;
+	return (execute_subshell(state, exe));
+}
+
+// always returns status
+int execute_tree_node(t_state* state, t_executable_node exe) {
+    switch (exe.node->node_type) {
         case AST_SIMPLE_COMMAND:
-            pid = execute_simple_command(state, node, 0, 1);
-            waitpid(pid, &status, 0);
-            return (status);
+            return exe_res_to_status(execute_simple_command(state, exe));
         case AST_COMMAND_PIPELINE:
-            return execute_pipeline(state, node, 0, 1);
+            return execute_pipeline(state, exe);
         case AST_SIMPLE_LIST:
         case AST_COMPOUND_LIST:
-            return execute_simple_list(state, node);
+            return execute_simple_list(state, exe);
         case AST_COMMAND:
-            assert("Unimplemented" == 0);
+            return exe_res_to_status(execute_command(state, exe));
         case AST_SUBSHELL:
 
         case AST_REDIRECT:
@@ -527,5 +605,8 @@ int gather_heredocs(t_state* state, t_ast_node* node) {
 }
 
 void execute_top_level(t_state* state) {
-    execute_tree_node(state, &state->tree);
+	t_executable_node exe;
+
+	exe = (t_executable_node){.infd = 0, .outfd = 1, .node = &state->tree, .modify_parent_context = true};
+    execute_tree_node(state, exe);
 }
