@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/19 05:46:22 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/19 06:38:32 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -391,14 +391,18 @@ void free_executable_cmd(executable_cmd_t cmd)
     free(cmd.argv.buff);
 }
 
+void free_executable_node(t_executable_node node)
+{
+    for (size_t i = 0; i < node.redirs.len; i++) {
+        free(node.redirs.buff[i].fname);
+    }
+    free(node.redirs.buff);
+}
+
 void set_up_redirection(t_executable_node exe)
 {
 	dup2(exe.infd, 0);
 	dup2(exe.outfd, 1);
-	if (exe.infd != 0)
-		close(exe.infd);
-	if (exe.outfd != 1)
-		close(exe.outfd);
 	for (size_t i = 0; i < exe.redirs.len; i++) {
 		if (exe.redirs.buff[i].direction_in) {
 			dup2(exe.redirs.buff[i].fd, 0);
@@ -439,6 +443,7 @@ t_exe_res execute_simple_command(t_state* state,
 		close(stdin_bak);
 		close(stdout_bak);
 		free_executable_cmd(cmd);
+		free_executable_node(exe);
 		return (res_status(status));
 	}
 
@@ -449,6 +454,7 @@ t_exe_res execute_simple_command(t_state* state,
         exit(actually_run(state, &cmd.argv));
     }
 	free_executable_cmd(cmd);
+	free_executable_node(exe);
 	return (res_pid(pid));
 }
 
@@ -457,6 +463,7 @@ int execute_pipeline(t_state* state, t_executable_node exe) {
 	t_executable_node curr_exe = {};
 
     curr_exe.infd = exe.infd;
+    curr_exe.outfd = exe.outfd;
 	curr_exe.modify_parent_context = exe.node->children.len == 1; // if its just one, it's ok
 
     int pp[2];
@@ -479,6 +486,12 @@ int execute_pipeline(t_state* state, t_executable_node exe) {
             assert("Unimplemented" == 0);
         }
     }
+	if (exe.node->children.len == 2)
+	{
+		ft_eprintf("\n\n");
+		usleep(1000000);
+		ft_eprintf("----------\n\n");
+	}
   if (exe.node->children.buff[i].node_type == AST_COMMAND) {
 		curr_exe.node = vec_nd_idx(&exe.node->children, i);
         res = execute_command(state, curr_exe);
