@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/19 06:38:32 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/19 06:40:27 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -471,44 +471,38 @@ int execute_pipeline(t_state* state, t_executable_node exe) {
     t_vec_exe_res results = {};
     t_exe_res res;
 
-    for (; i < exe.node->children.len - 1; i++) {
+	for (; i < exe.node->children.len - 1; i++) {
 		curr_exe.node = vec_nd_idx(&exe.node->children, i);
-        if (curr_exe.node->node_type == AST_COMMAND) {
-            pipe(pp);
-            curr_exe.outfd = pp[1];
-            res = execute_command(state, curr_exe);
-            vec_exe_res_push(&results, res);
-            close(curr_exe.outfd);
-            curr_exe.infd = pp[0];
-        } else {
+		if (curr_exe.node->node_type == AST_COMMAND) {
+			pipe(pp);
+			curr_exe.outfd = pp[1];
+			res = execute_command(state, curr_exe);
+			vec_exe_res_push(&results, res);
+			close(curr_exe.outfd);
+			curr_exe.infd = pp[0];
+		} else {
 			ft_eprintf("Got unexpected: \n");
 			print_node(*curr_exe.node);
-            assert("Unimplemented" == 0);
-        }
-    }
-	if (exe.node->children.len == 2)
-	{
-		ft_eprintf("\n\n");
-		usleep(1000000);
-		ft_eprintf("----------\n\n");
+			assert("Unimplemented" == 0);
+		}
 	}
-  if (exe.node->children.buff[i].node_type == AST_COMMAND) {
+	if (exe.node->children.buff[i].node_type == AST_COMMAND) {
 		curr_exe.node = vec_nd_idx(&exe.node->children, i);
-        res = execute_command(state, curr_exe);
+		res = execute_command(state, curr_exe);
 		vec_exe_res_push(&results, res);
-    } else {
-        assert("Unimplemented" == 0);
-    }
-    int status;
+	} else {
+		assert("Unimplemented" == 0);
+	}
+	int status;
 	i = 0;
-    while (i < results.len) {
-        res = vec_exe_res_idx(&results, i);
+	while (i < results.len) {
+		res = vec_exe_res_idx(&results, i);
 		status = exe_res_to_status(res);
 		i++;
-    }
-    free(results.buff);
-    return (status);
-    return (0);
+	}
+	free(results.buff);
+	return (status);
+	return (0);
 }
 
 int execute_tree_node(t_state* state, t_executable_node exe);
