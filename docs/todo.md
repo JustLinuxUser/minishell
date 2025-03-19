@@ -12,15 +12,23 @@
 
 [x] Env var expands when it's that commnad's turn, not in a pass before
 [x] Tilde expansion, only done in unquoted string
-
-[?] Using $IFS for word separation
-
 [x] Variable expancion, depends on the quoting
+
+[ ] Using $IFS for word separation
+    [ ] ft_split with an array as the second opt
+[ ] Managing syntax errors properly
+[ ] Managing HEREDOCs
+
 
 [ ] ambigous redirect, when an env_var doesn't exist
 [ ] When executing a scope, the inner redirection wins, e.g (./test.sh < test.sh) <test2 will recieve the input from test.sh
 
-[ ] Execution of commands
+[x] Execution of commands
 [ ] Builtins
 
 [ ] Make sure that all the vec / deque data types can be initialized  with = {0}
+    [x] In minishell
+    [ ] in libft
+
+[ ] Expansion of the special env vars
+[ ] Glob expansion
