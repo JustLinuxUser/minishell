@@ -3,18 +3,28 @@
 
 # include "dsa/vec_exe_res.h"
 # include "libft/dsa/dyn_str.h"
+# include "libft/dsa/vec_int.h"
 # include <stdbool.h>
 # include "dsa/vec_env.h"
 # include "dsa/vec_str.h"
 
 # define COMMAND_NOT_FOUND 127
 # define EXE_PERM_DENIED 126
+# define SYNTAX_ERR 2
+# define AMBIGUOUS_REDIRECT 1
 
-typedef enum s_res {
-    R_OK,
-    R_FatalError,
-    R_MoreInput,
-} t_res;
+typedef enum s_res_t {
+    RES_OK,
+    RES_FatalError,
+    RES_MoreInput,
+} t_res_t;
+
+
+typedef struct s_parser {
+	t_res_t	res;
+	char	*prog_name;
+	t_vec_int parse_stack;
+} t_parser;
 
 typedef enum e_tt {
 	TT_NONE = 0,
@@ -105,14 +115,18 @@ typedef struct s_deque_tt
 	t_token	*buff;
 }	t_deque_tt;
 
-typedef struct state_s {
-	t_dyn_str	prompt;
-	int			parse_idx;
+typedef struct s_state {
+	t_dyn_str	input;
 	t_vec_env	env;
 	t_ast_node	tree;
 	char		**argv;
-	int			last_cmd_status;
+	t_dyn_str	cwd;
+	int			prev_status;
+	char		*pid;
+	char		*last_cmd_status;
+	bool		should_exit;
 } t_state;
+
 
 typedef struct executable_cmd_s {
 	t_vec_env pre_assigns;
@@ -151,7 +165,7 @@ t_ast_node	vec_nd_pop(t_vec_nd *v);
 t_ast_node	*vec_nd_idx(t_vec_nd *v, size_t idx);
 void		vec_nd_push_vec(t_vec_nd *ret, t_vec_nd *second);
 void		vec_nd_free(t_vec_nd *ret);
-t_ast_node parse_tokens(t_res *res, t_deque_tt* tokens);
+t_ast_node parse_tokens(t_parser *res, t_deque_tt* tokens);
 
 // tree_utils.c
 void		print_node(t_ast_node node);
@@ -160,6 +174,8 @@ void ast_postorder_traversal(t_ast_node* node, void (*f)(t_ast_node* node));
 
 char*		tt_to_str(t_tt tt);
 void		free_ast(t_ast_node node);
+
+void		print_tokens(t_deque_tt tokens);
 
 // reparser.c
 void reparse_assignment_words(t_ast_node* node);
@@ -170,7 +186,11 @@ t_ast_node create_subtoken_node(t_token t, int offset, int end_offset, t_tt tt);
 
 t_vec_env env_to_vec_env(char** envp);
 t_env* env_get(t_vec_env* env, char* key);
+char* env_expand(t_state* state, char* key);
+char* env_expand_n(t_state* state, char* key, int len);
+
 t_env* env_nget(t_vec_env* env, char* key, int len);
+char**	get_envp(t_state* state);
 void free_env(t_vec_env *env);
 bool is_special_char(char c);
 bool is_space(char c);
@@ -191,4 +211,13 @@ typedef struct executable_node_s {
 } t_executable_node;
 
 t_exe_res execute_command(t_state* state, t_executable_node exe);
+
+// error.c
+void critical_error(char *error);
+void critical_error_errno();
+void warning_error(char *error) ;
+void warning_error_errno() ;
+
+void free_tab(char** tab);
+
 #endif

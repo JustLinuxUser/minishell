@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/19 06:40:27 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/21 01:21:04 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void expand_word(t_state* state,
                  bool keep_as_one) {
     t_token curr;
     t_dyn_str s;
-    t_env* temp;
+    char* temp;
     bool should_push = false;
     dyn_str_init(&s);
 
@@ -54,21 +54,21 @@ void expand_word(t_state* state,
                 should_push = true;
                 break;
             case TT_DQENVVAR:
-                temp = env_nget(&state->env, curr.start, curr.len);
-                if (temp && temp->value)
-                    dyn_str_pushstr(&s, temp->value);
+                temp = env_expand_n(state, curr.start, curr.len);
+                if (temp)
+                    dyn_str_pushstr(&s, temp);
                 should_push = true;
                 break;
             case TT_ENVVAR:
-                temp = env_nget(&state->env, curr.start, curr.len);
-                if (!temp || !temp->value)
+                temp = env_expand_n(state, curr.start, curr.len);
+                if (!temp)
                     break;
                 if (keep_as_one) {
-                    dyn_str_pushstr(&s, temp->value);
+                    dyn_str_pushstr(&s, temp);
                     should_push = true;
                     break;
                 }
-                char** things = ft_split(temp->value, ' ');
+                char** things = ft_split(temp, ' ');
                 if (things[0]) {
                     dyn_str_pushstr(&s, things[0]);
                     should_push = true;
@@ -150,28 +150,28 @@ void expand_tilde_token(t_state* state, t_token* t) {
     // 0 norm
     // 1 +/-
     int template_len;
-    t_env* env;
+    char* env_val;
     if (token_starts_with(*t, "~+")) {
-        env = env_get(&state->env, "PWD");
-        if (!env)
+        env_val = env_expand(state, "PWD");
+        if (!env_val)
             return;
         template_len = 2;
     } else if (token_starts_with(*t, "~-")) {
-        env = env_get(&state->env, "OLDPWD");
-        if (!env)
+        env_val = env_expand(state, "OLDPWD");
+        if (!env_val)
             return;
         template_len = 2;
     } else {
-        env = env_get(&state->env, "HOME");
-        if (!env)
+        env_val = env_expand(state, "HOME");
+        if (!env_val)
             return;
         template_len = 1;
     }
     t_dyn_str s;
     dyn_str_init(&s);
 
-    if (env->value)
-        dyn_str_pushstr(&s, env->value);
+    if (env_val)
+        dyn_str_pushstr(&s, env_val);
     t->allocated = true;
     dyn_str_pushnstr(&s, t->start + template_len, t->len - template_len);
     t->start = s.buff;
@@ -255,15 +255,6 @@ void err_cmd_other(t_state* state, char* cmd) {
     ft_eprintf("%s: %s: %s\n", state->argv[0], cmd, strerror(errno));
 }
 
-void free_tab(char** tab) {
-    int i;
-    i = 0;
-
-    while (tab[i])
-        free(tab[i++]);
-    free(tab);
-}
-
 // returns status
 int actually_run(t_state* state, t_vec_str* args) {
     assert(args->len >= 1);
@@ -271,12 +262,12 @@ int actually_run(t_state* state, t_vec_str* args) {
 	if (builtin_func(args->buff[0])) {
 		exit(builtin_func(args->buff[0])(state, *args));
 	}
-    t_env* path = env_get(&state->env, "PATH");
-    if (!path || !path->value) {
+    char* path = env_expand(state, "PATH");
+    if (!path) {
         err_no_path_var(state, args->buff[0]);
         return (COMMAND_NOT_FOUND);
     }
-    char** path_dirs = ft_split(path->value, ':');
+    char** path_dirs = ft_split(path, ':');
     char* path_of_exe = exe_path(path_dirs, args->buff[0]);
 
     free_tab(path_dirs);
@@ -285,7 +276,7 @@ int actually_run(t_state* state, t_vec_str* args) {
         return (COMMAND_NOT_FOUND);
     }
     vec_str_push(args, 0);  // nullterm
-    char** envp = env_to_envp(&state->env);
+    char** envp = get_envp(state);
     execve(path_of_exe, args->buff, envp);
 	err_cmd_other(state, args->buff[0]);
 	free_tab(args->buff);
@@ -418,8 +409,9 @@ t_exe_res execute_simple_command(t_state* state,
 	executable_cmd_t cmd;
 	if (expand_simple_command(state, exe.node, &cmd, &exe.redirs))
 	{
+		// TODO: Fix this
 		ft_eprintf("Failed to expand the command!\n");
-		return (res_status(-1)); // TODO: Fix this
+		return (res_status(AMBIGUOUS_REDIRECT));
 	}
     for (size_t i = 0; i < cmd.pre_assigns.len; i++) {
         printf("env: >%s=%s<\n", cmd.pre_assigns.buff[i].key,
@@ -574,16 +566,21 @@ t_exe_res execute_command(t_state* state, t_executable_node exe) {
 
 // always returns status
 int execute_tree_node(t_state* state, t_executable_node exe) {
+	int status = 0;
     switch (exe.node->node_type) {
         case AST_SIMPLE_COMMAND:
-            return exe_res_to_status(execute_simple_command(state, exe));
+            status =  exe_res_to_status(execute_simple_command(state, exe));
+			break;
         case AST_COMMAND_PIPELINE:
-            return execute_pipeline(state, exe);
+            status = execute_pipeline(state, exe);
+			break;
         case AST_SIMPLE_LIST:
         case AST_COMPOUND_LIST:
-            return execute_simple_list(state, exe);
+            status = execute_simple_list(state, exe);
+			break;
         case AST_COMMAND:
-            return exe_res_to_status(execute_command(state, exe));
+            status = exe_res_to_status(execute_command(state, exe));
+			break;
         case AST_SUBSHELL:
 
         case AST_REDIRECT:
@@ -593,7 +590,10 @@ int execute_tree_node(t_state* state, t_executable_node exe) {
             assert("Unreachable" == 0);
             break;
     }
-    return (0);
+
+	free(state->last_cmd_status);
+	state->last_cmd_status = ft_itoa(status);
+    return (status);
 }
 
 int gather_heredocs(t_state* state, t_ast_node* node) {

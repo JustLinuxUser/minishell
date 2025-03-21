@@ -1,98 +1,19 @@
+#include <unistd.h>
+
 #include <assert.h>
+#include "minishell.h"
 #include <stdbool.h>
 #include <stdio.h>
 
 #include <readline/readline.h>
 #include <signal.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include "libft/libft.h"
+
 #include "libft/dsa/dyn_str.h"
 #include "libft/ft_printf/ft_printf.h"
-#include "minishell.h"
-
-char* tt_to_str(t_tt tt) {
-    switch (tt) {
-        case TT_END:
-            return ("TT_END");
-        case TT_WORD:
-            return ("TT_WORD");
-        case TT_REDIRECT_LEFT:
-            return ("TT_REDIRECT_LEFT");
-        case TT_REDIRECT_RIGHT:
-            return ("TT_REDIRECT_RIGHT");
-        case TT_APPEND:
-            return ("TT_APPEND");
-        case TT_PIPE:
-            return ("TT_PIPE");
-        case TT_BRACE_LEFT:
-            return ("TT_BRACE_LEFT");
-        case TT_BRACE_RIGHT:
-            return ("TT_BRACE_RIGHT");
-        case TT_OR:
-            return ("TT_OR");
-        case TT_AND:
-            return ("TT_AND");
-        case TT_SEMICOLON:
-            return ("TT_SEMICOLON");
-        case TT_HEREDOC:
-            return ("TT_HEREDOC");
-        case TT_NEWLINE:
-            return ("TT_NEWLINE");
-        case TT_SQWORD:
-            return ("TT_QWORD");
-        case TT_DQWORD:
-            return ("TT_DQWORD");
-        case TT_ENVVAR:
-            return ("TT_ENVVAR");
-        case TT_DQENVVAR:
-            return ("TT_DQENVVAR");
-        case TT_NONE:
-            assert(false);
-            break;
-    }
-    return 0;
-}
-
-void print_tokens(t_deque_tt tokens) {
-    t_token curr;
-    printf("------- PRINTING TOKENS --------\n");
-    for (int i = 0; i < tokens.len; i++) {
-        curr = *deque_tt_idx(&tokens, i);
-        printf("%s: >%.*s<\n", tt_to_str(curr.tt), curr.len, curr.start);
-    }
-    printf("------- DONE --------\n");
-}
-
-bool replace_escaped_newlines(t_dyn_str* input) {
-    t_dyn_str out;
-    int i;
-    bool ret;
-    ret = false;
-    bool backslash;
-
-    dyn_str_init(&out);
-    i = -1;
-    backslash = false;
-    while (input->buff[++i]) {
-        if (input->buff[i] == '\\') {
-            backslash = true;
-            continue;
-        }
-        if (backslash) {
-            if (input->buff[i] != '\n') {
-                dyn_str_push(&out, '\\');
-                dyn_str_push(&out, input->buff[i]);
-            } else
-                ret = true;
-            backslash = false;
-            continue;
-        }
-        dyn_str_push(&out, input->buff[i]);
-    }
-    free(input->buff);
-    *input = out;
-    return (ret);
-}
 
 void termination_handler(int signum) {
     ft_eprintf("\n");
@@ -112,67 +33,174 @@ void signal_handling(void) {
     sigaction(SIGINT, &new_action, NULL);
 }
 
-int main(int argc, char** argv, char** envp) {
-    (void)argc;
+t_dyn_str read_fd(int fd)
+{
+	t_dyn_str ret;
+	char buff[100];
+	int len;
 
-    t_state state;
+	dyn_str_init(&ret);
+	while (1)
+	{
+		len = read(fd, buff, 100);
+		if (len == 0)
+			break;
+		if (len > 0)
+			dyn_str_pushnstr(&ret, buff, len);
+		else
+			critical_error_errno();
+	}
+	return	ret;
+}
+
+char *getpid_hack() {
+	int fd;
+	t_dyn_str file;
+	char *ret;
+	char **temp;
+
+	fd = open("/proc/self/stat", O_RDONLY);
+	if (fd < 0)
+	{
+		warning_error("Cannot get PID.");
+		return (0);
+	}
+	file = read_fd(fd);
+	temp = ft_split(file.buff, ' ');
+	free(file.buff);
+	ret = ft_strdup(temp[0]);
+	free_tab(temp);
+	return (ret);
+}
+
+t_dyn_str getcwd_dyn_str()
+{
+	t_dyn_str	ret;
+
+	dyn_str_init(&ret);
+	ret.buff = getcwd(0, 0);
+	if (!ret.buff)
+		critical_error_errno();
+	ret.len = ft_strlen(ret.buff);
+	ret.cap = ret.len;
+	return (ret);
+}
+
+
+t_dyn_str new_prompt(t_parser *parser)
+{
+	t_dyn_str ret;
+
+	dyn_str_init(&ret);
+	t_tt curr;
+	for (size_t i = 0; i < parser->parse_stack.len; i++) {
+		curr = vec_int_idx(&parser->parse_stack, i);
+		if (curr == TT_BRACE_LEFT)
+			dyn_str_pushstr(&ret, "subsh");
+		else if (curr == TT_PIPE)
+			dyn_str_pushstr(&ret, "pipe");
+		else if (curr == TT_AND)
+			dyn_str_pushstr(&ret, "cmdand");
+		else if (curr == TT_OR)
+			dyn_str_pushstr(&ret, "cmdor");
+		else
+			continue;
+		dyn_str_pushstr(&ret, " ");
+	}
+	ret.buff[ret.len - 1] = '>';
+	dyn_str_pushstr(&ret, " ");
+	return (ret);
+}
+
+void execute_line(t_state *state)
+{
     char* line;
     char* prompt;
     t_deque_tt tt;
-    signal_handling();
 
     deque_tt_init(&tt, 100);
-    dyn_str_init(&state.prompt);
-    state.env = env_to_vec_env(envp);
-	state.argv = argv;
-	state.last_cmd_status = 0;
+    prompt = ft_strdup("prompt> ");
 
-    prompt = "prompt> ";
-    t_res res = R_MoreInput;
-    while (res == R_MoreInput) {
+    t_parser parser = {.res = RES_MoreInput, .prog_name = state->argv[0]};
+    while (parser.res == RES_MoreInput) {
+		parser.parse_stack.len = 0;
         while (prompt) {
             tt.len = 0;
             tt.start = 0;
             tt.end = 0;
             line = readline(prompt);
+			free(prompt);
             if (line == 0) {
-                printf("Ctrl-D\n");
-                res = R_FatalError;
+                printf("exit\n");
+				state->should_exit = true;
+                parser.res = RES_OK;
                 break;
             }
-            dyn_str_pushstr(&state.prompt, line);
+            dyn_str_pushstr(&state->input, line);
             free(line);
-            if (state.prompt.len == 0)
+            if (state->input.len == 0)
                 continue;
-            if (state.prompt.buff[state.prompt.len - 1] == '\\') {
-                state.prompt.len--;
-                prompt = ">";
+            if (state->input.buff[state->input.len - 1] == '\\') {
+                state->input.len--;
+                prompt = ft_strdup("> ");
                 continue;
             }
-            dyn_str_push(&state.prompt, '\n');
-            prompt = tokenizer(state.prompt.buff, &tt);
+            dyn_str_push(&state->input, '\n');
+            prompt = tokenizer(state->input.buff, &tt);
+			if (prompt)
+				prompt = ft_strdup(prompt);
         }
         if (tt.len) {
-            print_tokens(tt);
-            t_ast_node node = parse_tokens(&res, &tt);
-            if (res == R_OK) {
-                print_node(node);
-                printf("\n");
-                print_ast_dot(node);
-                state.tree = node;
-                execute_top_level(&state);
-                free_ast(node);
-            } else {
-                prompt = "op> ";
-                free_ast(node);
-            }
+            state->tree = parse_tokens(&parser, &tt);
+            if (parser.res == RES_OK) {
+                execute_top_level(state);
+            } else if (parser.res == RES_MoreInput) {
+                prompt = new_prompt(&parser).buff;
+            } else if (parser.res == RES_FatalError) {
+				free(state->last_cmd_status);
+				state->last_cmd_status = ft_itoa(SYNTAX_ERR);
+			}
+			printf("freing!!\n");
+			free_ast(state->tree);
         } else {
             break;
         }
     }
-
-    free(state.prompt.buff);
-    free_env(&state.env);
+	free (parser.parse_stack.buff);
     free(tt.buff);
-    return (res);
+}
+
+int main(int argc, char** argv, char** envp) {
+    (void)argc;
+
+    t_state state;
+
+	if (!isatty(1))
+		return (0);
+    signal_handling();
+
+	state = (t_state){0};
+	state.pid = getpid_hack();
+	state.cwd = getcwd_dyn_str();
+
+    state.env = env_to_vec_env(envp);
+
+	state.argv = argv;
+	state.last_cmd_status = ft_strdup("0");
+
+
+	while (!state.should_exit)
+	{
+		dyn_str_init(&state.input);
+		execute_line(&state);
+		free(state.input.buff);
+	}
+
+
+    free_env(&state.env);
+	int status = ft_atoi(state.last_cmd_status);
+	free (state.last_cmd_status);
+	free (state.pid);
+	free (state.cwd.buff);
+    return (status);
 }

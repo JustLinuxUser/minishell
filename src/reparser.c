@@ -105,7 +105,6 @@ void reparse_norm_word(t_ast_node* ret, int* i, t_token t) {
     while (*i < t.len && !is_special_char(t.start[*i])) {
         (*i)++;
     }
-    printf("Pushing normal word\n");
     vec_nd_push(&ret->children,
                 create_subtoken_node(t, prev_start, *i, TT_WORD));
 }

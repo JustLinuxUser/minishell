@@ -27,16 +27,17 @@ t_vec_env env_to_vec_env(char** envp) {
     return (ret);
 }
 
-char** env_to_envp(t_vec_env* env) {
+char** get_envp(t_state* state) {
 	char ** ret;
 
-	ret = ft_calloc(env->len + 1, sizeof(char *));
-	for (size_t i = 0; i < env->len; i++) {
+	env_set(&state->env, (t_env){.key="PWD", .value=state->cwd.buff});
+	ret = ft_calloc(state->env.len + 1, sizeof(char *));
+	for (size_t i = 0; i < state->env.len; i++) {
 		t_dyn_str s;
 		dyn_str_init(&s);
-		dyn_str_pushstr(&s, env->buff[i].key);
+		dyn_str_pushstr(&s, state->env.buff[i].key);
 		dyn_str_push(&s, '=');
-		dyn_str_pushstr(&s, env->buff[i].value);
+		dyn_str_pushstr(&s, state->env.buff[i].value);
 		ret[i] = s.buff;
 	}
 	return (ret);
@@ -55,6 +56,38 @@ t_env* env_get(t_vec_env* env, char* key) {
     }
     return (0);
 }
+
+char* env_expand(t_state* state, char* key) {
+    t_env* curr;
+    int i;
+
+    i = state->env.len - 1;
+	if (ft_strcmp(key, "?") == 0)
+		return (state->last_cmd_status);
+	else if (ft_strcmp(key, "$") == 0 && state->pid) 
+		return (state->pid);
+    while (i >= 0) {
+        curr = vec_env_idx(&state->env, i);
+        if (ft_strcmp(key, curr->key) == 0)
+            return (curr->value);
+        i--;
+    }
+    return (0);
+}
+
+char* env_expand_n(t_state* state, char* key, int len) {
+    t_env* curr;
+
+	if (ft_strncmp(key, "?", len) == 0)
+		return (state->last_cmd_status);
+	else if (ft_strncmp(key, "$", len) == 0 && state->pid) 
+		return (state->pid);
+	curr = env_nget(&state->env, key, len);
+	if (curr == 0 || curr->key == 0)
+		return (0);
+	return (curr->value);
+}
+
 int env_set(t_vec_env* env, t_env new) {
 	t_env *old;
 

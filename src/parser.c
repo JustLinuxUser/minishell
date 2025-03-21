@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 00:07:42 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/18 07:09:47 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/21 00:23:54 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,30 +64,30 @@ bool is_compund_list_op(t_tt t) {
     return false;
 }
 
-t_ast_node parse_pipeline(t_res* res, t_deque_tt* tokens);
-t_ast_node unexpected(t_res* res, t_ast_node ret, t_deque_tt* tokens) {
-    printf("andriish: syntax error near unexpected token %s\n",
-           tt_to_str(deque_tt_peek(tokens).tt));
-    *res = R_FatalError;
-    assert(false);
+t_ast_node parse_pipeline(t_parser* parser, t_deque_tt* tokens);
+
+t_ast_node unexpected(t_parser* parser, t_ast_node ret, t_deque_tt* tokens) {
+    printf("%s: syntax error near unexpected token %s\n",
+           parser->prog_name, tt_to_str(deque_tt_peek(tokens).tt));
+	parser->res = RES_FatalError;
     return (ret);
 }
 
-t_ast_node parse_compound_list(t_res* res, t_deque_tt* tokens) {
+t_ast_node parse_compound_list(t_parser* parser, t_deque_tt* tokens) {
     t_ast_node ret = {.node_type = AST_COMPOUND_LIST};
 	while (deque_tt_peek(tokens).tt == TT_NEWLINE)
 		deque_tt_pop_start(tokens);
 	if (deque_tt_peek(tokens).tt == TT_END)
-		return (*res = R_MoreInput, ret);
-    vec_nd_push(&ret.children, parse_pipeline(res, tokens));
-    if (*res != R_OK)
-        return (ret);
-    while (is_compund_list_op(deque_tt_peek(tokens).tt)) {
+		return (parser->res = RES_MoreInput, ret);
+    vec_nd_push(&ret.children, parse_pipeline(parser, tokens));
+    if (parser->res != RES_OK)
+			return (ret);
+	t_tt op;
+    while (is_compund_list_op(op = deque_tt_peek(tokens).tt)) {
         vec_nd_push(&ret.children,
                     (t_ast_node){.node_type = AST_TOKEN,
                                  .token = deque_tt_pop_start(tokens)});
-        if (*res != R_OK)
-            return (ret);
+		vec_int_push(&parser->parse_stack, op);
         if ((ret.children.buff[ret.children.len - 1].token.tt == TT_SEMICOLON
 			|| ret.children.buff[ret.children.len - 1].token.tt == TT_NEWLINE)
 			&&
@@ -97,27 +97,30 @@ t_ast_node parse_compound_list(t_res* res, t_deque_tt* tokens) {
         while (deque_tt_peek(tokens).tt == TT_NEWLINE)
             deque_tt_pop_start(tokens);
         if (deque_tt_peek(tokens).tt == TT_END)
-            return (*res = R_MoreInput, ret);
-        vec_nd_push(&ret.children, parse_pipeline(res, tokens));
-        if (*res != R_OK)
+            return (parser->res = RES_MoreInput, ret);
+        vec_nd_push(&ret.children, parse_pipeline(parser, tokens));
+        if (parser->res != RES_OK)
             return (ret);
+		vec_int_pop(&parser->parse_stack);
     }
     return (ret);
 }
 
-t_ast_node parse_subshell(t_res* res, t_deque_tt* tokens) {
+t_ast_node parse_subshell(t_parser* parser, t_deque_tt* tokens) {
     t_ast_node ret = (t_ast_node){.node_type = AST_SUBSHELL};
+	vec_int_push(&parser->parse_stack, TT_BRACE_LEFT);
     if (deque_tt_peek(tokens).tt != TT_BRACE_LEFT)
-        return (unexpected(res, ret, tokens));
+        return (unexpected(parser, ret, tokens));
     deque_tt_pop_start(tokens);
 
-    vec_nd_push(&ret.children, parse_compound_list(res, tokens));
-    if (*res != R_OK) {
+    vec_nd_push(&ret.children, parse_compound_list(parser, tokens));
+    if (parser->res != RES_OK) {
         return (ret);
     }
     if (deque_tt_peek(tokens).tt != TT_BRACE_RIGHT)
-        return (unexpected(res, ret, tokens));
+        return (unexpected(parser, ret, tokens));
     deque_tt_pop_start(tokens);
+	vec_int_pop(&parser->parse_stack);
     return (ret);
 }
 
@@ -129,22 +132,22 @@ t_ast_node parse_word(t_deque_tt* tokens) {
     return (ret);
 }
 
-t_ast_node parse_redirect(t_res* res, t_deque_tt* tokens) {
+t_ast_node parse_redirect(t_parser* parser, t_deque_tt* tokens) {
     t_ast_node ret = (t_ast_node){.node_type = AST_REDIRECT};
     t_token t = deque_tt_pop_start(tokens);
 
     if (!is_redirect(t.tt)) {
-        return (unexpected(res, ret, tokens));
+        return (unexpected(parser, ret, tokens));
     }
     vec_nd_push(&ret.children,
                 (t_ast_node){.node_type = AST_TOKEN, .token = t});
     if (deque_tt_peek(tokens).tt != TT_WORD)
-        return (unexpected(res, ret, tokens));
+        return (unexpected(parser, ret, tokens));
     vec_nd_push(&ret.children, parse_word(tokens));
     return (ret);
 }
 
-t_ast_node parse_simple_command(t_res* res, t_deque_tt* tokens) {
+t_ast_node parse_simple_command(t_parser* res, t_deque_tt* tokens) {
     t_ast_node ret = (t_ast_node){.node_type = AST_SIMPLE_COMMAND};
 
     t_tt next;
@@ -158,7 +161,7 @@ t_ast_node parse_simple_command(t_res* res, t_deque_tt* tokens) {
             vec_nd_push(&ret.children, parse_word(tokens));
         else if (is_redirect(next)) {
             vec_nd_push(&ret.children, parse_redirect(res, tokens));
-            if (*res != R_OK)
+            if (res->res != RES_OK)
                 return (ret);
         } else
             break;
@@ -167,43 +170,45 @@ t_ast_node parse_simple_command(t_res* res, t_deque_tt* tokens) {
     return (ret);
 }
 
-t_ast_node parse_command(t_res* res, t_deque_tt* tokens) {
+t_ast_node parse_command(t_parser* parser, t_deque_tt* tokens) {
     t_ast_node ret = (t_ast_node){.node_type = AST_COMMAND};
     t_tt next;
     next = deque_tt_peek(tokens).tt;
     if (next == TT_BRACE_LEFT) {
-        vec_nd_push(&ret.children, parse_subshell(res, tokens));
-        if (*res != R_OK)
+        vec_nd_push(&ret.children, parse_subshell(parser, tokens));
+        if (parser->res != RES_OK)
             return (ret);
         while (is_redirect(deque_tt_peek(tokens).tt)) {
-            vec_nd_push(&ret.children, parse_redirect(res, tokens));
-            if (*res != R_OK)
+            vec_nd_push(&ret.children, parse_redirect(parser, tokens));
+            if (parser->res != RES_OK)
                 return (ret);
         }
     } else {
-        vec_nd_push(&ret.children, parse_simple_command(res, tokens));
-        if (*res != R_OK)
+        vec_nd_push(&ret.children, parse_simple_command(parser, tokens));
+        if (parser->res != RES_OK)
             return (ret);
     }
     return (ret);
 }
 
-t_ast_node parse_pipeline(t_res* res, t_deque_tt* tokens) {
+t_ast_node parse_pipeline(t_parser* parser, t_deque_tt* tokens) {
     t_ast_node ret = {.node_type = AST_COMMAND_PIPELINE};
 
-    vec_nd_push(&ret.children, parse_command(res, tokens));
-    if (*res != R_OK)
+    vec_nd_push(&ret.children, parse_command(parser, tokens));
+    if (parser->res != RES_OK)
         return (ret);
+	vec_int_push(&parser->parse_stack, TT_PIPE);
     while (deque_tt_peek(tokens).tt == TT_PIPE) {
 		deque_tt_pop_start(tokens);
         while (deque_tt_peek(tokens).tt == TT_NEWLINE)
             deque_tt_pop_start(tokens);
         if (deque_tt_peek(tokens).tt == TT_END)
-            return (*res = R_MoreInput, ret);
-        vec_nd_push(&ret.children, parse_command(res, tokens));
-        if (*res != R_OK)
+            return (parser->res = RES_MoreInput, ret);
+        vec_nd_push(&ret.children, parse_command(parser, tokens));
+        if (parser->res != RES_OK)
             return (ret);
     }
+	vec_int_pop(&parser->parse_stack);
     return (ret);
 }
 
@@ -219,65 +224,39 @@ bool is_simple_list_op(t_tt t) {
     return false;
 }
 
-t_ast_node parse_simple_list(t_res* res, t_deque_tt* tokens) {
+t_ast_node parse_simple_list(t_parser* parser, t_deque_tt* tokens) {
     t_ast_node ret = {.node_type = AST_SIMPLE_LIST};
 
     t_tt next = deque_tt_peek(tokens).tt;
     if (is_simple_cmd_token(next) || next == TT_BRACE_LEFT) {
-        vec_nd_push(&ret.children, parse_pipeline(res, tokens));
-        if (*res != R_OK)
+        vec_nd_push(&ret.children, parse_pipeline(parser, tokens));
+        if (parser->res != RES_OK)
             return (ret);
     }
-    while (is_simple_list_op(deque_tt_peek(tokens).tt)) {
+    while (is_simple_list_op(next = deque_tt_peek(tokens).tt)) {
+		vec_int_push(&parser->parse_stack, next);
         vec_nd_push(&ret.children,
                     (t_ast_node){.node_type = AST_TOKEN,
                                  .token = deque_tt_pop_start(tokens)});
-        if (*res != R_OK)
+        if (parser->res != RES_OK)
             return (ret);
-        if (ret.children.buff[ret.children.len - 1].token.tt == TT_SEMICOLON &&
-            deque_tt_peek(tokens).tt == TT_END) {
-            return (ret);
-        }
         while (deque_tt_peek(tokens).tt == TT_NEWLINE)
             deque_tt_pop_start(tokens);
-        if (deque_tt_peek(tokens).tt == TT_END)
-            return (*res = R_MoreInput, ret);
-        vec_nd_push(&ret.children, parse_pipeline(res, tokens));
-        if (*res != R_OK)
+        if (next == TT_SEMICOLON && deque_tt_peek(tokens).tt == TT_END) {
             return (ret);
+        }
+        if (deque_tt_peek(tokens).tt == TT_END)
+            return (parser->res = RES_MoreInput, ret);
+        vec_nd_push(&ret.children, parse_pipeline(parser, tokens));
+        if (parser->res != RES_OK)
+            return (ret);
+        vec_int_pop(&parser->parse_stack);
     }
     if (deque_tt_peek(tokens).tt == TT_NEWLINE)
         deque_tt_pop_start(tokens);
     else
-        return (unexpected(res, ret, tokens));
+        return (unexpected(parser, ret, tokens));
     return (ret);
-}
-
-bool can_flatten(t_ast_t t) {
-    switch (t) {
-        break;
-        case AST_SIMPLE_LIST:
-        case AST_COMMAND_PIPELINE:
-        case AST_COMMAND:
-        case AST_COMPOUND_LIST:
-            return true;
-        default:
-            break;
-    }
-    return (false);
-}
-
-void flatten(t_ast_node* node) {
-    void* temp;
-
-    for (size_t i = 0; i < node->children.len; i++) {
-        flatten(&node->children.buff[i]);
-    }
-    if (node->children.len == 1 && can_flatten(node->node_type)) {
-        temp = node->children.buff;
-        *node = node->children.buff[0];
-        free(temp);
-    }
 }
 
 t_ast_node create_subtoken_node(t_token t,
@@ -297,12 +276,12 @@ t_ast_node create_subtoken_node(t_token t,
 }
 
 
-t_ast_node parse_tokens(t_res* res, t_deque_tt* tokens) {
-    *res = R_OK;
-    t_ast_node ret = parse_simple_list(res, tokens);
-    if (*res == R_FatalError) {
+t_ast_node parse_tokens(t_parser* parser, t_deque_tt* tokens) {
+    parser->res = RES_OK;
+    t_ast_node ret = parse_simple_list(parser, tokens);
+    if (parser->res == RES_FatalError) {
         printf("Parse error!\n");
-    } else if (*res == R_MoreInput) {
+    } else if (parser->res == RES_MoreInput) {
         printf("Need more input\n");
     } else {
         t_tt tt = deque_tt_pop_start(tokens).tt;
@@ -311,9 +290,8 @@ t_ast_node parse_tokens(t_res* res, t_deque_tt* tokens) {
         }
         assert(tt == TT_END);
         assert(tokens->len == 0);
+		reparse_words(&ret);
+		reparse_assignment_words(&ret);
     }
-    // flatten(& ret);
-    reparse_words(&ret);
-    reparse_assignment_words(&ret);
     return (ret);
 }
