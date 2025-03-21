@@ -1,5 +1,4 @@
 #include <unistd.h>
-
 #include <assert.h>
 #include "minishell.h"
 #include <stdbool.h>
@@ -15,17 +14,18 @@
 #include "libft/dsa/dyn_str.h"
 #include "libft/ft_printf/ft_printf.h"
 
-void termination_handler(int signum) {
-    ft_eprintf("\n");
-    rl_on_new_line();
-    rl_replace_line("", 0);
-    rl_redisplay();
+void	termination_handler(int signum)
+{
+	ft_eprintf("\n");
+	rl_on_new_line();
+	rl_replace_line("", 0);
+	rl_redisplay();
 }
 
-void signal_handling(void) {
-    struct sigaction new_action;
+void	signal_handling(void)
+{
+	struct sigaction	new_action;
 
-    /* Set up the structure to specify the new action. */
     new_action.sa_handler = termination_handler;
     sigemptyset(&new_action.sa_mask);
     new_action.sa_flags = 0;
@@ -112,47 +112,55 @@ t_dyn_str new_prompt(t_parser *parser)
 	return (ret);
 }
 
+void get_input(t_state *state, char *prompt, t_deque_tt *tt) {
+	char *line;
+
+	while (prompt) {
+		tt->len = 0;
+		tt->start = 0;
+		tt->end = 0;
+		line = readline(prompt);
+		free(prompt);
+		if (line == 0) {
+			printf("exit\n");
+			state->should_exit = true;
+			break;
+		}
+		dyn_str_pushstr(&state->input, line);
+		free(line);
+		if (state->input.len == 0)
+			continue;
+		if (state->input.buff[state->input.len - 1] == '\\') {
+			state->input.len--;
+			prompt = ft_strdup("> ");
+			continue;
+		}
+		dyn_str_push(&state->input, '\n');
+		prompt = tokenizer(state->input.buff, tt);
+		if (prompt)
+			prompt = ft_strdup(prompt);
+	}
+}
+
 void execute_line(t_state *state)
 {
-    char* line;
-    char* prompt;
     t_deque_tt tt;
+	char *prompt;
 
-    deque_tt_init(&tt, 100);
     prompt = ft_strdup("prompt> ");
 
-    t_parser parser = {.res = RES_MoreInput, .prog_name = state->argv[0]};
+    deque_tt_init(&tt, 100);
+    t_parser parser = {.res = RES_MoreInput,
+		.prog_name = state->argv[0]};
     while (parser.res == RES_MoreInput) {
 		parser.parse_stack.len = 0;
-        while (prompt) {
-            tt.len = 0;
-            tt.start = 0;
-            tt.end = 0;
-            line = readline(prompt);
-			free(prompt);
-            if (line == 0) {
-                printf("exit\n");
-				state->should_exit = true;
-                parser.res = RES_OK;
-                break;
-            }
-            dyn_str_pushstr(&state->input, line);
-            free(line);
-            if (state->input.len == 0)
-                continue;
-            if (state->input.buff[state->input.len - 1] == '\\') {
-                state->input.len--;
-                prompt = ft_strdup("> ");
-                continue;
-            }
-            dyn_str_push(&state->input, '\n');
-            prompt = tokenizer(state->input.buff, &tt);
-			if (prompt)
-				prompt = ft_strdup(prompt);
-        }
+		get_input(state, prompt, &tt);
+		if (state->should_exit)
+			break;
         if (tt.len) {
             state->tree = parse_tokens(&parser, &tt);
             if (parser.res == RES_OK) {
+				print_ast_dot(state->tree);
                 execute_top_level(state);
             } else if (parser.res == RES_MoreInput) {
                 prompt = new_prompt(&parser).buff;
@@ -160,7 +168,6 @@ void execute_line(t_state *state)
 				free(state->last_cmd_status);
 				state->last_cmd_status = ft_itoa(SYNTAX_ERR);
 			}
-			printf("freing!!\n");
 			free_ast(state->tree);
         } else {
             break;
@@ -170,9 +177,9 @@ void execute_line(t_state *state)
     free(tt.buff);
 }
 
-int main(int argc, char** argv, char** envp) {
+int main(int argc, char** argv, char** envp)
+{
     (void)argc;
-
     t_state state;
 
 	if (!isatty(1))

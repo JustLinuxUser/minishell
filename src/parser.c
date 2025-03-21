@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 00:07:42 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/21 00:23:54 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/21 11:46:24 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,7 +196,7 @@ t_ast_node parse_pipeline(t_parser* parser, t_deque_tt* tokens) {
 
     vec_nd_push(&ret.children, parse_command(parser, tokens));
     if (parser->res != RES_OK)
-        return (ret);
+		return (ret);
 	vec_int_push(&parser->parse_stack, TT_PIPE);
     while (deque_tt_peek(tokens).tt == TT_PIPE) {
 		deque_tt_pop_start(tokens);
@@ -228,23 +228,20 @@ t_ast_node parse_simple_list(t_parser* parser, t_deque_tt* tokens) {
     t_ast_node ret = {.node_type = AST_SIMPLE_LIST};
 
     t_tt next = deque_tt_peek(tokens).tt;
-    if (is_simple_cmd_token(next) || next == TT_BRACE_LEFT) {
-        vec_nd_push(&ret.children, parse_pipeline(parser, tokens));
-        if (parser->res != RES_OK)
-            return (ret);
-    }
+    if (is_simple_cmd_token(next) || next == TT_BRACE_LEFT)
+		vec_nd_push(&ret.children, parse_pipeline(parser, tokens));
+	if (parser->res != RES_OK)
+		return (ret);
     while (is_simple_list_op(next = deque_tt_peek(tokens).tt)) {
 		vec_int_push(&parser->parse_stack, next);
-        vec_nd_push(&ret.children,
-                    (t_ast_node){.node_type = AST_TOKEN,
+        vec_nd_push(&ret.children, (t_ast_node){.node_type = AST_TOKEN,
                                  .token = deque_tt_pop_start(tokens)});
         if (parser->res != RES_OK)
             return (ret);
         while (deque_tt_peek(tokens).tt == TT_NEWLINE)
             deque_tt_pop_start(tokens);
-        if (next == TT_SEMICOLON && deque_tt_peek(tokens).tt == TT_END) {
+        if (next == TT_SEMICOLON && deque_tt_peek(tokens).tt == TT_END)
             return (ret);
-        }
         if (deque_tt_peek(tokens).tt == TT_END)
             return (parser->res = RES_MoreInput, ret);
         vec_nd_push(&ret.children, parse_pipeline(parser, tokens));

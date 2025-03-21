@@ -1,6 +1,7 @@
 #include "libft/ft_printf/ft_printf.h"
 #include "libft/libft.h"
 #include "minishell.h"
+#include <unistd.h>
 
 int	builtin_echo(t_state *state, t_vec_str argv)
 {

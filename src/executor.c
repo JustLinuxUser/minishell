@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/21 01:21:04 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/21 11:54:12 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ void expand_word(t_state* state,
                     should_push = true;
                     break;
                 }
+				// IFS
                 char** things = ft_split(temp, ' ');
                 if (things[0]) {
                     dyn_str_pushstr(&s, things[0]);
@@ -85,9 +86,7 @@ void expand_word(t_state* state,
                     }
                     should_push = false;
                 }
-                for (int i = 0; things[i]; i++)
-                    free(things[i]);
-                free(things);
+				free_tab(things);
                 break;
             default:
                 assert("Unreachable" == 0);
