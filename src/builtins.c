@@ -1,6 +1,8 @@
 #include "libft/ft_printf/ft_printf.h"
 #include "libft/libft.h"
 #include "minishell.h"
+#include <errno.h>
+#include <string.h>
 #include <unistd.h>
 
 int	builtin_echo(t_state *state, t_vec_str argv)
@@ -13,6 +15,21 @@ int	builtin_echo(t_state *state, t_vec_str argv)
 	return (0);
 }
 
+int	builtin_exit(t_state *state, t_vec_str argv)
+{
+	ft_eprintf("exit, FIX ME DUMMY!\n");
+	// TODO: checked atoi, replicate the shit of the BASH
+	if (argv.len == 1)
+		exit(0);
+	if (argv.len >= 3)
+	{
+		ft_eprintf("%s: %s: too many arguments\n", state->argv[0],
+			argv.buff[0]);
+		return (1);
+	}
+	exit(
+		ft_atoi(argv.buff[1]));
+}
 /* my echo
 void	ft_echo(char **args)
 {
@@ -37,6 +54,47 @@ void	ft_echo(char **args)
 		write(1, "\n", 1);
 }
 */
+int	builtin_cd(t_state *state, t_vec_str argv)
+{
+	char	*cwd;
+	char	*home;
+	t_env	cenv;
+	int		e;
+
+	if (argv.len >= 3)
+	{
+		ft_eprintf("%s: %s: too many arguments\n", state->argv[0],
+			argv.buff[0]);
+		return (1);
+	}
+	cwd = getcwd(NULL, 0);
+	cenv.key = ft_strdup("OLDPWD");
+	cenv.value = cwd;
+	cenv.exported = true;
+	env_set(&state->env, cenv);
+	home = env_expand(state, "HOME");
+	if (argv.len == 1)
+	{
+		if (home == NULL)
+		{
+			ft_eprintf("%s: cd: HOME not set\n", state->argv[0]);
+			return (1);
+		}
+		chdir(home);
+	}
+	if (argv.len == 2)
+	{
+		e = chdir(argv.buff[1]);
+		if (e == -1)
+			ft_eprintf("%s: %s: %s: %s\n", state->argv[0], argv.buff[0],
+				argv.buff[1], strerror(errno));
+	}
+	cwd = getcwd(NULL, 0);
+	cenv.key = ft_strdup("PWD");
+	cenv.value = cwd;
+	cenv.exported = true;
+	env_set(&state->env, cenv);
+}
 
 int	builtin_export(t_state *state, t_vec_str argv)
 {
@@ -55,59 +113,13 @@ int (*builtin_func(char *name))(t_state *state, t_vec_str argv)
 	{
 		return (builtin_export);
 	}
-	return (0);
-}
-
-/*intento de CD*/
-int	ft_cd(char **args)
-{
-	char	*target;
-	char	old_pwd[1024];
-	char	new_pwd[1024];
-
-	// Save the current directory.
-	if (getcwd(old_pwd, sizeof(old_pwd)) == NULL)
+	if (ft_strcmp(name, "cd") == 0)
 	{
-		perror("minishell cd: getcwd");
-		return (1);
+		return (builtin_cd);
 	}
-	// Determine the target directory.
-	if (!args[1])
+	if (ft_strcmp(name, "exit") == 0)
 	{
-		target = getenv("HOME");
-		if (!target)
-		{
-			fprintf(stderr, "minishell: cd: HOME not set\n");
-			return (1);
-		}
-	}
-	else
-	{
-		target = args[1];
-	}
-	// Attempt to change the directory.
-	if (chdir(target) != 0)
-	{
-		perror("minishell: cd");
-		return (1);
-	}
-	// Update OLDPWD environment variable.
-	if (setenv("OLDPWD", old_pwd, 1) != 0)
-	{
-		perror("minishell: cd: setenv OLDPWD");
-		return (1);
-	}
-	// Get the new current directory.
-	if (getcwd(new_pwd, sizeof(new_pwd)) == NULL)
-	{
-		perror("minishell cd: getcwd after chdir");
-		return (1);
-	}
-	// Update PWD environment
-	if (setenv("PWD", new_pwd, 1) != 0)
-	{
-		perror("minishell: cd: setenv PWD");
-		return (1);
+		return (builtin_exit);
 	}
 	return (0);
 }
