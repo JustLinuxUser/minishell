@@ -96,7 +96,6 @@ void parse_op(t_deque_tt* tokens, char** str) {
 
     char* start = *str;
     int op_idx = longest_matching_str(operators, *str);
-    fflush(stdout);
     assert(op_idx != -1);
     *str += ft_strlen(operators[op_idx].str);
     deque_tt_push_end(tokens, (t_token){.start = start,

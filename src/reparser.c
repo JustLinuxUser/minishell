@@ -97,7 +97,7 @@ void reparse_bs(t_ast_node* ret, int* i, t_token t) {
 	assert(*i < t.len);
 	(*i)++;
     vec_nd_push(&ret->children,
-                create_subtoken_node(t, prev_start, *i, TT_SQWORD));
+                create_subtoken_node(t, prev_start, *i, TT_WORD));
 }
 
 void reparse_norm_word(t_ast_node* ret, int* i, t_token t) {

@@ -26,6 +26,27 @@ typedef struct s_parser {
 	t_vec_int parse_stack;
 } t_parser;
 
+// buff_readline.c
+
+typedef struct s_buff_readline
+{
+	bool		has_line;
+	bool		no_readline;
+	t_dyn_str	buff;
+	size_t		cursor;
+} t_buff_readline;
+
+// get next line (without \n).
+// Appends the line to ret
+//
+// return value:
+// 0 - on no input (ctrl-d)
+//
+// 1 - on empty line
+//
+// 2 - anything else
+int buff_readline(t_buff_readline *l, t_dyn_str *ret, char *prompt);
+
 typedef enum e_tt {
 	TT_NONE = 0,
     TT_WORD,			// asfkaslfkj
@@ -74,17 +95,17 @@ typedef enum e_ast_t {
 }	t_ast_t;
 
 typedef struct redir_s {
-	bool	direction_in;
-	int		fd;
-	char	*fname;
+	bool		direction_in;
+	int			fd;
+	char	 *fname;
 	bool	should_delete;
-} redir_t;
+} t_redir;
 
 typedef struct s_vec_redir
 {
 	size_t	cap;
 	size_t	len;
-	redir_t		*buff;
+	t_redir		*buff;
 }	t_vec_redir;
 
 typedef struct s_ast_node t_ast_node;
@@ -97,9 +118,10 @@ typedef struct s_vec_nd
 }	t_vec_nd;
 
 typedef struct s_ast_node {
-    t_ast_t node_type;
-    t_token token;
-	redir_t *redir;
+    t_ast_t	node_type;
+    t_token	token;
+	bool	is_heredoc;
+	int		heredoc_idx;
 
 	t_vec_nd children;
 } t_ast_node;
@@ -116,15 +138,18 @@ typedef struct s_deque_tt
 }	t_deque_tt;
 
 typedef struct s_state {
-	t_dyn_str	input;
-	t_vec_env	env;
-	t_ast_node	tree;
-	char		**argv;
-	t_dyn_str	cwd;
-	int			prev_status;
-	char		*pid;
-	char		*last_cmd_status;
-	bool		should_exit;
+	t_dyn_str		input;
+	t_vec_env		env;
+	t_ast_node		tree;
+	t_dyn_str		cwd;
+	char			**argv;
+	int				prev_status;
+	char			*pid;
+	char			*last_cmd_status;
+	bool			should_exit;
+	t_vec_redir 	heredocs;
+	int				heredoc_idx;
+	t_buff_readline	readline_buff;
 } t_state;
 
 
@@ -139,9 +164,9 @@ char* tokenizer(char* str, t_deque_tt* ret);
 
 int	vec_redir_init(t_vec_redir *ret);
 int	vec_redir_double(t_vec_redir *v);
-int	vec_redir_push(t_vec_redir *v, redir_t el);
-redir_t	vec_redir_pop(t_vec_redir *v);
-redir_t	vec_redir_idx(t_vec_redir *v, size_t idx);
+int	vec_redir_push(t_vec_redir *v, t_redir el);
+t_redir	vec_redir_pop(t_vec_redir *v);
+t_redir	vec_redir_idx(t_vec_redir *v, size_t idx);
 
 int		deque_tt_init(t_deque_tt *ret, int size);
 void	deque_tt_double_if_needed(t_deque_tt *ret);
@@ -180,9 +205,15 @@ void		print_tokens(t_deque_tt tokens);
 // reparser.c
 void reparse_assignment_words(t_ast_node* node);
 void reparse_words(t_ast_node* node);
+//[a-zA-Z_]
+bool is_var_name_p1(char c);
+//[a-zA-Z0-9_]
+bool is_var_name_p2(char c);
 
 t_ast_node create_subtoken_node(t_token t, int offset, int end_offset, t_tt tt);
 
+// heredoc.c
+int gather_heredocs(t_state* state, t_ast_node* node);
 
 t_vec_env env_to_vec_env(char** envp);
 t_env* env_get(t_vec_env* env, char* key);
@@ -198,6 +229,7 @@ bool is_space(char c);
 void execute_top_level(t_state *state);
 
 
+char* expand_word_single(t_state* state, t_ast_node* curr);
 // builtins
 int (*builtin_func(char *name)) (t_state *state, t_vec_str argv);
 
@@ -205,6 +237,12 @@ int (*builtin_func(char *name)) (t_state *state, t_vec_str argv);
 typedef struct executable_node_s {
 	int			infd;
 	int			outfd;
+
+	// [ cmd ] ----> [ other cmd ]
+	//        ^    ^
+	//      outfd  next_infd
+	int			next_infd; 
+
 	t_ast_node	*node;
 	t_vec_redir redirs;
 	bool		modify_parent_context;
@@ -218,6 +256,11 @@ void critical_error_errno();
 void warning_error(char *error) ;
 void warning_error_errno() ;
 
+// utils.c
 void free_tab(char** tab);
+// 0 on success
+int write_to_file(char *str, int fd);
+void dyn_str_append_fd(int fd, t_dyn_str *ret);
+
 
 #endif

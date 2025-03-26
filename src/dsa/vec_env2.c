@@ -1,6 +1,7 @@
 #include "../libft/libft.h"
 #include "../minishell.h"
 #include "vec_env.h"
+#include <stdio.h>
 
 t_env str_to_env(char* str) {
     t_env ret;
@@ -11,8 +12,7 @@ t_env str_to_env(char* str) {
     ret.exported = true;
     ret.key = malloc(key_pos - str);
     ft_strlcpy(ret.key, str, key_pos - str);
-    ret.value = malloc(ft_strlen(key_pos) + 1);
-    ft_strlcpy(ret.value, key_pos, ft_strlen(key_pos) + 1);
+    ret.value = ft_strdup(key_pos);
     return (ret);
 }
 

@@ -33,24 +33,22 @@ void	signal_handling(void)
     sigaction(SIGINT, &new_action, NULL);
 }
 
-t_dyn_str read_fd(int fd)
+// Read fd untill the end, and append the results to *ret
+void dyn_str_append_fd(int fd, t_dyn_str *ret)
 {
-	t_dyn_str ret;
-	char buff[100];
+	char buff[1024];
 	int len;
 
-	dyn_str_init(&ret);
 	while (1)
 	{
-		len = read(fd, buff, 100);
+		len = read(fd, buff, sizeof(buff));
 		if (len == 0)
 			break;
 		if (len > 0)
-			dyn_str_pushnstr(&ret, buff, len);
+			dyn_str_pushnstr(ret, buff, len);
 		else
 			critical_error_errno();
 	}
-	return	ret;
 }
 
 char *getpid_hack() {
@@ -65,7 +63,8 @@ char *getpid_hack() {
 		warning_error("Cannot get PID.");
 		return (0);
 	}
-	file = read_fd(fd);
+	dyn_str_init(&file);
+	dyn_str_append_fd(fd, &file);
 	temp = ft_split(file.buff, ' ');
 	free(file.buff);
 	ret = ft_strdup(temp[0]);
@@ -113,23 +112,20 @@ t_dyn_str new_prompt(t_parser *parser)
 }
 
 void get_input(t_state *state, char *prompt, t_deque_tt *tt) {
-	char *line;
+	int			stat;
 
 	while (prompt) {
 		tt->len = 0;
 		tt->start = 0;
 		tt->end = 0;
-		line = readline(prompt);
+		stat = buff_readline(&state->readline_buff, &state->input, prompt);
 		free(prompt);
-		if (line == 0) {
-			printf("exit\n");
+		if (stat == 0) {
 			state->should_exit = true;
 			break;
 		}
-		dyn_str_pushstr(&state->input, line);
-		free(line);
 		if (state->input.len == 0)
-			continue;
+			break;
 		if (state->input.buff[state->input.len - 1] == '\\') {
 			state->input.len--;
 			prompt = ft_strdup("> ");
@@ -188,13 +184,12 @@ int main(int argc, char** argv, char** envp)
 
 	state = (t_state){0};
 	state.pid = getpid_hack();
-	state.cwd = getcwd_dyn_str();
 
     state.env = env_to_vec_env(envp);
+	state.cwd = getcwd_dyn_str();
 
 	state.argv = argv;
 	state.last_cmd_status = ft_strdup("0");
-
 
 	while (!state.should_exit)
 	{
@@ -209,5 +204,6 @@ int main(int argc, char** argv, char** envp)
 	free (state.last_cmd_status);
 	free (state.pid);
 	free (state.cwd.buff);
+	free (state.readline_buff.buff.buff);
     return (status);
 }

@@ -5,10 +5,11 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/10/13 22:51:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/17 19:20:11 by anddokhn         ###   ########.fr       */
+/*   Created: 2025/03/23 12:32:37 by anddokhn          #+#    #+#             */
+/*   Updated: 2025/03/23 12:33:07 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #include <stdlib.h>
 #include "../minishell.h"
@@ -22,12 +23,12 @@ int	vec_redir_init(t_vec_redir *ret)
 
 int	vec_redir_double(t_vec_redir *v)
 {
-	redir_t	*temp;
+	t_redir	*temp;
 	size_t	i;
 
 	v->cap *= 2;
 	v->cap += 1;
-	temp = malloc(sizeof(redir_t) * v->cap);
+	temp = malloc(sizeof(t_redir) * v->cap);
 	if (temp == 0)
 		return (1);
 	i = -1;
@@ -38,7 +39,7 @@ int	vec_redir_double(t_vec_redir *v)
 	return (0);
 }
 
-int	vec_redir_push(t_vec_redir *v, redir_t el)
+int	vec_redir_push(t_vec_redir *v, t_redir el)
 {
 	if (v->len == v->cap)
 		if (vec_redir_double(v))
@@ -47,13 +48,13 @@ int	vec_redir_push(t_vec_redir *v, redir_t el)
 	return (0);
 }
 
-redir_t	vec_redir_pop(t_vec_redir *v)
+t_redir	vec_redir_pop(t_vec_redir *v)
 {
 	ft_assert(v->len > 0);
 	return (v->buff[--v->len]);
 }
 
-redir_t	vec_redir_idx(t_vec_redir *v, size_t idx)
+t_redir	vec_redir_idx(t_vec_redir *v, size_t idx)
 {
 	ft_assert(idx < v->len);
 	return (v->buff[idx]);

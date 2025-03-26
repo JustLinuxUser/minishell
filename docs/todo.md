@@ -1,3 +1,15 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    todo.md                                            :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2025/03/26 19:18:24 by anddokhn          #+#    #+#              #
+#    Updated: 2025/03/26 19:18:25 by anddokhn         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 
 - 3.2.5.3 Grouping Commands, since the list is executed in a subshell, variable assignments do not remain in effect after the subshell completes. 
 - name=[value], value is optional
@@ -27,7 +39,7 @@
         [x] Set on syntax error
     [ ] PWD in new processes
 
-[ ] Parse stack to make stacked prompt like zsh
+[ ] Temp env set
 
 [?] Ctrl-D handling with non empty lines
 
@@ -36,13 +48,29 @@
 [-] Managing syntax errors properly
     [x] Setting proper status
     [ ] Proper message formating
-[ ] Managing HEREDOCs
 
+[x] Managing HEREDOCs
+    [x] <<-
+    [x] quoted
+    [x] unquoted
+    [?] errors while writing
+    [x] Expand separator, without envvars -
+    [x] \char, should have it's own type, not just sqword, or mb normal word
+    [x] Check for separator, after splitting by newlines, because readline can read multiple lines at once :)
+
+[x] Buffered input
+[x] Multiple line pasting, managing with custom readline that wraps the normal readline
+
+[ ] a=b bash, env var assignments before command
 [ ] Ambiguous redirect better error messages
-    [ ] Saving "debug info"
+[ ] All open / write calls should be error protected
 [ ] Glob expansion
 
-[ ] Managing signals, SIGINT, and SIGQUIT
+[ ] Signals
+
+[x] Close fds properly ;(
+    [x] cat | ls
+
 
 [x] Make sure that all the vec / deque data types can be initialized  with = {0}
     [x] In minishell

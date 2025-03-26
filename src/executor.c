@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/21 11:54:12 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/26 19:00:12 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
+
+#include <readline/readline.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -96,6 +98,43 @@ void expand_word(t_state* state,
         vec_str_push(args, s.buff);
     else
         free(s.buff);
+}
+void expand_word_hrdoc (t_state* state,
+                 t_ast_node node,
+                 t_vec_str* args) {
+    t_token curr;
+    t_dyn_str s;
+    char* temp;
+    dyn_str_init(&s);
+
+    for (size_t i = 0; i < node.children.len; i++) {
+        assert(node.children.buff[i].node_type == AST_TOKEN);
+        curr = node.children.buff[i].token;
+        switch (curr.tt) {
+            case TT_WORD:
+                dyn_str_pushnstr(&s, curr.start, curr.len);
+                break;
+            case TT_SQWORD:
+                dyn_str_pushnstr(&s, curr.start, curr.len);
+                break;
+            case TT_DQWORD:
+                dyn_str_pushnstr(&s, curr.start, curr.len);
+                break;
+            case TT_DQENVVAR:
+                temp = env_expand_n(state, curr.start, curr.len);
+                if (temp)
+                    dyn_str_pushstr(&s, temp);
+                break;
+            case TT_ENVVAR:
+                temp = env_expand_n(state, curr.start, curr.len);
+                if (temp)
+                    dyn_str_pushstr(&s, temp);
+                break;
+            default:
+                assert("Unreachable" == 0);
+        }
+    }
+	vec_str_push(args, s.buff);
 }
 
 t_env assignment_to_env(t_state* state, t_ast_node node) {
@@ -285,7 +324,8 @@ int actually_run(t_state* state, t_vec_str* args) {
     return (EXE_PERM_DENIED);
 }
 
-char* expand_word_single(t_state* state, t_ast_node* curr) {
+char* expand_word_single(t_state* state, t_ast_node* curr)
+{
     t_vec_str args = {};
     expand_word(state, *curr, &args, false);
     if (args.len != 1) {
@@ -299,12 +339,26 @@ char* expand_word_single(t_state* state, t_ast_node* curr) {
     return (temp);
 }
 
-int redirect_from_ast_redir(t_state *state, t_ast_node *curr, redir_t *ret)
+char* expand_word_single_hrdoc(t_state* state, t_ast_node* curr) {
+    t_vec_str args = {};
+    expand_word_hrdoc(state, *curr, &args);
+    if (args.len != 1) {
+        for (size_t i = 0; i < args.len; i++)
+            free(args.buff[i]);
+        free(args.buff);
+        return (0);
+    }
+    char* temp = args.buff[0];
+    free(args.buff);
+    return (temp);
+}
+
+int redirect_from_ast_redir(t_state *state, t_ast_node *curr, t_redir *ret)
 {
 	assert(curr->node_type == AST_REDIRECT);
-	if (curr->redir)
+	if (curr->is_heredoc)
 	{
-		*ret =  *curr->redir;
+		*ret = state->heredocs.buff[curr->heredoc_idx];
 		return (0);
 	}
 	t_tt tt = curr->children.buff[0].token.tt;
@@ -354,7 +408,7 @@ int redirect_from_ast_redir(t_state *state, t_ast_node *curr, redir_t *ret)
                 expand_word(state, *curr, &ret->argv, false);
             }
         } else if (curr->node_type == AST_REDIRECT) {
-			redir_t redir;
+			t_redir redir;
 			if (redirect_from_ast_redir(state, curr, &redir)) {
 				ft_eprintf("Error expanding redirect!!\n");
 				return (1);
@@ -384,6 +438,8 @@ void free_executable_cmd(executable_cmd_t cmd)
 void free_executable_node(t_executable_node node)
 {
     for (size_t i = 0; i < node.redirs.len; i++) {
+		if (node.redirs.buff[i].should_delete)
+			unlink(node.redirs.buff[i].fname);
         free(node.redirs.buff[i].fname);
     }
     free(node.redirs.buff);
@@ -391,14 +447,25 @@ void free_executable_node(t_executable_node node)
 
 void set_up_redirection(t_executable_node exe)
 {
-	dup2(exe.infd, 0);
-	dup2(exe.outfd, 1);
+	if (exe.next_infd)
+		close(exe.next_infd);
+	if (exe.outfd != 1)
+	{
+		dup2(exe.outfd, 1);
+		close(exe.outfd);
+	}
+	if (exe.infd != 0)
+	{
+		dup2(exe.infd, 0);
+		close(exe.infd);
+	}
 	for (size_t i = 0; i < exe.redirs.len; i++) {
 		if (exe.redirs.buff[i].direction_in) {
 			dup2(exe.redirs.buff[i].fd, 0);
 		} else {
 			dup2(exe.redirs.buff[i].fd, 1);
 		}
+		close(exe.redirs.buff[i].fd);
 	}
 }
 
@@ -453,8 +520,8 @@ t_exe_res execute_simple_command(t_state* state,
 int execute_pipeline(t_state* state, t_executable_node exe) {
 	t_executable_node curr_exe = {};
 
-    curr_exe.infd = exe.infd;
-    curr_exe.outfd = exe.outfd;
+    curr_exe.infd = dup(exe.infd);
+    // curr_exe.outfd = dup(exe.outfd);
 	curr_exe.modify_parent_context = exe.node->children.len == 1; // if its just one, it's ok
 
     int pp[2];
@@ -467,9 +534,12 @@ int execute_pipeline(t_state* state, t_executable_node exe) {
 		if (curr_exe.node->node_type == AST_COMMAND) {
 			pipe(pp);
 			curr_exe.outfd = pp[1];
+			curr_exe.next_infd = pp[0];
 			res = execute_command(state, curr_exe);
+			close(curr_exe.outfd);
 			vec_exe_res_push(&results, res);
 			close(curr_exe.outfd);
+			close(curr_exe.infd);
 			curr_exe.infd = pp[0];
 		} else {
 			ft_eprintf("Got unexpected: \n");
@@ -479,7 +549,11 @@ int execute_pipeline(t_state* state, t_executable_node exe) {
 	}
 	if (exe.node->children.buff[i].node_type == AST_COMMAND) {
 		curr_exe.node = vec_nd_idx(&exe.node->children, i);
+		curr_exe.next_infd = 0;
+		curr_exe.outfd = dup(exe.outfd);
 		res = execute_command(state, curr_exe);
+		close(curr_exe.outfd);
+		close(curr_exe.infd);
 		vec_exe_res_push(&results, res);
 	} else {
 		assert("Unimplemented" == 0);
@@ -550,7 +624,7 @@ t_exe_res execute_command(t_state* state, t_executable_node exe) {
 	for (size_t i = 1; i < exe.node->children.len; i++) {
 		t_ast_node *curr = vec_nd_idx(&exe.node->children, i);
 		assert(curr->node_type == AST_REDIRECT);
-		redir_t redir;
+		t_redir redir;
 		if (redirect_from_ast_redir(state, curr, &redir))
 		{
 			ft_eprintf("Failed to expand redir\n");
@@ -595,24 +669,14 @@ int execute_tree_node(t_state* state, t_executable_node exe) {
     return (status);
 }
 
-int gather_heredocs(t_state* state, t_ast_node* node) {
-    size_t i;
-
-    i = 0;
-    while (i < node->children.len) {
-        gather_heredocs(state, &node->children.buff[i]);
-    }
-    if (node->node_type == AST_REDIRECT) {
-        assert(node->children.len >= 1);
-        if (node->children.buff[0].token.tt == TT_HEREDOC) {
-        }
-    }
-    return (0);
-}
-
 void execute_top_level(t_state* state) {
 	t_executable_node exe;
 
 	exe = (t_executable_node){.infd = 0, .outfd = 1, .node = &state->tree, .modify_parent_context = true};
+	state->heredoc_idx = 0;
+	gather_heredocs(state, &state->tree);
     execute_tree_node(state, exe);
+
+	free(state->heredocs.buff);
+	vec_redir_init(&state->heredocs);
 }
