@@ -6,7 +6,7 @@
 #    By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/03/26 19:18:24 by anddokhn          #+#    #+#              #
-#    Updated: 2025/03/26 19:18:25 by anddokhn         ###   ########.fr        #
+#    Updated: 2025/03/26 19:22:57 by anddokhn         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -61,7 +61,7 @@
 [x] Buffered input
 [x] Multiple line pasting, managing with custom readline that wraps the normal readline
 
-[ ] a=b bash, env var assignments before command
+[x] a=b bash, env var assignments before command
 [ ] Ambiguous redirect better error messages
 [ ] All open / write calls should be error protected
 [ ] Glob expansion

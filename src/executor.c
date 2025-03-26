@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/26 19:00:12 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/26 19:22:33 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -387,9 +387,7 @@ int redirect_from_ast_redir(t_state *state, t_ast_node *curr, t_redir *ret)
 	 *ret = (executable_cmd_t){};
 
     bool found_first = false;
-    t_vec_env pre_assigns;
 
-    vec_env_init(&pre_assigns);
     vec_str_init(&ret->argv);
     tilde_expand_simple_command(state, node);
 
@@ -401,7 +399,7 @@ int redirect_from_ast_redir(t_state *state, t_ast_node *curr, t_redir *ret)
             found_first = true;
         } else if (curr->node_type == AST_ASSIGNMENT_WORD) {
             if (!found_first) {
-                vec_env_push(&pre_assigns, assignment_to_env(state, *curr));
+                vec_env_push(&ret->pre_assigns, assignment_to_env(state, *curr));
             } else {
                 assignment_word_to_word(curr);
                 print_node(*curr);
