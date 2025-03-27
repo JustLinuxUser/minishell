@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 
-int	builtin_echo(t_state *state, t_vec_str argv)
+/*int	builtin_echo(t_state *state, t_vec_str argv)
 {
 	for (size_t i = 1; i < argv.len; i++)
 	{
@@ -13,22 +13,84 @@ int	builtin_echo(t_state *state, t_vec_str argv)
 	}
 	ft_printf("\n");
 	return (0);
-}
+}*/
 
+int builtin_echo(t_state *state, t_vec_str argv)
+{
+	int n = 0;
+	int e = 0;
+	int i = 1;
+	int j = 0;
+
+	while (i < argv.len)
+	{
+		if (argv.buff[i][0] == '-')
+		{
+			j = 1; // Empezamos después del '-'
+			while (argv.buff[i][j] == 'n' || argv.buff[i][j] == 'e')
+			{
+				j++;
+			}
+			if (argv.buff[i][j] != '\0')
+				break;
+
+			j = 1;
+			while (argv.buff[i][j])
+			{
+				if (argv.buff[i][j] == 'n')
+					n = 1;
+				if (argv.buff[i][j] == 'e')
+					e = 1;
+				j++;
+			}
+			i++;
+		}
+		else
+			break;
+	}
+
+	while (i < argv.len)
+	{
+		ft_printf("%s", argv.buff[i]);
+		if (i < argv.len - 1)
+			ft_printf(" ");
+		i++;
+	}
+
+	if (!n)
+		ft_printf("\n");
+
+	ft_printf(" %d%d", e, n); // Debug
+	return (0);
+}
+int builtin_pwd(t_state *state, t_vec_str argv)
+{
+char	*cwd;
+cwd = getcwd(NULL, 0);
+	ft_printf("%s\n",cwd);
+}
 int	builtin_exit(t_state *state, t_vec_str argv)
 {
-	ft_eprintf("exit, FIX ME DUMMY!\n");
-	// TODO: checked atoi, replicate the shit of the BASH
+	int	ret;
+	int	err;
+
+	ft_eprintf("exit\n");
 	if (argv.len == 1)
 		exit(0);
+	err = ft_checked_atoi(argv.buff[1], &ret, 35);
+	if (err != 0)
+	{
+		ft_eprintf("%s: %s: %s: numeric argument required\n", state->argv[0],
+			argv.buff[0], argv.buff[1]);
+		exit(2);
+	}
 	if (argv.len >= 3)
 	{
 		ft_eprintf("%s: %s: too many arguments\n", state->argv[0],
 			argv.buff[0]);
 		return (1);
 	}
-	exit(
-		ft_atoi(argv.buff[1]));
+	exit(ret);
 }
 /* my echo
 void	ft_echo(char **args)
@@ -120,6 +182,10 @@ int (*builtin_func(char *name))(t_state *state, t_vec_str argv)
 	if (ft_strcmp(name, "exit") == 0)
 	{
 		return (builtin_exit);
+	}
+	if (ft_strcmp(name, "pwd") == 0)
+	{
+		return (builtin_pwd);
 	}
 	return (0);
 }
