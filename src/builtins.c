@@ -14,17 +14,49 @@
 	ft_printf("\n");
 	return (0);
 }*/
-
-int builtin_echo(t_state *state, t_vec_str argv)
+/*
+void	e_parser(char *str)
 {
-	int n = 0;
-	int e = 0;
-	int i = 1;
-	int j = 0;
+	while (*str)
+	{
+		if (*str == '\\' && *(str + 1))
+		{
+			str++;
+			if (*str == 'n')
+				write(1, "\n", 1);
+			else if (*str == 't')
+				write(1, "\t", 1);
+			else if (*str == '\\')
+				write(1, "\\", 1);
+			else if (*str == 'r')
+				write(1, "\r", 1);
+			else if (*str == 'e')
+				write(1, "\033", 1);
+			else
+			{
+				write(1, "\\", 1);
+				write(1,str,1);
+			}
+			str++;
+		}
+		else
+			write(1,str,1);
+			str++;
+	}
+}
+int	builtin_echo(t_state *state, t_vec_str argv)
+{
+	int	n;
+	int	e;
+	int	i;
+	int	j;
 
+	n = 0;
+	e = 0;
+	i = 1;
 	while (i < argv.len)
 	{
-		if (argv.buff[i][0] == '-')
+		if (argv.buff[i][0] == '-' && argv.buff[i][1])
 		{
 			j = 1; // Empezamos después del '-'
 			while (argv.buff[i][j] == 'n' || argv.buff[i][j] == 'e')
@@ -32,8 +64,7 @@ int builtin_echo(t_state *state, t_vec_str argv)
 				j++;
 			}
 			if (argv.buff[i][j] != '\0')
-				break;
-
+				break ;
 			j = 1;
 			while (argv.buff[i][j])
 			{
@@ -46,28 +77,133 @@ int builtin_echo(t_state *state, t_vec_str argv)
 			i++;
 		}
 		else
-			break;
+			break ;
 	}
-
 	while (i < argv.len)
 	{
-		ft_printf("%s", argv.buff[i]);
-		if (i < argv.len - 1)
-			ft_printf(" ");
+		if (!e)
+		{
+			ft_printf("%s", argv.buff[i]);
+			if (i < argv.len - 1)
+				ft_printf(" ");
+		}
+		else
+		{
+			e_parser(argv.buff[i]);
+			if (i < argv.len - 1)
+				ft_printf(" ");
+		}
 		i++;
 	}
+if (!n)
+ft_printf("\n");
+return (0);
+} */
+static void	e_parser(char *str)
+{
+	while (*str)
+	{
+		if (*str == '\\' && *(str + 1))
+		{
+			str++;
+			if (*str == 'n')
+				write(1, "\n", 1);
+			else if (*str == 't')
+				write(1, "\t", 1);
+			else if (*str == '\\')
+				write(1, "\\", 1);
+			else if (*str == 'r')
+				write(1, "\r", 1);
+			else if (*str == 'e')
+				write(1, "\033", 1);
+			else
+			{
+				write(1, "\\", 1);
+				write(1, str, 1);
+			}
+			str++;
+		}
+		else
+		{
+			write(1, str, 1);
+			str++;
+		}
+	}
+}
 
+static int	parse_flags(t_vec_str argv, int *n, int *e)
+{
+	int	i;
+	int	j;
+
+	i = 1;
+	while (i < argv.len)
+	{
+		if (argv.buff[i][0] == '-' && argv.buff[i][1])
+		{
+			j = 1;
+			while (argv.buff[i][j] == 'n' || argv.buff[i][j] == 'e')
+				j++;
+			if (argv.buff[i][j] != '\0')
+				break ;
+			j = 1;
+			while (argv.buff[i][j])
+			{
+				if (argv.buff[i][j] == 'n')
+					*n = 1;
+				if (argv.buff[i][j] == 'e')
+					*e = 1;
+				j++;
+			}
+			i++;
+		}
+		else
+			break ;
+	}
+	return (i);
+}
+
+static void	print_args(int e, t_vec_str argv, int i)
+{
+	while (i < argv.len)
+	{
+		if (!e)
+		{
+			ft_printf("%s", argv.buff[i]);
+			if (i < argv.len - 1)
+				ft_printf(" ");
+		}
+		else
+		{
+			e_parser(argv.buff[i]);
+			if (i < argv.len - 1)
+				ft_printf(" ");
+		}
+		i++;
+	}
+}
+
+int	builtin_echo(t_state *state, t_vec_str argv)
+{
+	int	n;
+	int	e;
+	int	i;
+
+	n = 0;
+	e = 0;
+	i = parse_flags(argv, &n, &e);
+	print_args(e, argv, i);
 	if (!n)
 		ft_printf("\n");
-
-	ft_printf(" %d%d", e, n); // Debug
 	return (0);
 }
-int builtin_pwd(t_state *state, t_vec_str argv)
+
+int	builtin_pwd(t_state *state, t_vec_str argv)
 {
-char	*cwd;
-cwd = getcwd(NULL, 0);
-	ft_printf("%s\n",cwd);
+	char	*cwd;
+
+	cwd = getcwd(NULL, 0);
+	ft_printf("%s\n", cwd);
 }
 int	builtin_exit(t_state *state, t_vec_str argv)
 {
@@ -92,30 +228,7 @@ int	builtin_exit(t_state *state, t_vec_str argv)
 	}
 	exit(ret);
 }
-/* my echo
-void	ft_echo(char **args)
-{
-	int	i;
-	int	newline;
 
-	i = 1;
-	newline = 1;
-	if(args[i] && strcmp(args[i], "-n") == 0)
-	{
-		newline = 0;
-		i++;
-	}
-	while (args[i])
-	{
-		write(1, args[i], strlen(args[i]));
-		if (args[i + 1])
-			write(1, "", 1);
-		i++;
-	}
-	if (newline)
-		write(1, "\n", 1);
-}
-*/
 int	builtin_cd(t_state *state, t_vec_str argv)
 {
 	char	*cwd;
