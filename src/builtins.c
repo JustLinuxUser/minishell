@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   builtins.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/30 21:39:29 by armgonza          #+#    #+#             */
+/*   Updated: 2025/03/31 23:14:58 by armgonza         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "libft/ft_printf/ft_printf.h"
 #include "libft/libft.h"
 #include "minishell.h"
@@ -46,10 +58,23 @@ void	e_parser(char *str)
 }
 int	builtin_echo(t_state *state, t_vec_str argv)
 {
-	int	n;
-	int	e;
-	int	i;
-	int	j;
+	int		n;
+	int		e;
+	int		i;
+	int		j;
+	int		res;
+	int		i;
+	char	base[16] = "0123456789ABCDEF";
+	int		i;
+	int		res;
+	char	strb[16] = "0l23456789ABCDEF";
+	char	strc;
+	char	*strn;
+	int		i;
+	int		res;
+	char	strb[16] = "0l23456789ABCDEF";
+	char	strc;
+	char	*strn;
 
 	n = 0;
 	e = 0;
@@ -99,6 +124,69 @@ if (!n)
 ft_printf("\n");
 return (0);
 } */
+mini_atoi_base(char *str, int base, int len)
+{
+	int i = 0;
+	int res;
+	char strb[16] = "0123456789ABCDEF";
+	char strc;
+	char *strn;
+
+	while (str[i] && len > i)
+	{
+		strc=ft_toupper(str[i]);
+		
+		strn = ft_strchr(strb, strc);
+		if (strn)
+		{	
+			res = (res * base) + (strn - strb);
+		}
+		else
+		{
+			break;
+		}
+		i++;
+	}
+	return (res);
+}
+
+static int	is_hex_digit(char c)
+{
+	return ((c >= '0' && c <= '9') ||
+			(c >= 'a' && c <= 'f') ||
+			(c >= 'A' && c <= 'F'));
+}
+
+static void	parse_numeric_escape(char **str)
+{
+	char	val[4] = {0};
+	int		len;
+	int		base;
+
+	len = 0;
+	if (**str == '0')
+		base = 8;
+	else if (**str == 'x')
+		base = 16;
+	else
+		return ;
+	(*str)++;
+	while (base == 8 && len < 3 && **str >= '0' && **str <= '7')
+	{
+		val[len] = **str;
+		len++;
+		(*str)++;
+	}
+	while (base == 16 && len < 2 && is_hex_digit(**str))
+	{
+		val[len] = **str;
+		len++;
+		(*str)++;
+	}
+	(*str)--;
+	write(1, &(char){mini_atoi_base(val, base, len)}, 1);
+}
+
 static void	e_parser(char *str)
 {
 	while (*str)
@@ -110,12 +198,24 @@ static void	e_parser(char *str)
 				write(1, "\n", 1);
 			else if (*str == 't')
 				write(1, "\t", 1);
-			else if (*str == '\\')
-				write(1, "\\", 1);
+			else if (*str == 'a')
+				write(1, "\a", 1);
+			else if (*str == 'b')
+				write(1, "\b", 1);
+			else if (*str == 'f')
+				write(1, "\f", 1);
 			else if (*str == 'r')
 				write(1, "\r", 1);
+			else if (*str == 'v')
+				write(1, "\v", 1);
+			else if (*str == '\\')
+				write(1, "\\", 1);
 			else if (*str == 'e')
 				write(1, "\033", 1);
+			else if (*str == 'c')
+				return ;
+			else if (*str == '0' || *str == 'x')
+				parse_numeric_escape(&str);
 			else
 			{
 				write(1, "\\", 1);
@@ -124,25 +224,23 @@ static void	e_parser(char *str)
 			str++;
 		}
 		else
-		{
-			write(1, str, 1);
-			str++;
-		}
+			write(1, str++, 1);
 	}
 }
 
-static int	parse_flags(t_vec_str argv, int *n, int *e)
+static int	parse_flags(t_vec_str argv, int *n, int *e, int *E)
 {
 	int	i;
-	int	j;
-
-	i = 1;
+	int j;
+	i = 1,
+	*E = 0;
 	while (i < argv.len)
 	{
 		if (argv.buff[i][0] == '-' && argv.buff[i][1])
 		{
 			j = 1;
-			while (argv.buff[i][j] == 'n' || argv.buff[i][j] == 'e')
+			while (argv.buff[i][j] == 'n' || argv.buff[i][j] == 'e'
+				|| argv.buff[i][j] == 'E')
 				j++;
 			if (argv.buff[i][j] != '\0')
 				break ;
@@ -152,7 +250,9 @@ static int	parse_flags(t_vec_str argv, int *n, int *e)
 				if (argv.buff[i][j] == 'n')
 					*n = 1;
 				if (argv.buff[i][j] == 'e')
-					*e = 1;
+					*e = 1, *E = 0;
+				if (argv.buff[i][j] == 'E')
+					*E = 1, *e = 0;
 				j++;
 			}
 			i++;
@@ -163,36 +263,33 @@ static int	parse_flags(t_vec_str argv, int *n, int *e)
 	return (i);
 }
 
-static void	print_args(int e, t_vec_str argv, int i)
+static void print_args(int e, int E, t_vec_str argv, int i)
 {
-	while (i < argv.len)
-	{
-		if (!e)
-		{
-			ft_printf("%s", argv.buff[i]);
-			if (i < argv.len - 1)
-				ft_printf(" ");
-		}
-		else
-		{
-			e_parser(argv.buff[i]);
-			if (i < argv.len - 1)
-				ft_printf(" ");
-		}
-		i++;
-	}
+    while (i < argv.len)
+    {
+        if (e && !E)
+            e_parser(argv.buff[i]);
+        else
+            ft_printf("%s", argv.buff[i]);
+
+        if (i < argv.len - 1)
+            ft_printf(" ");
+        i++;
+    }
 }
 
 int	builtin_echo(t_state *state, t_vec_str argv)
 {
 	int	n;
 	int	e;
+	int	E;
 	int	i;
 
+	E = 0;
 	n = 0;
 	e = 0;
-	i = parse_flags(argv, &n, &e);
-	print_args(e, argv, i);
+	i = parse_flags(argv, &n, &e, &E);
+	print_args(e, E, argv, i);
 	if (!n)
 		ft_printf("\n");
 	return (0);
@@ -299,6 +396,10 @@ int (*builtin_func(char *name))(t_state *state, t_vec_str argv)
 	if (ft_strcmp(name, "pwd") == 0)
 	{
 		return (builtin_pwd);
+	}
+	if (ft_strcmp(name, "export") == 0)
+	{
+		return (builtin_export);
 	}
 	return (0);
 }
