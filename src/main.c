@@ -20,13 +20,7 @@ void	termination_handler(int signum)
 {
 	ft_eprintf("\n");
 	rl_on_new_line();
-	// rl_prompt = ft_strdup("prompt> ");
-	// rl_display_prompt = rl_prompt;
-	// rl_visible_prompt_length = 8;
-	// rl_set_prompt("custom> ");
 	rl_replace_line("\n", 0);
-	// ft_eprintf("prompt> ");
-	// readline("custom> ");
 	rl_redisplay();
 }
 
@@ -52,11 +46,11 @@ void	ignore_sig(void)
 
     sigaction(SIGINT, &new_action, NULL);
 }
+
 void	die_on_sig(void)
 {
 	struct sigaction	new_action;
 
-    // new_action.sa_handler = SIG_IGN;
     sigemptyset(&new_action.sa_mask);
     new_action.sa_flags = 0;
 

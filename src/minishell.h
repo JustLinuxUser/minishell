@@ -46,7 +46,9 @@ typedef struct s_buff_readline
 //
 // 1 - on empty line
 //
-// 2 - anything else
+// 2 - ctrl-c
+//
+// 3 - anything else
 int buff_readline(t_buff_readline *l, t_dyn_str *ret, char *prompt);
 void buff_readline_update(t_buff_readline *l);
 void buff_readline_reset(t_buff_readline *l);
