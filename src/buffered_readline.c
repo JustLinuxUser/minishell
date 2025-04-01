@@ -83,7 +83,7 @@ int buff_readline(t_buff_readline *l, t_dyn_str *ret, char *prompt)
 		code = get_more_input_readline(l, prompt);
 		if (code == 1)  //ctrl - d
 			return (0);
-		if (code == 2)
+		if (code == 2) // ctrl-c
 			return (2);
 		dyn_str_push(&l->buff, '\n');
 		l->has_line = true;

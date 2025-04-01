@@ -150,6 +150,7 @@ typedef struct s_state {
 	char			*pid;
 	char			*last_cmd_status;
 	bool			should_exit;
+	bool			should_reset;
 	t_vec_redir 	heredocs;
 	int				heredoc_idx;
 	t_buff_readline	readline_buff;

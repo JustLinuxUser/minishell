@@ -15,7 +15,6 @@
 #include "libft/dsa/dyn_str.h"
 #include "libft/ft_printf/ft_printf.h"
 
-extern int rl_visible_prompt_length;
 void	termination_handler(int signum)
 {
 	ft_eprintf("\n");
@@ -145,6 +144,10 @@ void get_input(t_state *state, char *prompt, t_deque_tt *tt) {
 		if (stat == 0) {
 			state->should_exit = true;
 			break;
+		} else if (stat == 2)
+		{
+			state->should_reset = 1;
+			break;
 		}
 		if (state->input.len == 0)
 			break;
@@ -186,6 +189,11 @@ void execute_line(t_state *state)
 		get_input(state, prompt, &tt);
 		if (state->should_exit)
 			break;
+		if (state->should_reset)
+		{
+			state->should_reset = false;
+			break;
+		}
         if (tt.len) {
             state->tree = parse_tokens(&parser, &tt);
             if (parser.res == RES_OK) {
