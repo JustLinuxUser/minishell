@@ -35,3 +35,15 @@ int buff_readline(t_buff_readline *l, t_dyn_str *ret, char *prompt)
 	l->has_line = l->cursor != l->buff.len;
 	return ((len != 0) + 1);
 }
+
+void buff_readline_update(t_buff_readline *l)
+{
+	l->has_line = l->cursor != l->buff.len;
+}
+
+void buff_readline_reset(t_buff_readline *l)
+{
+	ft_memmove(l->buff.buff, l->buff.buff + l->cursor, l->buff.len - l->cursor);
+	l->buff.len -= l->cursor;
+	l->cursor = 0;
+}

@@ -6,10 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/26 19:22:33 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/31 15:56:39 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "dsa/vec_str.h"
 #include "minishell.h"
 
 #include <assert.h>
@@ -28,83 +29,99 @@
 #include "libft/libft.h"
 #include "dsa/vec_exe_res.h"
 
+void expand_word_fully(t_state *state, t_ast_node *node, t_vec_str *args, bool keep_as_one);
 
-void expand_word(t_state* state,
-                 t_ast_node node,
-                 t_vec_str* args,
-                 bool keep_as_one) {
-    t_token curr;
-    t_dyn_str s;
+void expand_env_vars(t_state* state, t_ast_node *node)
+{
+    t_token *curr_tt;
     char* temp;
-    bool should_push = false;
-    dyn_str_init(&s);
 
-    for (size_t i = 0; i < node.children.len; i++) {
-        assert(node.children.buff[i].node_type == AST_TOKEN);
-        curr = node.children.buff[i].token;
-        switch (curr.tt) {
+    for (size_t i = 0; i < node->children.len; i++) {
+        assert(node->children.buff[i].node_type == AST_TOKEN);
+        curr_tt = &node->children.buff[i].token;
+        switch (curr_tt->tt) {
             case TT_WORD:
-                dyn_str_pushnstr(&s, curr.start, curr.len);
-                should_push = true;
-                break;
             case TT_SQWORD:
-                dyn_str_pushnstr(&s, curr.start, curr.len);
-                should_push = true;
-                break;
             case TT_DQWORD:
-                dyn_str_pushnstr(&s, curr.start, curr.len);
-                should_push = true;
-                break;
+				break;
             case TT_DQENVVAR:
-                temp = env_expand_n(state, curr.start, curr.len);
-                if (temp)
-                    dyn_str_pushstr(&s, temp);
-                should_push = true;
-                break;
             case TT_ENVVAR:
-                temp = env_expand_n(state, curr.start, curr.len);
-                if (!temp)
-                    break;
-                if (keep_as_one) {
-                    dyn_str_pushstr(&s, temp);
-                    should_push = true;
-                    break;
-                }
-				// IFS
-                char** things = ft_split(temp, ' ');
-                if (things[0]) {
-                    dyn_str_pushstr(&s, things[0]);
-                    should_push = true;
-                    int i = 1;
-                    for (; things[i]; i++) {
-                        vec_str_push(args, s.buff);
-                        dyn_str_init(&s);
-                        dyn_str_pushstr(&s, things[i]);
-                    }
-                } else {
-                    if (should_push) {
-                        vec_str_push(args, s.buff);
-                        dyn_str_init(&s);
-                    }
-                    should_push = false;
-                }
-				free_tab(things);
+                temp = env_expand_n(state, curr_tt->start, curr_tt->len);
+				curr_tt->start = temp;
+				if (curr_tt)
+					curr_tt->len = ft_strlen(temp);
+				else
+					curr_tt->len = 0;
+				curr_tt->allocated = false;
                 break;
             default:
                 assert("Unreachable" == 0);
         }
     }
-    if (should_push)
-        vec_str_push(args, s.buff);
-    else
-        free(s.buff);
 }
-void expand_word_hrdoc (t_state* state,
-                 t_ast_node node,
-                 t_vec_str* args) {
+
+t_ast_node new_env_node(char *new_start)
+{
+    return (t_ast_node){.node_type = AST_TOKEN,
+                        .token = {.allocated = true,
+                                  .len = ft_strlen(new_start),
+                                  .start = new_start,
+                                  .tt = TT_ENVVAR}};
+}
+
+t_vec_nd split_words(t_ast_node *node) {
+	t_vec_nd ret = {};
+    t_token *curr_tt;
+	char** things;
+
+    t_ast_node curr_node = {.node_type = AST_WORD};
+
+    for (size_t i = 0; i < node->children.len; i++) {
+        assert(node->children.buff[i].node_type == AST_TOKEN);
+        curr_tt = &node->children.buff[i].token;
+        switch (curr_tt->tt) {
+            case TT_WORD:
+            case TT_SQWORD:
+            case TT_DQWORD:
+            case TT_DQENVVAR:
+				vec_nd_push(&curr_node.children, node->children.buff[i]);
+				break;
+            case TT_ENVVAR:
+				if (!curr_tt->start)
+					break;
+				// IFS
+                things = ft_split(curr_tt->start, ' ');
+				// free(curr_tt->start);
+                if (things[0])
+				{
+					vec_nd_push(&curr_node.children, new_env_node(things[0]));
+                    int i = 1;
+                    for (; things[i]; i++)
+					{
+						vec_nd_push(&ret, curr_node);
+						curr_node = (t_ast_node){.node_type = AST_WORD};
+						vec_nd_push(&curr_node.children, new_env_node(things[i]));
+                    }
+                }
+				else if (curr_node.children.len)
+				{
+					vec_nd_push(&ret, curr_node);
+					curr_node = (t_ast_node){.node_type = AST_WORD};
+                }
+				free(things);
+                break;
+            default:
+                assert("Unreachable" == 0);
+        }
+    }
+	if (curr_node.children.len)
+		vec_nd_push(&ret, curr_node);
+	return (ret);
+}
+
+t_dyn_str word_to_string(t_ast_node node) {
     t_token curr;
     t_dyn_str s;
-    char* temp;
     dyn_str_init(&s);
 
     for (size_t i = 0; i < node.children.len; i++) {
@@ -112,29 +129,17 @@ void expand_word_hrdoc (t_state* state,
         curr = node.children.buff[i].token;
         switch (curr.tt) {
             case TT_WORD:
-                dyn_str_pushnstr(&s, curr.start, curr.len);
-                break;
             case TT_SQWORD:
-                dyn_str_pushnstr(&s, curr.start, curr.len);
-                break;
             case TT_DQWORD:
-                dyn_str_pushnstr(&s, curr.start, curr.len);
-                break;
             case TT_DQENVVAR:
-                temp = env_expand_n(state, curr.start, curr.len);
-                if (temp)
-                    dyn_str_pushstr(&s, temp);
-                break;
             case TT_ENVVAR:
-                temp = env_expand_n(state, curr.start, curr.len);
-                if (temp)
-                    dyn_str_pushstr(&s, temp);
-                break;
+                dyn_str_pushnstr(&s, curr.start, curr.len);
+				break;
             default:
                 assert("Unreachable" == 0);
         }
     }
-	vec_str_push(args, s.buff);
+	return (s);
 }
 
 t_env assignment_to_env(t_state* state, t_ast_node node) {
@@ -143,7 +148,7 @@ t_env assignment_to_env(t_state* state, t_ast_node node) {
     vec_str_init(&args);
     assert(node.children.len == 2);
 
-    expand_word(state, node.children.buff[1], &args, true);
+    expand_word_fully(state, &node.children.buff[1], &args, true);
 
     ret.key = ft_strndup(node.children.buff[0].token.start,
                          node.children.buff[0].token.len);
@@ -303,6 +308,7 @@ int actually_run(t_state* state, t_vec_str* args) {
     char* path = env_expand(state, "PATH");
     if (!path) {
         err_no_path_var(state, args->buff[0]);
+		free_all_state(*state);
         return (COMMAND_NOT_FOUND);
     }
     char** path_dirs = ft_split(path, ':');
@@ -311,15 +317,17 @@ int actually_run(t_state* state, t_vec_str* args) {
     free_tab(path_dirs);
     if (!path_of_exe) {
         err_cmd_not_found(state, args->buff[0]);
+		free_all_state(*state);
         return (COMMAND_NOT_FOUND);
     }
     vec_str_push(args, 0);  // nullterm
     char** envp = get_envp(state);
     execve(path_of_exe, args->buff, envp);
-	err_cmd_other(state, args->buff[0]);
-	free_tab(args->buff);
-	free_tab(envp);
-	free_ast(state->tree);
+	free_all_state(*state);
+	// err_cmd_other(state, args->buff[0]);
+	// free_tab(args->buff);
+	// free_tab(envp);
+	// free_ast(state->tree);
 	free(path_of_exe);
     return (EXE_PERM_DENIED);
 }
@@ -327,21 +335,7 @@ int actually_run(t_state* state, t_vec_str* args) {
 char* expand_word_single(t_state* state, t_ast_node* curr)
 {
     t_vec_str args = {};
-    expand_word(state, *curr, &args, false);
-    if (args.len != 1) {
-        for (size_t i = 0; i < args.len; i++)
-            free(args.buff[i]);
-        free(args.buff);
-        return (0);
-    }
-    char* temp = args.buff[0];
-    free(args.buff);
-    return (temp);
-}
-
-char* expand_word_single_hrdoc(t_state* state, t_ast_node* curr) {
-    t_vec_str args = {};
-    expand_word_hrdoc(state, *curr, &args);
+    expand_word_fully(state, curr, &args, false);
     if (args.len != 1) {
         for (size_t i = 0; i < args.len; i++)
             free(args.buff[i]);
@@ -383,10 +377,56 @@ int redirect_from_ast_redir(t_state *state, t_ast_node *curr, t_redir *ret)
 	return (0);
 }
 
- int expand_simple_command(t_state* state, t_ast_node* node, executable_cmd_t *ret, t_vec_redir * redirects) {
+void expand_word_fully(t_state *state, t_ast_node *node, t_vec_str *args, bool keep_as_one)
+{
+	t_vec_nd	words;
+	t_vec_str	glob_words;
+	t_dyn_str 	temp;
+
+	expand_env_vars(state, node);
+	vec_nd_init(&words);
+	if (!keep_as_one)
+		words = split_words(node);
+	else
+		vec_nd_push(&words, *node);
+	for (size_t i = 0; i < words.len; i++) {
+		glob_words = expand_word_glob(words.buff[i]);
+		dyn_str_init(&temp);
+		for (size_t i = 0; i < glob_words.len; i++)
+		{
+			if (!keep_as_one)
+				vec_str_push(args, glob_words.buff[i]);
+			else
+				dyn_str_pushstr(&temp, glob_words.buff[i]);
+			if (keep_as_one && i + 1 < glob_words.len)
+				dyn_str_push(&temp, ' ');
+		}
+		if (keep_as_one)
+			vec_str_push(args, temp.buff);
+		free(glob_words.buff);
+		free_ast(words.buff[i]);
+	}
+	free(words.buff);
+}
+
+bool	is_export(t_ast_node word)
+{
+	t_ast_node	c;
+	if (word.children.len != 1)
+		return (false);
+	c = word.children.buff[0];
+	if (c.token.tt != TT_WORD)
+		return false;
+	if (ft_strncmp(c.token.start, "export", c.token.len))
+		return (false);
+	return (true);
+}
+
+int expand_simple_command(t_state* state, t_ast_node* node, executable_cmd_t *ret, t_vec_redir * redirects) {
 	 *ret = (executable_cmd_t){};
 
     bool found_first = false;
+	bool export = false;
 
     vec_str_init(&ret->argv);
     tilde_expand_simple_command(state, node);
@@ -395,15 +435,23 @@ int redirect_from_ast_redir(t_state *state, t_ast_node *curr, t_redir *ret)
     for (size_t i = 0; i < node->children.len; i++) {
         curr = &node->children.buff[i];
         if (curr->node_type == AST_WORD) {
-            expand_word(state, *curr, &ret->argv, false);
+			expand_word_fully(state, curr, &ret->argv, false);
+			if (!found_first && is_export(*curr))
+				export = true;
             found_first = true;
         } else if (curr->node_type == AST_ASSIGNMENT_WORD) {
-            if (!found_first) {
+            if (!found_first)
+			{
                 vec_env_push(&ret->pre_assigns, assignment_to_env(state, *curr));
-            } else {
+            }
+			else
+			{
                 assignment_word_to_word(curr);
                 print_node(*curr);
-                expand_word(state, *curr, &ret->argv, false);
+				if (export)
+					expand_word_fully(state, curr, &ret->argv, true);
+				else
+					expand_word_fully(state, curr, &ret->argv, false);
             }
         } else if (curr->node_type == AST_REDIRECT) {
 			t_redir redir;

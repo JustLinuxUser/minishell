@@ -1,81 +1,59 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   vec_nd.c                                           :+:      :+:    :+:   */
+/*   vec_glob.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:51:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/27 20:25:23 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/03/28 18:34:02 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
-#include "../minishell.h"
+#include "vec_glob.h"
 #include "../libft/utils/utils.h"
-#include "../libft/libft.h"
 
-int	vec_nd_init(t_vec_nd *ret)
+int	vec_glob_init(t_vec_glob *ret)
 {
-	*ret = (t_vec_nd){0};
+	*ret = (t_vec_glob){0};
 	return (0);
 }
 
-int	vec_nd_double(t_vec_nd *v)
+int	vec_glob_double(t_vec_glob *v)
 {
-	t_ast_node	*temp;
-	int	i;
+	t_glob	*temp;
+	size_t	i;
 
-	v->cap += 1;
-	v->cap *= 2;
-	temp = malloc(sizeof(t_ast_node) * v->cap);
+	v->cap = v->cap * 2 + 1;
+	temp = malloc(sizeof(t_glob) * v->cap);
 	if (temp == 0)
 		return (1);
 	i = -1;
-	while (++i < (int)v->len)
+	while (++i < v->len)
 		temp[i] = v->buff[i];
 	free(v->buff);
 	v->buff = temp;
 	return (0);
 }
 
-int	vec_nd_push(t_vec_nd *v, t_ast_node el)
+int	vec_glob_push(t_vec_glob *v, t_glob el)
 {
 	if (v->len == v->cap)
-		if (vec_nd_double(v))
+		if (vec_glob_double(v))
 			return (1);
 	v->buff[v->len++] = el;
 	return (0);
 }
 
-t_ast_node	vec_nd_pop(t_vec_nd *v)
+t_glob	vec_glob_pop(t_vec_glob *v)
 {
 	ft_assert(v->len > 0);
 	return (v->buff[--v->len]);
 }
 
-t_ast_node	*vec_nd_idx(t_vec_nd *v, size_t idx)
+t_glob	vec_glob_idx(t_vec_glob *v, size_t idx)
 {
 	ft_assert(idx < v->len);
-	return (&v->buff[idx]);
-}
-
-int	vec_nd_insert_vec_replacing(t_vec_nd *v, t_vec_nd new, int idx)
-{
-	size_t	i;
-
-	ft_assert(v->len > 0);
-	while (v->len + new.len >= v->cap)
-		if (vec_nd_double(v))
-			return (1);
-	ft_memmove(&v->buff[idx + new.len], &v->buff[idx + 1], v->len - 1 - idx);
-	i = 0;
-	while (i < new.len)
-	{
-		v->buff[idx + i] = new.buff[i];
-		i++;
-	}
-	free(new.buff);
-	v->len += new.len - 1;
-	return (0);
+	return (v->buff[idx]);
 }

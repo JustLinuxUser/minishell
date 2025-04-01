@@ -1,19 +1,9 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    todo.md                                            :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/03/26 19:18:24 by anddokhn          #+#    #+#              #
-#    Updated: 2025/03/26 19:22:57 by anddokhn         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
-
 - 3.2.5.3 Grouping Commands, since the list is executed in a subshell, variable assignments do not remain in effect after the subshell completes. 
+
 - name=[value], value is optional
-- name=[value] can appear as a param to export builtin
+    - [x] Before command
+    - [x] by itself, changing env
+- [ ] name=[value] can appear as a param to export builtin
 
 
 [*] Backslash can negate astrisk/tilde expansion
@@ -32,6 +22,9 @@
 
 [x] Execution of commands
 [ ] Builtins
+    [x] echo
+    [ ] exit
+        [ ] properly free all memory
 
 [x] Special envvars
     [x] $$ -> /proc/self/stat, ft_split()[0]
@@ -39,9 +32,8 @@
         [x] Set on syntax error
     [ ] PWD in new processes
 
-[ ] Temp env set
-
 [?] Ctrl-D handling with non empty lines
+    - nope
 
 [ ] Using $IFS for word separation
     [ ] ft_split with an array as the second opt
@@ -57,6 +49,7 @@
     [x] Expand separator, without envvars -
     [x] \char, should have it's own type, not just sqword, or mb normal word
     [x] Check for separator, after splitting by newlines, because readline can read multiple lines at once :)
+    [x] `\$HOME` doesn't expand
 
 [x] Buffered input
 [x] Multiple line pasting, managing with custom readline that wraps the normal readline
@@ -64,9 +57,20 @@
 [x] a=b bash, env var assignments before command
 [ ] Ambiguous redirect better error messages
 [ ] All open / write calls should be error protected
-[ ] Glob expansion
+
+- [x] Glob expansion
+    - [ ] sort ascii
+    - [ ] echo test, becomes echo test test
+
+
+- [ ] History
+    - [x] normal history management + multi-line
+    - [ ] history file
+        - [ ] history file parsing.
+        - [ ] for \, I would have to escape \ with \\, and `<CR>` with `\<CR>` like zsh
 
 [ ] Signals
+    [ ] For expansion, it should stop when recieving a signal
 
 [x] Close fds properly ;(
     [x] cat | ls

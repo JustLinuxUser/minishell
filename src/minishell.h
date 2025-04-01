@@ -2,8 +2,10 @@
 # define MINISHELL_H
 
 # include "dsa/vec_exe_res.h"
+#include "dsa/vec_glob.h"
 # include "libft/dsa/dyn_str.h"
 # include "libft/dsa/vec_int.h"
+#include <dirent.h>
 # include <stdbool.h>
 # include "dsa/vec_env.h"
 # include "dsa/vec_str.h"
@@ -46,7 +48,8 @@ typedef struct s_buff_readline
 //
 // 2 - anything else
 int buff_readline(t_buff_readline *l, t_dyn_str *ret, char *prompt);
-
+void buff_readline_update(t_buff_readline *l);
+void buff_readline_reset(t_buff_readline *l);
 typedef enum e_tt {
 	TT_NONE = 0,
     TT_WORD,			// asfkaslfkj
@@ -126,8 +129,6 @@ typedef struct s_ast_node {
 	t_vec_nd children;
 } t_ast_node;
 
-
-
 typedef struct s_deque_tt
 {
 	int		cap;
@@ -160,6 +161,8 @@ typedef struct executable_cmd_s {
 } executable_cmd_t;
 
 // lexer.c
+void free_all_state(t_state state);
+
 char* tokenizer(char* str, t_deque_tt* ret);
 
 int	vec_redir_init(t_vec_redir *ret);
@@ -188,6 +191,7 @@ int			vec_nd_double(t_vec_nd *v);
 int			vec_nd_push(t_vec_nd *v, t_ast_node el);
 t_ast_node	vec_nd_pop(t_vec_nd *v);
 t_ast_node	*vec_nd_idx(t_vec_nd *v, size_t idx);
+int			vec_nd_insert_vec_replacing(t_vec_nd *v, t_vec_nd new, int idx);
 void		vec_nd_push_vec(t_vec_nd *ret, t_vec_nd *second);
 void		vec_nd_free(t_vec_nd *ret);
 t_ast_node parse_tokens(t_parser *res, t_deque_tt* tokens);
@@ -246,9 +250,10 @@ typedef struct executable_node_s {
 	t_ast_node	*node;
 	t_vec_redir redirs;
 	bool		modify_parent_context;
-} t_executable_node;
+}	t_executable_node;
 
 t_exe_res execute_command(t_state* state, t_executable_node exe);
+t_dyn_str word_to_string(t_ast_node node);
 
 // error.c
 void critical_error(char *error);
@@ -262,5 +267,23 @@ void free_tab(char** tab);
 int write_to_file(char *str, int fd);
 void dyn_str_append_fd(int fd, t_dyn_str *ret);
 
+// glob.c
+t_vec_str expand_word_glob(t_ast_node word);
+typedef struct s_dir_matcher {
+	DIR				*dir;
+	t_vec_str		*args;
+	t_vec_glob		glob;
+	char			*path;
+	size_t			offset;
+}	t_dir_matcher;
 
+void		match_dir(t_vec_str *args, t_vec_glob glob, char *path, size_t offset);
+size_t		matches_pattern(char *name, t_vec_glob patt, size_t offset, bool first);
+t_vec_glob	word_to_glob(t_ast_node word);
+size_t		matches_pattern(char *name, t_vec_glob patt, size_t offset, bool first);
+void		ft_quicksort(t_vec_str *vec);
+void	ignore_sig(void);
+void	signal_handling(void);
+void	die_on_sig(void);
+ 
 #endif

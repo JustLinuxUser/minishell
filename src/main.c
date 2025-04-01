@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include <readline/readline.h>
+#include <readline/history.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -14,11 +15,18 @@
 #include "libft/dsa/dyn_str.h"
 #include "libft/ft_printf/ft_printf.h"
 
+extern int rl_visible_prompt_length;
 void	termination_handler(int signum)
 {
 	ft_eprintf("\n");
 	rl_on_new_line();
-	rl_replace_line("", 0);
+	// rl_prompt = ft_strdup("prompt> ");
+	// rl_display_prompt = rl_prompt;
+	// rl_visible_prompt_length = 8;
+	// rl_set_prompt("custom> ");
+	rl_replace_line("\n", 0);
+	// ft_eprintf("prompt> ");
+	// readline("custom> ");
 	rl_redisplay();
 }
 
@@ -33,6 +41,27 @@ void	signal_handling(void)
     sigaction(SIGINT, &new_action, NULL);
 }
 
+
+void	ignore_sig(void)
+{
+	struct sigaction	new_action;
+
+    new_action.sa_handler = SIG_IGN;
+    sigemptyset(&new_action.sa_mask);
+    new_action.sa_flags = 0;
+
+    sigaction(SIGINT, &new_action, NULL);
+}
+void	die_on_sig(void)
+{
+	struct sigaction	new_action;
+
+    // new_action.sa_handler = SIG_IGN;
+    sigemptyset(&new_action.sa_mask);
+    new_action.sa_flags = 0;
+
+    sigaction(SIGINT, &new_action, NULL);
+}
 // Read fd untill the end, and append the results to *ret
 void dyn_str_append_fd(int fd, t_dyn_str *ret)
 {
@@ -84,7 +113,6 @@ t_dyn_str getcwd_dyn_str()
 	ret.cap = ret.len;
 	return (ret);
 }
-
 
 t_dyn_str new_prompt(t_parser *parser)
 {
@@ -138,6 +166,17 @@ void get_input(t_state *state, char *prompt, t_deque_tt *tt) {
 	}
 }
 
+void manage_history(t_state *state) {
+	if (state->readline_buff.cursor > 1)
+	{
+
+		char *temp = ft_strndup(state->readline_buff.buff.buff, state->readline_buff.cursor - 1);
+		add_history(temp);
+		free(temp);
+	}
+	buff_readline_reset(&state->readline_buff);
+}
+
 void execute_line(t_state *state)
 {
     t_deque_tt tt;
@@ -156,8 +195,11 @@ void execute_line(t_state *state)
         if (tt.len) {
             state->tree = parse_tokens(&parser, &tt);
             if (parser.res == RES_OK) {
+				free(parser.parse_stack.buff);
+				parser.parse_stack = (t_vec_int){};
 				print_ast_dot(state->tree);
                 execute_top_level(state);
+				manage_history(state);
             } else if (parser.res == RES_MoreInput) {
                 prompt = new_prompt(&parser).buff;
             } else if (parser.res == RES_FatalError) {
@@ -166,11 +208,22 @@ void execute_line(t_state *state)
 			}
 			free_ast(state->tree);
         } else {
+			manage_history(state);
             break;
         }
     }
 	free (parser.parse_stack.buff);
     free(tt.buff);
+}
+
+
+void free_all_state(t_state state)
+{
+	free(state.input.buff);
+	free (state.last_cmd_status);
+	free (state.pid);
+	free (state.cwd.buff);
+	free (state.readline_buff.buff.buff);
 }
 
 int main(int argc, char** argv, char** envp)
@@ -197,7 +250,6 @@ int main(int argc, char** argv, char** envp)
 		execute_line(&state);
 		free(state.input.buff);
 	}
-
 
     free_env(&state.env);
 	int status = ft_atoi(state.last_cmd_status);

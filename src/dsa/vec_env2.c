@@ -30,7 +30,7 @@ t_vec_env env_to_vec_env(char** envp) {
 char** get_envp(t_state* state) {
 	char ** ret;
 
-	env_set(&state->env, (t_env){.key="PWD", .value=state->cwd.buff});
+	env_set(&state->env, (t_env){.key=ft_strdup("PWD"), .value=state->cwd.buff});
 	ret = ft_calloc(state->env.len + 1, sizeof(char *));
 	for (size_t i = 0; i < state->env.len; i++) {
 		t_dyn_str s;
@@ -95,6 +95,7 @@ int env_set(t_vec_env* env, t_env new) {
 	old = env_get(env, new.key);
 	if (old) {
 		free(old->value);
+		free(new.key);
 		old->value = new.value;
 	} else {
 		return vec_env_push(env, new);

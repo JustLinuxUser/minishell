@@ -1,3 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   heredoc.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/27 13:59:13 by anddokhn          #+#    #+#             */
+/*   Updated: 2025/04/01 00:42:42 by anddokhn         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "libft/dsa/dyn_str.h"
 #include "libft/libft.h"
 #include "minishell.h"
 #include <assert.h>
@@ -58,15 +71,36 @@ int env_len (char *line)
 		len++;
 	return (len);
 }
+bool is_escapable(char c)
+{
+	if (c == '\\' || c == '$')
+		return true;
+	return false;
+}
 
 void expand_line(t_state *state, t_dyn_str *full_file, char *line)
 {
 	int	i;
 	int len;
+	bool bs;
 
 	i = 0;
+	bs = 0;
 	while (line[i])
 	{
+		if (bs)
+		{
+			if (is_escapable(line[i]))
+				dyn_str_push(full_file, line[i]);
+			else if (line[i] != '\n')
+			{
+				dyn_str_push(full_file, '\\');
+				dyn_str_push(full_file, line[i]);
+			}
+			i++;
+			bs = false;
+			continue;
+		}
 		if (line[i] == '$')
 		{
 			i++;
@@ -82,10 +116,10 @@ void expand_line(t_state *state, t_dyn_str *full_file, char *line)
 			i += len;
 			continue;
 		}
+		else if (line[i] == '\\')
+			bs = true;
 		else
-		{
 			dyn_str_push(full_file, line[i]);
-		}
 		i++;
 	}
 }
@@ -114,28 +148,44 @@ typedef struct s_heredoc_req {
 	bool remove_tabs;
 } t_heredoc_req;
 
-void bg_read_heredoc(t_heredoc_req *req, int outfd)
+void process_line(t_state *state, t_heredoc_req *req);
+
+bool ends_in_backslash(char *line)
 {
-	char *line;
-	while (1)
+	int	len;
+	int bs_count;
+
+	bs_count = 0;
+	len = ft_strlen(line);
+
+	if (len == 0)
+		return false;
+	while (line[len - 1] == '\\')
 	{
-		line = readline("heredoc> ");
-		if (line == 0)
-			break;
-		assert(write_to_file(line, outfd) == 0);
-		assert(write_to_file("\n", outfd) == 0);
-		if (ft_strcmp(line, req->sep) == 0)
-		{
-			free(line);
-			break;
-		}
-		free(line);
+		bs_count++;
+		len--;
 	}
+	if (bs_count % 2 == 0)
+		return false;
+	return (true);
+}
+
+void bg_read_heredoc(t_state *state, t_heredoc_req *req, int outfd)
+{
+	int start_cursor;
+
+	start_cursor = state->readline_buff.cursor;
+	while (!req->finished) {
+		process_line(state, req);
+	}
+	if (state->readline_buff.buff.buff)
+		assert(write_to_file(&state->readline_buff.buff.buff[start_cursor], outfd) == 0);
 	exit (0);
 }
 
 // should brake
-void process_line(t_state *state, t_heredoc_req *req) {
+void process_line(t_state *state, t_heredoc_req *req)
+{
 	t_dyn_str alloc_line;
 	int stat;
 	char *line;
@@ -147,12 +197,15 @@ void process_line(t_state *state, t_heredoc_req *req) {
 		req->finished = true;
 		return;
 	}
-	if (ft_strcmp(alloc_line.buff, req->sep) == 0)
+	if ((req->full_file.len == 0
+			|| req->full_file.buff[req->full_file.len - 1] == '\n')
+		&& ft_strcmp(alloc_line.buff, req->sep) == 0)
 	{
 		free(alloc_line.buff);
 		req->finished = true;
 		return;
 	}
+	dyn_str_push(&alloc_line, '\n');
 	if (req->remove_tabs)
 		line = first_non_tab(alloc_line.buff);
 	else 
@@ -161,7 +214,6 @@ void process_line(t_state *state, t_heredoc_req *req) {
 		expand_line(state, &req->full_file, line);
 	else
 		dyn_str_pushstr(&req->full_file, line);
-	dyn_str_push(&req->full_file, '\n');
 	free(alloc_line.buff);
 }
 
@@ -173,21 +225,24 @@ void get_more_input_heredoc(t_state *state, t_heredoc_req *req)
 		critical_error_errno();
 	int pid = fork();
 	if (pid == 0) {
+		die_on_sig();
 		close(pp[0]);
-		bg_read_heredoc(req, pp[1]);
+		bg_read_heredoc(state, req, pp[1]);
 	} else if (pid < 0) {
 		critical_error_errno();
 	} else  {
+		ignore_sig();
 		close(pp[1]);
 		dyn_str_append_fd(pp[0], &state->readline_buff.buff);
+		buff_readline_update(&state->readline_buff);
 		close(pp[0]);
-		state->readline_buff.has_line = state->readline_buff.cursor != state->readline_buff.buff.len;
 		wait(0);
 	}
 }
 
 void write_heredoc(t_state *state, int wr_fd, t_heredoc_req *req)
 {
+	printf("remove_tabs: %i\n", req->remove_tabs);
 	while (state->readline_buff.has_line && !req->finished) {
 		process_line(state, req);
 	}
@@ -237,8 +292,7 @@ int gather_heredocs(t_state* state, t_ast_node* node) {
 				.sep = sep,
 				.expand = !contains_quotes(node->children.buff[1]),
 				.remove_tabs =
-					ft_strcmp(node->children.buff[0].token.start,
-							   "<<-") == 0};
+					ft_strncmp(node->children.buff[0].token.start, "<<-", 3) == 0};
 			write_heredoc(state, wr_fd, &req);
 			free(sep);
         }
