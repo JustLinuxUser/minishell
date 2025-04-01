@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 21:39:29 by armgonza          #+#    #+#             */
-/*   Updated: 2025/03/31 23:14:58 by armgonza         ###   ########.fr       */
+/*   Updated: 2025/04/01 13:47:10 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,7 +124,7 @@ if (!n)
 ft_printf("\n");
 return (0);
 } */
-mini_atoi_base(char *str, int base, int len)
+int mini_atoi_base(char *str, int base, int len)
 {
 	int i = 0;
 	int res;
