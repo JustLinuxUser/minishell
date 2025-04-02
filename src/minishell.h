@@ -12,8 +12,11 @@
 
 # define COMMAND_NOT_FOUND 127
 # define EXE_PERM_DENIED 126
+# define CANCELED 130
 # define SYNTAX_ERR 2
 # define AMBIGUOUS_REDIRECT 1
+
+extern int should_unwind;
 
 typedef enum s_res_t {
     RES_OK,
@@ -125,8 +128,8 @@ typedef struct s_vec_nd
 typedef struct s_ast_node {
     t_ast_t	node_type;
     t_token	token;
-	bool	is_heredoc;
-	int		heredoc_idx;
+	bool	has_redirect;
+	int		redir_idx;
 
 	t_vec_nd children;
 } t_ast_node;
@@ -151,7 +154,7 @@ typedef struct s_state {
 	char			*last_cmd_status;
 	bool			should_exit;
 	bool			should_reset;
-	t_vec_redir 	heredocs;
+	t_vec_redir 	redirects;
 	int				heredoc_idx;
 	t_buff_readline	readline_buff;
 } t_state;
@@ -251,7 +254,7 @@ typedef struct executable_node_s {
 	int			next_infd; 
 
 	t_ast_node	*node;
-	t_vec_redir redirs;
+	t_vec_int	redirs;
 	bool		modify_parent_context;
 }	t_executable_node;
 
@@ -289,4 +292,6 @@ void	ignore_sig(void);
 void	signal_handling(void);
 void	die_on_sig(void);
  
+// TODO: Delete this:
+size_t	get_timestamp_micro(void);
 #endif

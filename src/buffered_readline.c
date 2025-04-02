@@ -7,12 +7,22 @@
 #include <stdio.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <sys/time.h>
+
+int should_unwind = 0;
 
 void buff_readline_init(t_buff_readline *ret)
 {
 	*ret = (t_buff_readline){};
 }
 
+size_t	get_timestamp_micro(void)
+{
+	struct timeval	tv;
+
+	gettimeofday(&tv, 0);
+	return (tv.tv_usec / 1000 + (tv.tv_sec * 1000));
+}
 
 
 /* exit codes:
@@ -38,6 +48,7 @@ void bg_readline(int outfd, char *prompt)
 	exit(0);
 }
 
+
 int get_more_input_readline(t_buff_readline *l, char *prompt)
 {
 	int pp[2];
@@ -53,16 +64,15 @@ int get_more_input_readline(t_buff_readline *l, char *prompt)
 	} else if (pid < 0) {
 		critical_error_errno();
 	} else {
-		ignore_sig();
 		close(pp[1]);
 		dyn_str_append_fd(pp[0], &l->buff);
 		buff_readline_update(l);
 		close(pp[0]);
+		
 		wait(&status);
-		if (WIFSIGNALED(status))
+		if (WEXITSTATUS(status) == 2)
 		{
 			ft_eprintf("\n");
-			return (2);
 		}
 		return (WEXITSTATUS(status));
 	}
@@ -84,7 +94,10 @@ int buff_readline(t_buff_readline *l, t_dyn_str *ret, char *prompt)
 		if (code == 1)  //ctrl - d
 			return (0);
 		if (code == 2) // ctrl-c
+		{
+			should_unwind = 1;
 			return (2);
+		}
 		dyn_str_push(&l->buff, '\n');
 		l->has_line = true;
 	}
@@ -100,24 +113,6 @@ int buff_readline(t_buff_readline *l, t_dyn_str *ret, char *prompt)
 	else
 		return 4;
 }
-
-// int buff_readline(t_buff_readline *l, t_dyn_str *ret, char *prompt)
-// {
-// 	char	*temp;
-// 	int		len;
-// 	if (!l->has_line)
-// 	{
-// 		if (l->no_readline)
-// 			return (0);
-// 		temp = readline(prompt);
-// 		if (!temp)
-// 			return (0);
-// 		dyn_str_pushstr(&l->buff, temp);
-// 		dyn_str_push(&l->buff, '\n');
-// 		free(temp);
-// 		l->has_line = true;
-// 	}
-// }
 
 void buff_readline_update(t_buff_readline *l)
 {

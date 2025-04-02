@@ -6,55 +6,13 @@
 
 #include <readline/readline.h>
 #include <readline/history.h>
-#include <signal.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include "libft/libft.h"
 
 #include "libft/dsa/dyn_str.h"
-#include "libft/ft_printf/ft_printf.h"
 
-void	termination_handler(int signum)
-{
-	ft_eprintf("\n");
-	rl_on_new_line();
-	rl_replace_line("\n", 0);
-	rl_redisplay();
-}
-
-void	signal_handling(void)
-{
-	struct sigaction	new_action;
-
-    new_action.sa_handler = termination_handler;
-    sigemptyset(&new_action.sa_mask);
-    new_action.sa_flags = 0;
-
-    sigaction(SIGINT, &new_action, NULL);
-}
-
-
-void	ignore_sig(void)
-{
-	struct sigaction	new_action;
-
-    new_action.sa_handler = SIG_IGN;
-    sigemptyset(&new_action.sa_mask);
-    new_action.sa_flags = 0;
-
-    sigaction(SIGINT, &new_action, NULL);
-}
-
-void	die_on_sig(void)
-{
-	struct sigaction	new_action;
-
-    sigemptyset(&new_action.sa_mask);
-    new_action.sa_flags = 0;
-
-    sigaction(SIGINT, &new_action, NULL);
-}
 // Read fd untill the end, and append the results to *ret
 void dyn_str_append_fd(int fd, t_dyn_str *ret)
 {
@@ -202,11 +160,16 @@ void execute_line(t_state *state)
 				print_ast_dot(state->tree);
                 execute_top_level(state);
 				manage_history(state);
+				if (should_unwind)
+				{
+					free(state->last_cmd_status);
+					state->last_cmd_status = ft_itoa(SYNTAX_ERR);
+				}
             } else if (parser.res == RES_MoreInput) {
                 prompt = new_prompt(&parser).buff;
             } else if (parser.res == RES_FatalError) {
 				free(state->last_cmd_status);
-				state->last_cmd_status = ft_itoa(SYNTAX_ERR);
+				state->last_cmd_status = ft_itoa(CANCELED);
 			}
 			free_ast(state->tree);
         } else {
@@ -219,6 +182,25 @@ void execute_line(t_state *state)
 }
 
 
+
+void free_redirects(t_vec_redir *v)
+{
+	size_t	i;
+	t_redir c;
+	
+	i = 0;
+	while (i < v->len)
+	{
+		c = v->buff[i];
+		if (c.should_delete)
+			unlink(c.fname);
+		free(c.fname);
+		i++;
+	}
+	free(v->buff);
+	vec_redir_init(v);
+}
+
 void free_all_state(t_state state)
 {
 	free(state.input.buff);
@@ -226,6 +208,7 @@ void free_all_state(t_state state)
 	free (state.pid);
 	free (state.cwd.buff);
 	free (state.readline_buff.buff.buff);
+	free_redirects(&state.redirects);
 }
 
 int main(int argc, char** argv, char** envp)
@@ -235,7 +218,7 @@ int main(int argc, char** argv, char** envp)
 
 	if (!isatty(1))
 		return (0);
-    signal_handling();
+	ignore_sig();
 
 	state = (t_state){0};
 	state.pid = getpid_hack();
@@ -249,7 +232,9 @@ int main(int argc, char** argv, char** envp)
 	while (!state.should_exit)
 	{
 		dyn_str_init(&state.input);
+		should_unwind = 0;
 		execute_line(&state);
+		free_redirects(&state.redirects);
 		free(state.input.buff);
 	}
 

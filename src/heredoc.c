@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 13:59:13 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/01 00:42:42 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:25:58 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,9 +45,9 @@ int ft_mktemp(t_state *state, t_ast_node *node)
 	ret.fd = open(ret.fname, O_RDONLY);
 	if (ret.fd < 0)
 		critical_error_errno();
-	vec_redir_push(&state->heredocs, ret);
-	node->heredoc_idx = state->heredocs.len - 1;
-	node->is_heredoc = true;
+	vec_redir_push(&state->redirects, ret);
+	node->redir_idx = state->redirects.len - 1;
+	node->has_redirect = true;
 	return (wr_fd);
 }
 
@@ -124,22 +124,6 @@ void expand_line(t_state *state, t_dyn_str *full_file, char *line)
 	}
 }
 
-bool is_separator(char *input, char *sep)
-{
-	int len_input;
-	int len_sep;
-	if (ft_strcmp(input, sep) == 0)
-		return (true);
-	len_input = ft_strlen(input);
-	len_sep = ft_strlen(sep);
-	if (len_input > len_sep) {
-		if (input[len_input - 1 - len_sep] == '\n' &&
-			ft_strcmp(&input[len_input - len_sep], sep) == 0)
-			return (true);
-	}
-	return (false);
-}
-
 typedef struct s_heredoc_req {
 	t_dyn_str full_file;
 	bool finished;
@@ -147,41 +131,6 @@ typedef struct s_heredoc_req {
 	bool expand;
 	bool remove_tabs;
 } t_heredoc_req;
-
-void process_line(t_state *state, t_heredoc_req *req);
-
-bool ends_in_backslash(char *line)
-{
-	int	len;
-	int bs_count;
-
-	bs_count = 0;
-	len = ft_strlen(line);
-
-	if (len == 0)
-		return false;
-	while (line[len - 1] == '\\')
-	{
-		bs_count++;
-		len--;
-	}
-	if (bs_count % 2 == 0)
-		return false;
-	return (true);
-}
-
-void bg_read_heredoc(t_state *state, t_heredoc_req *req, int outfd)
-{
-	int start_cursor;
-
-	start_cursor = state->readline_buff.cursor;
-	while (!req->finished) {
-		process_line(state, req);
-	}
-	if (state->readline_buff.buff.buff)
-		assert(write_to_file(&state->readline_buff.buff.buff[start_cursor], outfd) == 0);
-	exit (0);
-}
 
 // should brake
 void process_line(t_state *state, t_heredoc_req *req)
@@ -192,7 +141,7 @@ void process_line(t_state *state, t_heredoc_req *req)
 
 	dyn_str_init(&alloc_line);
 	stat = buff_readline(&state->readline_buff, &alloc_line, "heredoc> ");
-	if (stat == 0)
+	if (stat == 0 || stat == 2)
 	{
 		req->finished = true;
 		return;
@@ -217,38 +166,10 @@ void process_line(t_state *state, t_heredoc_req *req)
 	free(alloc_line.buff);
 }
 
-void get_more_input_heredoc(t_state *state, t_heredoc_req *req)
-{
-	int pp[2];
-
-	if (pipe(pp))
-		critical_error_errno();
-	int pid = fork();
-	if (pid == 0) {
-		die_on_sig();
-		close(pp[0]);
-		bg_read_heredoc(state, req, pp[1]);
-	} else if (pid < 0) {
-		critical_error_errno();
-	} else  {
-		ignore_sig();
-		close(pp[1]);
-		dyn_str_append_fd(pp[0], &state->readline_buff.buff);
-		buff_readline_update(&state->readline_buff);
-		close(pp[0]);
-		wait(0);
-	}
-}
 
 void write_heredoc(t_state *state, int wr_fd, t_heredoc_req *req)
 {
-	printf("remove_tabs: %i\n", req->remove_tabs);
-	while (state->readline_buff.has_line && !req->finished) {
-		process_line(state, req);
-	}
-	if (!req->finished)
-		get_more_input_heredoc(state, req);
-	while (state->readline_buff.has_line && !req->finished) {
+	while (!req->finished) {
 		process_line(state, req);
 	}
 	if (req->full_file.len)
@@ -276,7 +197,7 @@ int gather_heredocs(t_state* state, t_ast_node* node) {
     size_t i;
 
     i = 0;
-    while (i < node->children.len) {
+    while (i < node->children.len && !should_unwind) {
         gather_heredocs(state, &node->children.buff[i]);
 		i++;
     }
