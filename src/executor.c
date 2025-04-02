@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/02 16:52:22 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/02 17:42:32 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -396,6 +396,13 @@ void expand_word_fully(t_state *state, t_ast_node *node, t_vec_str *args, bool k
 		vec_nd_push(&words, *node);
 	for (size_t i = 0; i < words.len; i++) {
 		glob_words = expand_word_glob(words.buff[i]);
+		if (should_unwind)
+		{
+			for (; i < words.len; i++) {
+				free_ast(words.buff[i]);
+			}
+			break;
+		}
 		dyn_str_init(&temp);
 		for (size_t i = 0; i < glob_words.len; i++)
 		{

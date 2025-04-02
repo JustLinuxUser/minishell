@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/28 18:06:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/31 15:52:28 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/02 17:39:39 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ void	match_dir(t_vec_str *args, t_vec_glob glob, char *path, size_t offset)
 		return ;
 	matcher = (t_dir_matcher){.path = path, .dir = dir,
 		.glob = glob, .offset = offset, .args = args};
-	while (process_dir(matcher))
+	while (!should_unwind && process_dir(matcher))
 		;
 	closedir(dir);
 }
@@ -92,6 +92,7 @@ t_vec_str	expand_word_glob(t_ast_node word)
 	t_vec_str	args;
 	t_vec_glob	glob;
 
+	set_unwind_sig();
 	vec_str_init(&args);
 	glob = word_to_glob(word);
 	ft_assert (glob.len != 0);
@@ -102,6 +103,17 @@ t_vec_str	expand_word_glob(t_ast_node word)
 	if (args.len == 0)
 		vec_str_push(&args, word_to_string(word).buff);
 	free(glob.buff);
-	ft_quicksort(&args);
+	if (!should_unwind)
+		ft_quicksort(&args);
+	ignore_sig();
+	if (should_unwind)
+	{
+		for(size_t i = 0; i < args.len; i++)
+		{
+			free(args.buff[i]);
+		}
+		free(args.buff);
+		vec_str_init(&args);
+	}
 	return (args);
 }

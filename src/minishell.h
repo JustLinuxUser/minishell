@@ -288,9 +288,12 @@ size_t		matches_pattern(char *name, t_vec_glob patt, size_t offset, bool first);
 t_vec_glob	word_to_glob(t_ast_node word);
 size_t		matches_pattern(char *name, t_vec_glob patt, size_t offset, bool first);
 void		ft_quicksort(t_vec_str *vec);
+
+// signals.c
 void	ignore_sig(void);
 void	signal_handling(void);
 void	die_on_sig(void);
+void	set_unwind_sig(void);
  
 // TODO: Delete this:
 size_t	get_timestamp_micro(void);

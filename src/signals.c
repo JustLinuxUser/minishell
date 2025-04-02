@@ -1,4 +1,5 @@
 #include "libft/ft_printf/ft_printf.h"
+#include "minishell.h"
 #include <readline/readline.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -40,11 +41,25 @@ void die_sig(int sig) {
 
 void	die_on_sig(void)
 {
-	struct sigaction	new_action;
+	struct sigaction	new_action = {};
 
 	new_action.sa_handler = die_sig;
     sigemptyset(&new_action.sa_mask);
     new_action.sa_flags = 0;
-
     sigaction(SIGINT, &new_action, NULL);
 }
+
+
+void set_unwind(int sig) {
+	should_unwind = 1;
+}
+void	set_unwind_sig(void)
+{
+	struct sigaction	new_action = {};
+
+	new_action.sa_handler = set_unwind;
+    sigemptyset(&new_action.sa_mask);
+    new_action.sa_flags = 0;
+    sigaction(SIGINT, &new_action, NULL);
+}
+

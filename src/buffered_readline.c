@@ -70,6 +70,10 @@ int get_more_input_readline(t_buff_readline *l, char *prompt)
 		close(pp[0]);
 		
 		wait(&status);
+		if (WIFSIGNALED(status))
+		{
+			ft_eprintf("\n");
+		}
 		if (WEXITSTATUS(status) == 2)
 		{
 			ft_eprintf("\n");
