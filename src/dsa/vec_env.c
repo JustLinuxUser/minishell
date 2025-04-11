@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   vec_env.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
+/*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:51:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/17 19:19:42 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/11 23:31:59 by armgonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include "vec_env.h"
 #include "../libft/utils/utils.h"
+#include "../libft/libft.h"
 
 int	vec_env_init(t_vec_env *ret)
 {
@@ -35,6 +36,15 @@ int	vec_env_double(t_vec_env *v)
 	free(v->buff);
 	v->buff = temp;
 	return (0);
+}
+
+void vec_env_del(t_vec_env *v, size_t i)
+{
+	ft_assert( i < v->len);
+	free(v->buff[i].key);
+	free(v->buff[i].value); 
+	ft_memmove(&v->buff[i], &v->buff[i+1], (sizeof(t_env)*(v->len-i-1 )));
+	v->len = (v->len - 1);
 }
 
 int	vec_env_push(t_vec_env *v, t_env el)

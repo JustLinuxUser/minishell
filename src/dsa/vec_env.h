@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   vec_env.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
+/*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:52:15 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/11 20:11:41 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/11 23:44:51 by armgonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,8 @@
 
 typedef struct s_env {
 	bool exported;
-	char *key;
-	char *value;
+	char *key; // =
+	char *value; // =
 } t_env;
 
 typedef struct s_vec_env

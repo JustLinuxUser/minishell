@@ -1,0 +1,171 @@
+#include "minishell.h"
+#include <stdio.h>   // printf, fprintf
+#include <stdlib.h>  // free
+#include <string.h>  // strcmp, strchr
+#include <stdbool.h> // bool
+
+/*
+** Estructuras y funciones (recordatorio, ajusta según tu proyecto real):
+**
+** typedef struct s_env {
+**     bool  exported;
+**     char  *key;
+**     char  *value;
+** } t_env;
+**
+** typedef struct s_vec_env {
+**     size_t  cap;   // capacidad total del buffer
+**     size_t  len;   // número de elementos ocupados
+**     t_env  *buff;  // array dinámico de t_env
+** } t_vec_env;
+**
+** typedef struct s_vec_str {
+**     char   **buff;   // array de strings
+**     size_t   len;    // número de strings
+** } t_vec_str;
+**
+** typedef struct s_state {
+**     char     **argv;  // Para mensajes de error, etc.
+**     t_vec_env  env;   // Aquí guardas tus variables de entorno
+**     // ... otros campos ...
+** } t_state;
+**
+** Prototipos que deberían existir en minishell.h (o donde corresponda):
+**
+**  t_env    *env_get(t_vec_env *env, char *key);
+**  t_env    *env_nget(t_vec_env *env, char *key, int len);
+**  char     *env_expand(t_state *state, char *key);
+**  char     *env_expand_n(t_state *state, char *key, int len);
+**  char    **get_envp(t_state *state);
+*/
+
+/*
+** Imprime toda la información de state->env para ver si está bien cargada.
+*/
+static void print_all_env_vars(t_vec_env *env)
+{
+    printf("=== Listado de variables en state->env ===\n");
+    for (size_t i = 0; i < env->len; i++)
+    {
+        t_env *var = &env->buff[i];
+        // Si var->value es NULL, lo indicamos
+        printf("[%zu] exported=%s key=\"%s\" value=\"%s\"\n",
+               i,
+               var->exported ? "true" : "false",
+               var->key,
+               var->value ? var->value : "(null)");
+    }
+    printf("==========================================\n");
+}
+
+/*
+** test_export:
+**  - Sin argumentos adicionales: imprime todas las variables (debug).
+**  - Con argumentos: para cada uno hace:
+**      1) env_get / env_nget.
+**      2) env_expand / env_expand_n.
+**  - Luego muestra el resultado de get_envp.
+**
+** Uso esperado (ejemplo):
+**   test_export
+**       -> Muestra todas las variables guardadas en state->env.
+**   test_export PATH HOME
+**       -> Prueba env_get("PATH"), env_nget("PATH", 3), expand("PATH"), etc.
+**       -> Luego get_envp y muestra sus primeras 5 entradas.
+*/
+int builtin_export(t_state *state, t_vec_str argv)
+{
+    // argv.buff[0] podría ser "test_export"
+    // argv.len es el número total de tokens (por ejemplo, 1 si solo escriben "test_export")
+
+    // Caso: sin argumentos extra -> imprimir todo el entorno
+    // (argv.len == 1 => solo "test_export")
+    if (argv.len == 1)
+    {
+        print_all_env_vars(&state->env);
+        return 0;
+    }
+
+    // Si hay argumentos, los usamos para probar env_get, env_nget, etc.
+    // Empezamos desde argv.buff[1]
+    for (size_t i = 1; i < argv.len; i++)
+    {
+        const char *key = argv.buff[i];
+        printf("\n--- Probando con clave: \"%s\" ---\n", key);
+
+        // 1) env_get
+        t_env *found = env_get(&state->env, (char *)key);
+        if (found)
+            printf("  env_get: key=%s, value=%s, exported=%s\n",
+                   found->key,
+                   found->value ? found->value : "(null)",
+                   found->exported ? "true" : "false");
+        else
+            printf("  env_get: (no encontrada)\n");
+
+        // 2) env_nget (ejemplo con len=3)
+        t_env *found_n = env_nget(&state->env, (char *)key, 3);
+        if (found_n)
+            printf("  env_nget(, 3): key=%s, value=%s, exported=%s\n",
+                   found_n->key,
+                   found_n->value ? found_n->value : "(null)",
+                   found_n->exported ? "true" : "false");
+        else
+            printf("  env_nget(, 3): (no encontrada)\n");
+
+        // 3) env_expand
+        char *exp_str = env_expand(state, (char *)key);
+        if (exp_str)
+        {
+            printf("  env_expand: \"%s\"\n", exp_str);
+            free(exp_str); // asumiendo que env_expand retorna memoria dinámica
+        }
+        else
+            printf("  env_expand: (NULL)\n");
+
+        // 4) env_expand_n (ejemplo con len=3)
+        char *exp_str_n = env_expand_n(state, (char *)key, 3);
+        if (exp_str_n)
+        {
+            printf("  env_expand_n(, 3): \"%s\"\n", exp_str_n);
+            free(exp_str_n);
+        }
+        else
+            printf("  env_expand_n(, 3): (NULL)\n");
+    }
+
+    // Por último, probamos get_envp y mostramos algunas entradas
+    printf("\n=== Probando get_envp ===\n");
+    char **array_envp = get_envp(state);
+    if (!array_envp)
+    {
+        printf("  get_envp devolvió NULL\n");
+    }
+    else
+    {
+        int idx = 0;
+        // Mostramos hasta 5 entradas para no saturar la salida
+        while (array_envp[idx] && idx < 5)
+        {
+            printf("  envp[%d] = %s\n", idx, array_envp[idx]);
+            idx++;
+        }
+        if (array_envp[idx])
+            printf("  ... (hay más, no las mostramos todas)\n");
+
+        // Dependiendo de tu implementación, puede que debas liberar array_envp.
+        // Por ejemplo, si get_envp genera memoria nueva, harías:
+        /*
+        idx = 0;
+        while (array_envp[idx])
+        {
+            free(array_envp[idx]);
+            idx++;
+        }
+        free(array_envp);
+        */
+    }
+    printf("==========================================\n");
+
+    return 0;
+}
