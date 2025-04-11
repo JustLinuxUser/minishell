@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 21:39:29 by armgonza          #+#    #+#             */
-/*   Updated: 2025/04/01 13:47:10 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/11 23:10:31 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -310,7 +310,7 @@ int	builtin_exit(t_state *state, t_vec_str argv)
 	ft_eprintf("exit\n");
 	if (argv.len == 1)
 	{
-		free_all_state(*state);
+		free_all_state(state);
 		exit(0);
 	}
 	err = ft_checked_atoi(argv.buff[1], &ret, 35);
@@ -318,14 +318,14 @@ int	builtin_exit(t_state *state, t_vec_str argv)
 	{
 		ft_eprintf("%s: %s: %s: numeric argument required\n", state->argv[0],
 			argv.buff[0], argv.buff[1]);
-		free_all_state(*state);
+		free_all_state(state);
 		exit(2);
 	}
 	if (argv.len >= 3)
 	{
 		ft_eprintf("%s: %s: too many arguments\n", state->argv[0],
 			argv.buff[0]);
-		free_all_state(*state);
+		free_all_state(state);
 		return (1);
 	}
 	exit(ret);
@@ -375,8 +375,12 @@ int	builtin_cd(t_state *state, t_vec_str argv)
 
 int	builtin_export(t_state *state, t_vec_str argv)
 {
-	env_set(&state->env, (t_env){.key = ft_strdup("hello"),
-		.value = ft_strdup("world")});
+	env_set(&state->env,
+	 (t_env) {
+		 .key = ft_strdup("hello"),
+		 .value = ft_strdup("world"),
+		 .exported = true,
+	 });
 	return (0);
 }
 

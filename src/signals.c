@@ -3,6 +3,7 @@
 #include <readline/readline.h>
 #include <signal.h>
 #include <stdlib.h>
+
 void	termination_handler(int signum)
 {
 	ft_eprintf("\n");
@@ -22,7 +23,6 @@ void	signal_handling(void)
     sigaction(SIGINT, &new_action, NULL);
 }
 
-
 void	ignore_sig(void)
 {
 	struct sigaction	new_action;
@@ -33,7 +33,6 @@ void	ignore_sig(void)
 
     sigaction(SIGINT, &new_action, NULL);
 }
-
 
 void die_sig(int sig) {
 	exit(2);
@@ -49,9 +48,8 @@ void	die_on_sig(void)
     sigaction(SIGINT, &new_action, NULL);
 }
 
-
 void set_unwind(int sig) {
-	should_unwind = 1;
+	g_should_unwind = 1;
 }
 void	set_unwind_sig(void)
 {
@@ -62,4 +60,3 @@ void	set_unwind_sig(void)
     new_action.sa_flags = 0;
     sigaction(SIGINT, &new_action, NULL);
 }
-

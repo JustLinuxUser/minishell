@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 15:25:40 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/30 15:26:46 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/05 00:32:01 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,15 @@ void	tokenize_star_glob(t_vec_glob *ret, t_token t, int *i)
 
 bool	star_expandable(t_tt tt)
 {
-	if (tt == TT_SQWORD || tt == TT_DQWORD)
+	if (tt == TT_SQWORD || tt == TT_DQWORD || tt == TT_DQENVVAR)
 		return (false);
 	else if (tt == TT_WORD || tt == TT_ENVVAR)
 		return (true);
 	else
+	{
+		printf("got unexpected: %s\n", tt_to_str(tt));
 		ft_assert("Unreachable" == 0);
+	}
 	return (true);
 }
 

@@ -6,11 +6,12 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 13:59:13 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/02 16:25:58 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/10 14:54:47 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft/dsa/dyn_str.h"
+#include "libft/ft_printf/ft_printf.h"
 #include "libft/libft.h"
 #include "minishell.h"
 #include <assert.h>
@@ -197,7 +198,7 @@ int gather_heredocs(t_state* state, t_ast_node* node) {
     size_t i;
 
     i = 0;
-    while (i < node->children.len && !should_unwind) {
+    while (i < node->children.len && !g_should_unwind) {
         gather_heredocs(state, &node->children.buff[i]);
 		i++;
     }
@@ -207,15 +208,16 @@ int gather_heredocs(t_state* state, t_ast_node* node) {
         if (node->children.buff[0].token.tt == TT_HEREDOC)
 		{
 			int wr_fd = ft_mktemp(state, node);
-			char *sep = expand_word_single(state, &node->children.buff[1]);
-			assert(sep);
+			t_dyn_str sep = word_to_hrdoc_string(node->children.buff[1]);
+			printf("sep: %.*s\n", (int)sep.len, sep.buff);
+			assert(sep.buff);
 			t_heredoc_req req = {
-				.sep = sep,
+				.sep = sep.buff,
 				.expand = !contains_quotes(node->children.buff[1]),
 				.remove_tabs =
 					ft_strncmp(node->children.buff[0].token.start, "<<-", 3) == 0};
 			write_heredoc(state, wr_fd, &req);
-			free(sep);
+			free(sep.buff);
         }
     }
     return (0);

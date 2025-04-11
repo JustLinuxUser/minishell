@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 00:31:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/17 18:35:56 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/04 09:47:12 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,25 +66,9 @@ t_token deque_tt_peek(t_deque_tt *ret)
 	return (*deque_tt_idx(ret, 0));
 }
 
-t_token deque_tt_peek2(t_deque_tt *ret)
+void deque_tt_clear(t_deque_tt *ret)
 {
-	return (*deque_tt_idx(ret, 1));
-}
-
-bool	deque_tt_check2(t_deque_tt *ret, t_tt t1, t_tt t2)
-{
-	if (ret->len < 2)
-		return (false);
-	if (deque_tt_idx(ret, 0)->tt == t1 && deque_tt_idx(ret, 1)->tt == t2)
-		return (true);
-	return (false);
-}
-
-bool	deque_tt_check1(t_deque_tt *ret, t_tt t1)
-{
-	if (ret->len < 1)
-		return (false);
-	if (deque_tt_idx(ret, 0)->tt == t1)
-		return (true);
-	return (false);
+	ret->cap = 0;
+	ret->start = 0;
+	ret->len = 0;
 }

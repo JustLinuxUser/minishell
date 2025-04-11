@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/28 18:06:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/02 17:39:39 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/10 14:54:48 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ void	match_dir(t_vec_str *args, t_vec_glob glob, char *path, size_t offset)
 		return ;
 	matcher = (t_dir_matcher){.path = path, .dir = dir,
 		.glob = glob, .offset = offset, .args = args};
-	while (!should_unwind && process_dir(matcher))
+	while (!g_should_unwind && process_dir(matcher))
 		;
 	closedir(dir);
 }
@@ -95,7 +95,11 @@ t_vec_str	expand_word_glob(t_ast_node word)
 	set_unwind_sig();
 	vec_str_init(&args);
 	glob = word_to_glob(word);
-	ft_assert (glob.len != 0);
+	if (glob.len == 0)
+	{
+		vec_str_push(&args, ft_strdup(""));
+		return (args);
+	}
 	if (glob.buff[0].ty == G_SLASH)
 		match_dir(&args, glob, "/", 1);
 	else
@@ -103,10 +107,10 @@ t_vec_str	expand_word_glob(t_ast_node word)
 	if (args.len == 0)
 		vec_str_push(&args, word_to_string(word).buff);
 	free(glob.buff);
-	if (!should_unwind)
+	if (!g_should_unwind)
 		ft_quicksort(&args);
 	ignore_sig();
-	if (should_unwind)
+	if (g_should_unwind)
 	{
 		for(size_t i = 0; i < args.len; i++)
 		{

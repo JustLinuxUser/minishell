@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/04 09:39:34 by anddokhn          #+#    #+#             */
+/*   Updated: 2025/04/11 18:12:56 by anddokhn         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <unistd.h>
 #include <assert.h>
 #include "minishell.h"
@@ -13,29 +25,12 @@
 
 #include "libft/dsa/dyn_str.h"
 
-// Read fd untill the end, and append the results to *ret
-void dyn_str_append_fd(int fd, t_dyn_str *ret)
+char	*getpid_hack(void)
 {
-	char buff[1024];
-	int len;
-
-	while (1)
-	{
-		len = read(fd, buff, sizeof(buff));
-		if (len == 0)
-			break;
-		if (len > 0)
-			dyn_str_pushnstr(ret, buff, len);
-		else
-			critical_error_errno();
-	}
-}
-
-char *getpid_hack() {
-	int fd;
-	t_dyn_str file;
-	char *ret;
-	char **temp;
+	int			fd;
+	t_dyn_str	file;
+	char		*ret;
+	char		**temp;
 
 	fd = open("/proc/self/stat", O_RDONLY);
 	if (fd < 0)
@@ -52,7 +47,7 @@ char *getpid_hack() {
 	return (ret);
 }
 
-t_dyn_str getcwd_dyn_str()
+t_dyn_str	getcwd_dyn_str(void)
 {
 	t_dyn_str	ret;
 
@@ -65,13 +60,16 @@ t_dyn_str getcwd_dyn_str()
 	return (ret);
 }
 
-t_dyn_str new_prompt(t_parser *parser)
+t_dyn_str	prompt_more_input(t_parser *parser)
 {
-	t_dyn_str ret;
+	t_dyn_str	ret;
+	t_tt		curr;
+	size_t		i;
 
+	i = 0;
 	dyn_str_init(&ret);
-	t_tt curr;
-	for (size_t i = 0; i < parser->parse_stack.len; i++) {
+	while (i < parser->parse_stack.len)
+	{
 		curr = vec_int_idx(&parser->parse_stack, i);
 		if (curr == TT_BRACE_LEFT)
 			dyn_str_pushstr(&ret, "subsh");
@@ -82,37 +80,64 @@ t_dyn_str new_prompt(t_parser *parser)
 		else if (curr == TT_OR)
 			dyn_str_pushstr(&ret, "cmdor");
 		else
-			continue;
+		{
+			i++;
+			continue ;
+		}
 		dyn_str_pushstr(&ret, " ");
+		i++;
 	}
 	ret.buff[ret.len - 1] = '>';
 	dyn_str_pushstr(&ret, " ");
 	return (ret);
 }
 
-void get_input(t_state *state, char *prompt, t_deque_tt *tt) {
+t_dyn_str	prompt_normal(t_state *state)
+{
+	t_dyn_str	ret;
+	dyn_str_init(&ret);
+	dyn_str_push(&ret, RL_PROMPT_START_IGNORE);
+	if (ft_strcmp(state->last_cmd_status, "0") == 0)
+		dyn_str_pushstr(&ret, ANSI_GREEN);
+	else
+		dyn_str_pushstr(&ret, ANSI_RED);
+	dyn_str_pushstr(&ret, PROMPT);
+	dyn_str_pushstr(&ret, ANSI_RESET);
+	dyn_str_push(&ret, RL_PROMPT_END_IGNORE);
+	dyn_str_pushstr(&ret, RL_SPACER_1);
+	dyn_str_pushstr(&ret, RL_SPACER_1);
+	return (ret);
+}
+
+bool	readline_cmd(t_state *state, char *prompt, t_deque_tt *tt)
+{
 	int			stat;
 
-	while (prompt) {
-		tt->len = 0;
-		tt->start = 0;
-		tt->end = 0;
-		stat = buff_readline(&state->readline_buff, &state->input, prompt);
-		free(prompt);
-		if (stat == 0) {
+	deque_tt_clear(tt);
+	stat = buff_readline(&state->readline_buff, &state->input, prompt);
+	free(prompt);
+	if (stat == 0 || stat == 2 || !state->input.len)
+	{
+		if (stat == 0)
 			state->should_exit = true;
-			break;
-		} else if (stat == 2)
-		{
+		else if (stat == 2)
 			state->should_reset = 1;
-			break;
-		}
-		if (state->input.len == 0)
-			break;
-		if (state->input.buff[state->input.len - 1] == '\\') {
-			state->input.len--;
+		return (true);
+	}
+	return (false);
+}
+
+void	get_more_tokens(t_state *state, char *prompt, t_deque_tt *tt)
+{
+	while (prompt)
+	{
+		if (readline_cmd(state, prompt, tt))
+			break ;
+		if (dyn_str_ends_with_str(&state->input, "\\"))
+		{
+			dyn_str_pop(&state->input);
 			prompt = ft_strdup("> ");
-			continue;
+			continue ;
 		}
 		dyn_str_push(&state->input, '\n');
 		prompt = tokenizer(state->input.buff, tt);
@@ -121,73 +146,95 @@ void get_input(t_state *state, char *prompt, t_deque_tt *tt) {
 	}
 }
 
-void manage_history(t_state *state) {
+void	manage_history(t_state *state)
+{
+	char	*temp;
+
 	if (state->readline_buff.cursor > 1)
 	{
-
-		char *temp = ft_strndup(state->readline_buff.buff.buff, state->readline_buff.cursor - 1);
+		temp = ft_strndup(state->readline_buff.buff.buff,
+				state->readline_buff.cursor - 1);
 		add_history(temp);
 		free(temp);
 	}
 	buff_readline_reset(&state->readline_buff);
 }
 
-void execute_line(t_state *state)
+bool	try_parse_tokens(t_state *state, t_parser *parser, t_deque_tt *tt, char **prompt)
 {
-    t_deque_tt tt;
-	char *prompt;
-
-    prompt = ft_strdup("prompt> ");
-
-    deque_tt_init(&tt, 100);
-    t_parser parser = {.res = RES_MoreInput,
-		.prog_name = state->argv[0]};
-    while (parser.res == RES_MoreInput) {
-		parser.parse_stack.len = 0;
-		get_input(state, prompt, &tt);
-		if (state->should_exit)
-			break;
-		if (state->should_reset)
-		{
-			state->should_reset = false;
-			break;
-		}
-        if (tt.len) {
-            state->tree = parse_tokens(&parser, &tt);
-            if (parser.res == RES_OK) {
-				free(parser.parse_stack.buff);
-				parser.parse_stack = (t_vec_int){};
-				print_ast_dot(state->tree);
-                execute_top_level(state);
-				manage_history(state);
-				if (should_unwind)
-				{
-					free(state->last_cmd_status);
-					state->last_cmd_status = ft_itoa(SYNTAX_ERR);
-				}
-            } else if (parser.res == RES_MoreInput) {
-                prompt = new_prompt(&parser).buff;
-            } else if (parser.res == RES_FatalError) {
-				free(state->last_cmd_status);
-				state->last_cmd_status = ft_itoa(CANCELED);
-			}
-			free_ast(state->tree);
-        } else {
-			manage_history(state);
-            break;
-        }
-    }
-	free (parser.parse_stack.buff);
-    free(tt.buff);
+	if (!tt->len)
+	{
+		buff_readline_reset(&state->readline_buff);
+		return (false);
+	}
+	parser->parse_stack.len = 0;
+	state->tree = parse_tokens(parser, tt);
+	if (parser->res == RES_OK)
+		return (true);
+	else if (parser->res == RES_MoreInput)
+	{
+		*prompt = prompt_more_input(parser).buff;
+	}
+	else if (parser->res == RES_FatalError)
+	{
+		free(state->last_cmd_status);
+		state->last_cmd_status = ft_itoa(SYNTAX_ERR);
+	}
+	free_ast(&state->tree);
+	return (true);
 }
 
+void	set_cmd_status(t_state *state, char *new_status)
+{
+	free(state->last_cmd_status);
+	state->last_cmd_status = new_status;
+}
 
+void	execute_tree(t_state *state)
+{
+	print_ast_dot(state->tree);
+	execute_top_level(state);
+	free_ast(&state->tree);
+	if (g_should_unwind)
+	{
+		free(state->last_cmd_status);
+		state->last_cmd_status = ft_itoa(CANCELED);
+	}
+}
 
-void free_redirects(t_vec_redir *v)
+void	parse_and_execute_input(t_state *state)
+{
+	t_deque_tt	tt;
+	char		*prompt;
+	t_parser	parser;
+
+	parser = (t_parser){.res = RES_MoreInput,
+		.prog_name = state->argv[0]};
+	prompt = prompt_normal(state).buff;
+	deque_tt_init(&tt, 100);
+	while (parser.res == RES_MoreInput)
+	{
+		get_more_tokens(state, prompt, &tt);
+		if (state->should_exit)
+			break ;
+		if (g_should_unwind)
+			set_cmd_status(state, ft_itoa(CANCELED));
+		if (!try_parse_tokens(state, &parser, &tt, &prompt))
+			break ;
+	}
+	manage_history(state);
+	if (parser.res == RES_OK)
+		execute_tree(state);
+	free (parser.parse_stack.buff);
+	parser.parse_stack = (t_vec_int){};
+	free(tt.buff);
+}
+
+void	free_redirects(t_vec_redir *v)
 {
 	size_t	i;
-	t_redir c;
-	
+	t_redir	c;
+
 	i = 0;
 	while (i < v->len)
 	{
@@ -201,48 +248,48 @@ void free_redirects(t_vec_redir *v)
 	vec_redir_init(v);
 }
 
-void free_all_state(t_state state)
+void	free_all_state(t_state *state)
 {
-	free(state.input.buff);
-	free (state.last_cmd_status);
-	free (state.pid);
-	free (state.cwd.buff);
-	free (state.readline_buff.buff.buff);
-	free_redirects(&state.redirects);
+	free(state->input.buff);
+	state->input = (t_dyn_str){};
+	free(state->last_cmd_status);
+	free(state->pid);
+	free(state->readline_buff.buff.buff);
+	free_redirects(&state->redirects);
+	free_ast(&state->tree);
 }
 
-int main(int argc, char** argv, char** envp)
+void	init_setup(t_state *state, char **argv, char **envp)
 {
-    (void)argc;
-    t_state state;
+	ignore_sig();
+	*state = (t_state){0};
+	state->pid = getpid_hack();
+	state->env = env_to_vec_env(envp);
+	state->argv = argv;
+	state->last_cmd_status = ft_strdup("0");
+}
 
+int	main(int argc, char **argv, char **envp)
+{
+	t_state	state;
+	int		status;
+
+	(void)argc;
 	if (!isatty(1))
 		return (0);
-	ignore_sig();
-
-	state = (t_state){0};
-	state.pid = getpid_hack();
-
-    state.env = env_to_vec_env(envp);
-	state.cwd = getcwd_dyn_str();
-
-	state.argv = argv;
-	state.last_cmd_status = ft_strdup("0");
-
+	init_setup(&state, argv, envp);
 	while (!state.should_exit)
 	{
 		dyn_str_init(&state.input);
-		should_unwind = 0;
-		execute_line(&state);
+		g_should_unwind = 0;
+		parse_and_execute_input(&state);
 		free_redirects(&state.redirects);
+		free_ast(&state.tree);
 		free(state.input.buff);
+		state.input = (t_dyn_str){};
 	}
-
-    free_env(&state.env);
-	int status = ft_atoi(state.last_cmd_status);
-	free (state.last_cmd_status);
-	free (state.pid);
-	free (state.cwd.buff);
-	free (state.readline_buff.buff.buff);
-    return (status);
+	status = ft_atoi(state.last_cmd_status);
+	free_env(&state.env);
+	free_all_state(&state);
+	return (status);
 }

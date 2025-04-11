@@ -15,8 +15,14 @@
 # define CANCELED 130
 # define SYNTAX_ERR 2
 # define AMBIGUOUS_REDIRECT 1
+# define PROMPT "❯ "
 
-extern int should_unwind;
+# define  ANSI_RED "\033[31m"
+# define  ANSI_GREEN "\033[32m"
+# define  ANSI_RESET "\033[0m"
+# define  RL_SPACER_1 "\001\xE2\x80\002\x8B"
+
+extern int g_should_unwind;
 
 typedef enum s_res_t {
     RES_OK,
@@ -78,10 +84,17 @@ typedef enum e_tt {
 	TT_DQENVVAR,
 } t_tt;
 
-typedef struct s_token {
+typedef struct s_token_old {
+	bool present;
     char* start;
     int len;
-    t_tt tt;
+} t_token_old;
+
+typedef struct s_token {
+    char*		start;
+    int			len;
+    t_tt		tt;
+	t_token_old	full_word;
 	bool allocated;
 } t_token;
 
@@ -147,9 +160,7 @@ typedef struct s_state {
 	t_dyn_str		input;
 	t_vec_env		env;
 	t_ast_node		tree;
-	t_dyn_str		cwd;
 	char			**argv;
-	int				prev_status;
 	char			*pid;
 	char			*last_cmd_status;
 	bool			should_exit;
@@ -159,7 +170,6 @@ typedef struct s_state {
 	t_buff_readline	readline_buff;
 } t_state;
 
-
 typedef struct executable_cmd_s {
 	t_vec_env pre_assigns;
 	t_vec_str argv;
@@ -167,7 +177,7 @@ typedef struct executable_cmd_s {
 } executable_cmd_t;
 
 // lexer.c
-void free_all_state(t_state state);
+void free_all_state(t_state *state);
 
 char* tokenizer(char* str, t_deque_tt* ret);
 
@@ -188,9 +198,7 @@ t_token	*deque_tt_idx(t_deque_tt *ret, int idx);
 t_token	*deque_tt_idx_wrapping(t_deque_tt *ret, int idx);
 
 t_token deque_tt_peek(t_deque_tt *ret);
-t_token deque_tt_peek2(t_deque_tt *ret);
-bool	deque_tt_check2(t_deque_tt *ret, t_tt t1, t_tt t2);
-bool	deque_tt_check1(t_deque_tt *ret, t_tt t1);
+void deque_tt_clear(t_deque_tt *ret);
 
 int			vec_nd_init(t_vec_nd *ret);
 int			vec_nd_double(t_vec_nd *v);
@@ -208,7 +216,7 @@ void		print_ast_dot(t_ast_node node);
 void ast_postorder_traversal(t_ast_node* node, void (*f)(t_ast_node* node));
 
 char*		tt_to_str(t_tt tt);
-void		free_ast(t_ast_node node);
+void		free_ast(t_ast_node *node);
 
 void		print_tokens(t_deque_tt tokens);
 
@@ -226,7 +234,7 @@ t_ast_node create_subtoken_node(t_token t, int offset, int end_offset, t_tt tt);
 int gather_heredocs(t_state* state, t_ast_node* node);
 
 t_vec_env env_to_vec_env(char** envp);
-t_env* env_get(t_vec_env* env, char* key);
+t_env*	env_get(t_vec_env* env, char* key);
 char* env_expand(t_state* state, char* key);
 char* env_expand_n(t_state* state, char* key, int len);
 
@@ -258,8 +266,9 @@ typedef struct executable_node_s {
 	bool		modify_parent_context;
 }	t_executable_node;
 
-t_exe_res execute_command(t_state* state, t_executable_node exe);
+t_exe_res execute_command(t_state* state, t_executable_node *exe);
 t_dyn_str word_to_string(t_ast_node node);
+t_dyn_str word_to_hrdoc_string(t_ast_node node);
 
 // error.c
 void critical_error(char *error);
@@ -290,11 +299,17 @@ size_t		matches_pattern(char *name, t_vec_glob patt, size_t offset, bool first);
 void		ft_quicksort(t_vec_str *vec);
 
 // signals.c
-void	ignore_sig(void);
-void	signal_handling(void);
-void	die_on_sig(void);
-void	set_unwind_sig(void);
+void		ignore_sig(void);
+void		signal_handling(void);
+void		die_on_sig(void);
+void		set_unwind_sig(void);
+t_dyn_str	getcwd_dyn_str(void);
  
 // TODO: Delete this:
 size_t	get_timestamp_micro(void);
+
+// expanding
+void expand_word(t_state *state, t_ast_node *node, t_vec_str *args, bool keep_as_one);
+int expand_simple_command(t_state* state, t_ast_node* node, executable_cmd_t *ret, t_vec_int * redirects);
+int redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx);
 #endif
