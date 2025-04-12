@@ -6,12 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 09:39:34 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/11 18:12:56 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/12 17:46:28 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <unistd.h>
 #include <assert.h>
+#include "libft/ft_printf/ft_printf.h"
 #include "minishell.h"
 #include <stdbool.h>
 #include <stdio.h>
@@ -114,7 +115,7 @@ bool	readline_cmd(t_state *state, char *prompt, t_deque_tt *tt)
 	int			stat;
 
 	deque_tt_clear(tt);
-	stat = buff_readline(&state->readline_buff, &state->input, prompt);
+	stat = buff_readline(state, &state->input, prompt);
 	free(prompt);
 	if (stat == 0 || stat == 2 || !state->input.len)
 	{
@@ -209,7 +210,7 @@ void	parse_and_execute_input(t_state *state)
 	t_parser	parser;
 
 	parser = (t_parser){.res = RES_MoreInput,
-		.prog_name = state->argv[0]};
+		.prog_name = state->context};
 	prompt = prompt_normal(state).buff;
 	deque_tt_init(&tt, 100);
 	while (parser.res == RES_MoreInput)
@@ -254,6 +255,10 @@ void	free_all_state(t_state *state)
 	state->input = (t_dyn_str){};
 	free(state->last_cmd_status);
 	free(state->pid);
+	free(state->context);
+	free(state->base_context);
+	state->context = 0;
+	state->base_context = 0;
 	free(state->readline_buff.buff.buff);
 	free_redirects(&state->redirects);
 	free_ast(&state->tree);
@@ -265,8 +270,23 @@ void	init_setup(t_state *state, char **argv, char **envp)
 	*state = (t_state){0};
 	state->pid = getpid_hack();
 	state->env = env_to_vec_env(envp);
-	state->argv = argv;
+	state->context = ft_strdup(argv[0]);
+	state->base_context = ft_strdup(argv[0]);
 	state->last_cmd_status = ft_strdup("0");
+	if (argv[1] && ft_strcmp(argv[1], "-c") == 0)
+	{
+		if (!argv[2])
+		{
+			ft_eprintf("%s: -c: option requires an argument\n", state->base_context);
+			free_all_state(state);
+			exit(SYNTAX_ERR);
+		}
+		dyn_str_pushstr(&state->readline_buff.buff, argv[2]);
+		dyn_str_push(&state->readline_buff.buff, '\n');
+		buff_readline_update(&state->readline_buff);
+		state->readline_buff.no_readline = true;
+		state->readline_buff.should_update_context = true;
+	}
 }
 
 int	main(int argc, char **argv, char **envp)

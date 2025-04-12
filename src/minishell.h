@@ -43,24 +43,12 @@ typedef struct s_buff_readline
 {
 	bool		has_line;
 	bool		no_readline;
+	int 		line;
+	bool 		should_update_context;
 	t_dyn_str	buff;
 	size_t		cursor;
 } t_buff_readline;
 
-// get next line (without \n).
-// Appends the line to ret
-//
-// return value:
-// 0 - on no input (ctrl-d)
-//
-// 1 - on empty line
-//
-// 2 - ctrl-c
-//
-// 3 - anything else
-int buff_readline(t_buff_readline *l, t_dyn_str *ret, char *prompt);
-void buff_readline_update(t_buff_readline *l);
-void buff_readline_reset(t_buff_readline *l);
 typedef enum e_tt {
 	TT_NONE = 0,
     TT_WORD,			// asfkaslfkj
@@ -160,7 +148,8 @@ typedef struct s_state {
 	t_dyn_str		input;
 	t_vec_env		env;
 	t_ast_node		tree;
-	char			**argv;
+	char			*base_context;
+	char			*context;
 	char			*pid;
 	char			*last_cmd_status;
 	bool			should_exit;
@@ -169,6 +158,21 @@ typedef struct s_state {
 	int				heredoc_idx;
 	t_buff_readline	readline_buff;
 } t_state;
+
+// get next line (without \n).
+// Appends the line to ret
+//
+// return value:
+// 0 - on no input (ctrl-d)
+//
+// 1 - on empty line
+//
+// 2 - ctrl-c
+//
+// 3 - anything else
+int buff_readline(t_state *state, t_dyn_str *ret, char *prompt);
+void buff_readline_update(t_buff_readline *l);
+void buff_readline_reset(t_buff_readline *l);
 
 typedef struct executable_cmd_s {
 	t_vec_env pre_assigns;

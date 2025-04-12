@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 13:59:13 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/10 14:54:47 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/12 17:43:37 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,7 +141,7 @@ void process_line(t_state *state, t_heredoc_req *req)
 	char *line;
 
 	dyn_str_init(&alloc_line);
-	stat = buff_readline(&state->readline_buff, &alloc_line, "heredoc> ");
+	stat = buff_readline(state, &alloc_line, "heredoc> ");
 	if (stat == 0 || stat == 2)
 	{
 		req->finished = true;

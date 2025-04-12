@@ -315,7 +315,7 @@ int	redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx)
 	ret.fname = expand_word_single(state, vec_nd_idx(&curr->children, 1));
 	if (!ret.fname)
 	{
-		ft_eprintf("%s: %.*s: ambigous redirect\n", state->argv[0], full_word.len, full_word.start);
+		ft_eprintf("%s: %.*s: ambigous redirect\n", state->context, full_word.len, full_word.start);
 		return (-1);
 	}
 	if (tt == TT_REDIRECT_LEFT)
@@ -327,7 +327,7 @@ int	redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx)
 	if (ret.fd < 0)
 	{
 		free(ret.fname);
-		ft_eprintf("%s: %.*s: ambigous redirect\n", state->argv[0], full_word.len, full_word.start);
+		ft_eprintf("%s: %.*s: ambigous redirect\n", state->context, full_word.len, full_word.start);
 		return (-1);
 	}
 	ret.should_delete = false;

@@ -1,4 +1,5 @@
 #include "libft/dsa/dyn_str.h"
+#include "libft/ft_printf/ft_printf.h"
 #include "minishell.h"
 #include "libft/libft.h"
 #include <assert.h>
@@ -87,18 +88,26 @@ int	get_more_input_readline(t_buff_readline *l, char *prompt)
 	return (0);
 }
 
+void update_context(t_state *state)
+{
+	if (!state->readline_buff.should_update_context)
+		return ;
+	free(state->context);
+	state->context = ft_asprintf("%s: line %i", state->base_context, state->readline_buff.line);
+}
+
 // 1 on ctrl-d
-int	buff_readline(t_buff_readline *l, t_dyn_str *ret, char *prompt)
+int	buff_readline(t_state *state, t_dyn_str *ret, char *prompt)
 {
 	int		code;
 	char	*temp;
 	int		len;
 
-	if (!l->has_line)
+	if (!state->readline_buff.has_line)
 	{
-		if (l->no_readline)
+		if (state->readline_buff.no_readline)
 			return (0);
-		code = get_more_input_readline(l, prompt);
+		code = get_more_input_readline(&state->readline_buff, prompt);
 		if (code == 1) // ctrl - d
 			return (0);
 		if (code == 2) // ctrl-c
@@ -106,17 +115,19 @@ int	buff_readline(t_buff_readline *l, t_dyn_str *ret, char *prompt)
 			g_should_unwind = 1;
 			return (2);
 		}
-		dyn_str_push(&l->buff, '\n');
-		l->has_line = true;
+		dyn_str_push(&state->readline_buff.buff, '\n');
+		state->readline_buff.has_line = true;
 	}
 	// at this point we should have a newline
-	temp = ft_strchr(l->buff.buff + l->cursor, '\n');
+	state->readline_buff.line++;
+	update_context(state);
+	temp = ft_strchr(state->readline_buff.buff.buff + state->readline_buff.cursor, '\n');
 	ft_assert(temp != 0);
-	len = temp - (l->buff.buff + l->cursor);
-	dyn_str_pushnstr(ret, l->buff.buff + l->cursor, len);
+	len = temp - (state->readline_buff.buff.buff + state->readline_buff.cursor);
+	dyn_str_pushnstr(ret, state->readline_buff.buff.buff + state->readline_buff.cursor, len);
 	dyn_str_init_alloc(ret);
-	l->cursor += len + 1;
-	l->has_line = l->cursor != l->buff.len;
+	state->readline_buff.cursor += len + 1;
+	state->readline_buff.has_line = state->readline_buff.cursor != state->readline_buff.buff.len;
 	if (len == 0)
 		return (1);
 	else

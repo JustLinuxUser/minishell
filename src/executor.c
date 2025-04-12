@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/11 22:17:17 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/12 17:08:39 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,17 +54,17 @@ char	*exe_path(char **path_dirs, char *exe_name)
 	return (free(temp.buff), NULL);
 }
 
-void	err_cmd_not_found(t_state* state, char* cmd)
+void	err_cmd_not_found(t_state *state, char *cmd)
 {
-    ft_eprintf("%s: %s: command not found\n", state->argv[0], cmd);
+	ft_eprintf("%s: %s: command not found\n", state->context, cmd);
 }
 
-void err_no_path_var(t_state* state, char* cmd) {
-    ft_eprintf("%s: %s: No such file or directory\n", state->argv[0], cmd);
+void	err_no_path_var(t_state *state, char *cmd) {
+	ft_eprintf("%s: %s: No such file or directory\n", state->context, cmd);
 }
 
 void err_cmd_other(t_state* state, char* cmd) {
-    ft_eprintf("%s: %s: %s\n", state->argv[0], cmd, strerror(errno));
+    ft_eprintf("%s: %s: %s\n", state->context, cmd, strerror(errno));
 }
 
 // returns status

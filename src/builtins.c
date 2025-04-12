@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 21:39:29 by armgonza          #+#    #+#             */
-/*   Updated: 2025/04/11 23:44:24 by armgonza         ###   ########.fr       */
+/*   Updated: 2025/04/12 17:41:37 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,14 +215,14 @@ int	builtin_exit(t_state *state, t_vec_str argv)
 	err = ft_checked_atoi(argv.buff[1], &ret, 35);
 	if (err != 0)
 	{
-		ft_eprintf("%s: %s: %s: numeric argument required\n", state->argv[0],
+		ft_eprintf("%s: %s: %s: numeric argument required\n", state->context,
 			argv.buff[0], argv.buff[1]);
 		free_all_state(state);
 		exit(2);
 	}
 	if (argv.len >= 3)
 	{
-		ft_eprintf("%s: %s: too many arguments\n", state->argv[0],
+		ft_eprintf("%s: %s: too many arguments\n", state->context,
 			argv.buff[0]);
 		free_all_state(state);
 		return (1);
@@ -298,7 +298,7 @@ int	builtin_export(t_state *state, t_vec_str argv)
 		}
 		else
 		{
-			ft_eprintf("%s: %s: `%s' not valid identifier\n", state->argv[0],
+			ft_eprintf("%s: %s: `%s' not valid identifier\n", state->context,
 				argv.buff[0], argv.buff[i]);
 			status = 1;
 		}
@@ -316,7 +316,7 @@ int	builtin_cd(t_state *state, t_vec_str argv)
 
 	if (argv.len >= 3)
 	{
-		ft_eprintf("%s: %s: too many arguments\n", state->argv[0],
+		ft_eprintf("%s: %s: too many arguments\n", state->context,
 			argv.buff[0]);
 		return (1);
 	}
@@ -330,7 +330,7 @@ int	builtin_cd(t_state *state, t_vec_str argv)
 	{
 		if (home == NULL)
 		{
-			ft_eprintf("%s: cd: HOME not set\n", state->argv[0]);
+			ft_eprintf("%s: cd: HOME not set\n", state->context);
 			return (1);
 		}
 		chdir(home);
@@ -339,7 +339,7 @@ int	builtin_cd(t_state *state, t_vec_str argv)
 	{
 		e = chdir(argv.buff[1]);
 		if (e == -1)
-			ft_eprintf("%s: %s: %s: %s\n", state->argv[0], argv.buff[0],
+			ft_eprintf("%s: %s: %s: %s\n", state->context, argv.buff[0],
 				argv.buff[1], strerror(errno));
 	}
 	cwd = getcwd(NULL, 0);
