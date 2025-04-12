@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 09:39:34 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/12 19:45:33 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/12 22:14:37 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,7 +194,7 @@ void	set_cmd_status(t_state *state, char *new_status)
 
 void	execute_tree(t_state *state)
 {
-	print_ast_dot(state->tree);
+	// print_ast_dot(state->tree);
 	execute_top_level(state);
 	free_ast(&state->tree);
 	if (g_should_unwind)
