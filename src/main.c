@@ -6,10 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 09:39:34 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/12 17:46:28 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/12 19:45:33 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <errno.h>
 #include <unistd.h>
 #include <assert.h>
 #include "libft/ft_printf/ft_printf.h"
@@ -223,9 +224,12 @@ void	parse_and_execute_input(t_state *state)
 		if (!try_parse_tokens(state, &parser, &tt, &prompt))
 			break ;
 	}
-	manage_history(state);
 	if (parser.res == RES_OK)
+	{
 		execute_tree(state);
+		manage_history(state);
+	}
+	manage_history(state);
 	free (parser.parse_stack.buff);
 	parser.parse_stack = (t_vec_int){};
 	free(tt.buff);
@@ -286,6 +290,27 @@ void	init_setup(t_state *state, char **argv, char **envp)
 		buff_readline_update(&state->readline_buff);
 		state->readline_buff.no_readline = true;
 		state->readline_buff.should_update_context = true;
+	}
+	else if (argv[1])
+	{
+		int fd = open(argv[1], O_RDONLY);
+		if (fd < 0)
+		{
+			ft_eprintf("%s: %s: %s\n", state->base_context, argv[1], strerror(errno));
+			free_all_state(state);
+			if (errno == EISDIR)
+				exit(127);
+			exit(EXE_BASE_ERROR + errno);
+		}
+		dyn_str_append_fd(fd, &state->readline_buff.buff);
+		dyn_str_push(&state->readline_buff.buff, '\n');
+		buff_readline_update(&state->readline_buff);
+		state->readline_buff.no_readline = true;
+		state->readline_buff.should_update_context = true;
+		free(state->base_context);
+		free(state->context);
+		state->base_context = ft_strdup(argv[1]);
+		state->context = ft_strdup(argv[1]);
 	}
 }
 

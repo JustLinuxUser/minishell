@@ -1,4 +1,5 @@
 #include "dsa/vec_str.h"
+#include "libft/ft_printf/ft_printf.h"
 #include "libft/libft.h"
 #include "minishell.h"
 #include <assert.h>
@@ -125,6 +126,7 @@ t_dyn_str	word_to_string(t_ast_node node)
 			|| curr.tt == TT_DQWORD || curr.tt == TT_DQENVVAR
 			|| curr.tt == TT_ENVVAR)
 		{
+			assert(curr.start || !curr.len);
 			dyn_str_pushnstr(&s, curr.start, curr.len);
 		}
 		else
@@ -180,6 +182,8 @@ t_env	assignment_to_env(t_state *state, t_ast_node *node)
 	{
 		assert(args.len == 1);
 		ret.value = args.buff[0];
+		if (!ret.value)
+			ret.value = ft_strdup("");
 	}
 	free(args.buff);
 	return (ret);

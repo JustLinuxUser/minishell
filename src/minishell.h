@@ -12,6 +12,7 @@
 
 # define COMMAND_NOT_FOUND 127
 # define EXE_PERM_DENIED 126
+# define EXE_BASE_ERROR 125
 # define CANCELED 130
 # define SYNTAX_ERR 2
 # define AMBIGUOUS_REDIRECT 1
@@ -217,7 +218,7 @@ t_ast_node parse_tokens(t_parser *res, t_deque_tt* tokens);
 // tree_utils.c
 void		print_node(t_ast_node node);
 void		print_ast_dot(t_ast_node node);
-void ast_postorder_traversal(t_ast_node* node, void (*f)(t_ast_node* node));
+void		ast_postorder_traversal(t_ast_node* node, void (*f)(t_ast_node* node));
 
 char*		tt_to_str(t_tt tt);
 void		free_ast(t_ast_node *node);
@@ -270,9 +271,9 @@ typedef struct executable_node_s {
 	bool		modify_parent_context;
 }	t_executable_node;
 
-t_exe_res execute_command(t_state* state, t_executable_node *exe);
-t_dyn_str word_to_string(t_ast_node node);
-t_dyn_str word_to_hrdoc_string(t_ast_node node);
+t_exe_res	execute_command(t_state* state, t_executable_node *exe);
+t_dyn_str	word_to_string(t_ast_node node);
+t_dyn_str	word_to_hrdoc_string(t_ast_node node);
 
 // error.c
 void critical_error(char *error);

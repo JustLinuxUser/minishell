@@ -16,7 +16,7 @@ LIBFT_A := src/libft/libft.a
 
 LIBS := -L src/libft -lft -lreadline
 
-CC := gcc
+CC := cc
 
 all: ${TARGET} ${headers}
 

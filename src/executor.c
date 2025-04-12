@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/12 17:08:39 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/12 19:54:26 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,11 +92,10 @@ int actually_run(t_state* state, t_vec_str* args) {
     vec_str_push(args, 0);  // nullterm
     char** envp = get_envp(state);
     execve(path_of_exe, args->buff, envp);
+	err_cmd_other(state, args->buff[0]);
 	free_all_state(state);
-	// err_cmd_other(state, args->buff[0]);
-	// free_tab(args->buff);
-	// free_tab(envp);
-	// free_ast(state->tree);
+	free_tab(args->buff);
+	free_tab(envp);
 	free(path_of_exe);
     return (EXE_PERM_DENIED);
 }

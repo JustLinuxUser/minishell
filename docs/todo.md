@@ -3,7 +3,7 @@
 - name=[value], value is optional
     - [x] Before command
     - [x] by itself, changing env
-- [ ] name=[value] can appear as a param to export builtin
+- [x] name=[value] can appear as a param to export builtin
 
 
 [*] Backslash can negate astrisk/tilde expansion
@@ -23,19 +23,23 @@
 [x] Execution of commands
 [ ] Builtins
     [x] echo
-    [ ] exit
-        [ ] properly free all memory
+    [x] exit
+        [x] properly free all memory
+    [ ] export
+    [-] cd
+        [ ] cd -
 
 [x] Special envvars
     [x] $$ -> /proc/self/stat, ft_split()[0]
     [x] $?
         [x] Set on syntax error
-    [ ] PWD in new processes
+    [ ] $RANDOM
+    [x] PWD in new processes (father)
 
 [?] Ctrl-D handling with non empty lines
     - nope
 
-[ ] Using $IFS for word separation
+[?] Using $IFS for word separation
     [ ] ft_split with an array as the second opt
 [-] Managing syntax errors properly
     [x] Setting proper status
@@ -45,32 +49,46 @@
     [x] <<-
     [x] quoted
     [x] unquoted
-    [?] errors while writing
+    [ ] errors while writing
     [x] Expand separator, without envvars -
+        [ ] Proper error handling
     [x] \char, should have it's own type, not just sqword, or mb normal word
     [x] Check for separator, after splitting by newlines, because readline can read multiple lines at once :)
     [x] `\$HOME` doesn't expand
+    [ ] Herestrings
+        - No word splitting or pathname extension
+        - Nahhh
 
 [x] Buffered input
 [x] Multiple line pasting, managing with custom readline that wraps the normal readline
 
 [x] a=b bash, env var assignments before command
-[ ] Ambiguous redirect better error messages
+[x] Ambiguous redirect better error messages
 [ ] All open / write calls should be error protected
 
 - [x] Glob expansion
-    - [ ] sort ascii
-    - [ ] echo test, becomes echo test test
+    - [x] sort ascii
+    - [x] echo test, becomes echo test test
 
 
 - [ ] History
     - [x] normal history management + multi-line
+    - [x] save line to history, even if it contains syntax error
     - [ ] history file
         - [ ] history file parsing.
         - [ ] for \, I would have to escape \ with \\, and `<CR>` with `\<CR>` like zsh
 
-[ ] Signals
+- [ ] Executing sources
+    - [x] -c
+    - [ ] file.sh
+
+[ ] Signals (including Ctrl-\)
     [ ] For expansion, it should stop when recieving a signal
+
+[ ] Ctrl-D / Ctrl-C management in tokenizer additional input
+
+[ ] Libft, update, push
+
 
 [x] Close fds properly ;(
     [x] cat | ls
@@ -81,3 +99,21 @@
     [x] in libft
 
 [x] Expansion of the special env vars
+
+[x] Pasting in more then one EOF in the heredoc field, the rest should be treated as a command
+
+[x] Subshell bug
+
+# Memory model
+
+Tokenizer: 1 string
+|> tokens: a ref to str of tokenizer
+|> Parser: owned tree, tokens are refs to tokens of tokenizer
+|> ReParser: mut owned tree, tokens are refs to tokens of tokenizer
+|> Heredocs: state->heredocs, nodes have refs to state->heredocs
+|> exe_<node>: ref to tree nodes, owned redirects
+|> expand_simple_command: ref to tree nodes
+    - tilde_expand_simple_command: todo, figure out why a=~ doesn't expand, and a= does
+- expand_word_fully, keep as one: ref to node, consuming, when consuming properly, it works lol
+
+case: 
