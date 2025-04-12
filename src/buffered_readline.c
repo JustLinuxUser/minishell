@@ -94,6 +94,7 @@ void update_context(t_state *state)
 		return ;
 	free(state->context);
 	state->context = ft_asprintf("%s: line %i", state->base_context, state->readline_buff.line);
+	printf("%p\n", state->context);
 }
 
 // 1 on ctrl-d

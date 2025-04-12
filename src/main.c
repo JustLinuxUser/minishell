@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 09:39:34 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/12 22:14:37 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/13 00:22:10 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,6 +117,7 @@ bool	readline_cmd(t_state *state, char *prompt, t_deque_tt *tt)
 
 	deque_tt_clear(tt);
 	stat = buff_readline(state, &state->input, prompt);
+	printf("input: %.*s\n", (int)state->input.len, state->input.buff);
 	free(prompt);
 	if (stat == 0 || stat == 2 || !state->input.len)
 	{
@@ -170,7 +171,7 @@ bool	try_parse_tokens(t_state *state, t_parser *parser, t_deque_tt *tt, char **p
 		return (false);
 	}
 	parser->parse_stack.len = 0;
-	state->tree = parse_tokens(parser, tt);
+	state->tree = parse_tokens(state, parser, tt);
 	if (parser->res == RES_OK)
 		return (true);
 	else if (parser->res == RES_MoreInput)
@@ -210,8 +211,7 @@ void	parse_and_execute_input(t_state *state)
 	char		*prompt;
 	t_parser	parser;
 
-	parser = (t_parser){.res = RES_MoreInput,
-		.prog_name = state->context};
+	parser = (t_parser){.res = RES_MoreInput};
 	prompt = prompt_normal(state).buff;
 	deque_tt_init(&tt, 100);
 	while (parser.res == RES_MoreInput)

@@ -34,7 +34,6 @@ typedef enum s_res_t {
 
 typedef struct s_parser {
 	t_res_t	res;
-	char	*prog_name;
 	t_vec_int parse_stack;
 } t_parser;
 
@@ -213,7 +212,7 @@ t_ast_node	*vec_nd_idx(t_vec_nd *v, size_t idx);
 int			vec_nd_insert_vec_replacing(t_vec_nd *v, t_vec_nd new, int idx);
 void		vec_nd_push_vec(t_vec_nd *ret, t_vec_nd *second);
 void		vec_nd_free(t_vec_nd *ret);
-t_ast_node parse_tokens(t_parser *res, t_deque_tt* tokens);
+t_ast_node parse_tokens(t_state *state, t_parser *res, t_deque_tt* tokens);
 
 // tree_utils.c
 void		print_node(t_ast_node node);
