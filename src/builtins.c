@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 21:39:29 by armgonza          #+#    #+#             */
-/*   Updated: 2025/04/12 17:41:37 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/12 22:24:40 by armgonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,8 +197,9 @@ int	builtin_pwd(t_state *state, t_vec_str argv)
 	(void)state;
 	(void)argv;
 
-	cwd = getcwd(NULL, 0);
+	cwd = getcwd(NULL, 0); // TO DO: obtener CWD en el caso que el directorio haya sido eliminado con RM -RF mientras estamos dentro del direcotrio 
 	ft_printf("%s\n", cwd);
+	free(cwd);
 	return(0);
 }
 int	builtin_exit(t_state *state, t_vec_str argv)
@@ -258,13 +259,26 @@ static bool	is_valid_ident(char *ident)
 	{
 		return (false);
 	}
-	while (ident[i] && is_var_name_p2(ident[i]) != false)
+	while (ident[i] && is_var_name_p2(ident[i]))
 	{
 		i++;
 	}
-	return (ident[i]);
+	return (!ident[i]);
 }
+int builtin_env(t_state *state, t_vec_str argv)
+{
+	size_t i;
+	i = 0;
 
+	(void)argv;
+	while(state->env.len > i)
+		{
+		ft_printf("%s=%s\n",state->env.buff[i].key,
+							state->env.buff[i].value);
+		i++;
+		}
+	return(0);
+}
 int	builtin_export(t_state *state, t_vec_str argv)
 {
 	size_t		i;
@@ -275,11 +289,13 @@ int	builtin_export(t_state *state, t_vec_str argv)
 
 	status = 0;
 	i = 1;
+	if(argv.len == 1)	
+		builtin_env(state, argv);
 	while (i < argv.len)
 	{
+		parse_export_arg(argv.buff[i], &ident, &val);
 		if (is_valid_ident(ident))
 		{
-			parse_export_arg(argv.buff[i], &ident, &val);
 			// aqui va la exportacion aL ENV
 			if (val == NULL)
 			{
@@ -300,6 +316,8 @@ int	builtin_export(t_state *state, t_vec_str argv)
 		{
 			ft_eprintf("%s: %s: `%s' not valid identifier\n", state->context,
 				argv.buff[0], argv.buff[i]);
+			free(ident);
+			free(val);
 			status = 1;
 		}
 		i++;
@@ -343,24 +361,10 @@ int	builtin_cd(t_state *state, t_vec_str argv)
 				argv.buff[1], strerror(errno));
 	}
 	cwd = getcwd(NULL, 0);
-	cenv.key = ft_strdup(ft_strdup("PWD"));
+	cenv.key = ft_strdup("PWD");
 	cenv.value = cwd;
 	cenv.exported = true;
 	env_set(&state->env, cenv);
-	return(0);
-}
-int builtin_env(t_state *state, t_vec_str argv)
-{
-	size_t i;
-	i = 0;
-
-	(void)argv;
-	while(state->env.len > i)
-		{
-		ft_printf("%s=%s\n",state->env.buff[i].key,
-							state->env.buff[i].value);
-		i++;
-		}
 	return(0);
 }
 int builtin_unset(t_state *state, t_vec_str argv)
