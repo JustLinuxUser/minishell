@@ -114,6 +114,8 @@ int get_more_input_notty(t_state *state)
 			break ;
 		has_read = true;
 		dyn_str_pushnstr(&state->readline_buff.buff, buff, ret);
+		if (ft_strnchr(buff, '\n', ret))
+	  		break ;
 	}
 	buff_readline_update(&state->readline_buff);
 	return (!has_read);
