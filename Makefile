@@ -9,8 +9,8 @@ HEADERS := ${wildcard src/**/*.h src/*.h}
 
 OBJS := ${SOURCES:%.c=${OUT_DIR}/%.o}
 
-CFLAGS := -Wall -Wextra -g3 -ggdb -fsanitize=address -fno-inline-small-functions
-# CFLAGS := -Wall -Wextra -g3 -O3
+CFLAGS := -Wall -Wextra -g3 -ggdb -fsanitize=address
+# CFLAGS := -Wall -Wextra -O3 -flto
 
 LIBFT_A := src/libft/libft.a
 

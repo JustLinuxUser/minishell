@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/12 19:54:26 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/13 18:57:50 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -254,6 +254,7 @@ int execute_pipeline(t_state* state, t_executable_node *exe) {
 		assert("Unimplemented" == 0);
 	}
 	int status;
+	status = 0;
 	i = 0;
 	while (i < results.len) {
 		res = vec_exe_res_idx(&results, i);

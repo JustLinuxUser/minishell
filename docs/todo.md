@@ -78,14 +78,19 @@
         - [ ] history file parsing.
         - [ ] for \, I would have to escape \ with \\, and `<CR>` with `\<CR>` like zsh
 
-- [ ] Executing sources
+- [x] Executing sources
     - [x] -c
-    - [ ] file.sh
+    - [x] file.sh
+    - [ ] echo echo hi | ./minishell
+
 
 [ ] Signals (including Ctrl-\)
     [ ] For expansion, it should stop when recieving a signal
 
 [ ] Ctrl-D / Ctrl-C management in tokenizer additional input
+- Detect C-c when executing a command, and don't execute the next one.
+e.g: sleep 10; sleep 10; sleep 10
+- Detect C-c when executing a file, and don't even try to read the next command
 
 [ ] Libft, update, push
 

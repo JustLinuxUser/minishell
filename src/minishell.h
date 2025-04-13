@@ -17,6 +17,7 @@
 # define SYNTAX_ERR 2
 # define AMBIGUOUS_REDIRECT 1
 # define PROMPT "❯ "
+# define HIST_FILE ".minishell_history"
 
 # define  ANSI_RED "\033[31m"
 # define  ANSI_GREEN "\033[32m"
@@ -42,7 +43,6 @@ typedef struct s_parser {
 typedef struct s_buff_readline
 {
 	bool		has_line;
-	bool		no_readline;
 	int 		line;
 	bool 		should_update_context;
 	t_dyn_str	buff;
@@ -144,10 +144,18 @@ typedef struct s_deque_tt
 	t_token	*buff;
 }	t_deque_tt;
 
+enum e_input_method {
+	INP_READLINE,
+	INP_FILE,
+	INP_ARG,
+	INP_STDIN_NOTTY,
+};
+
 typedef struct s_state {
 	t_dyn_str		input;
 	t_vec_env		env;
 	t_ast_node		tree;
+	int				input_method;
 	char			*base_context;
 	char			*context;
 	char			*pid;

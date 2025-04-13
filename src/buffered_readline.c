@@ -1,5 +1,6 @@
 #include "libft/dsa/dyn_str.h"
 #include "libft/ft_printf/ft_printf.h"
+#include "libft/gnl/get_next_line.h"
 #include "minishell.h"
 #include "libft/libft.h"
 #include <assert.h>
@@ -97,6 +98,27 @@ void update_context(t_state *state)
 	printf("%p\n", state->context);
 }
 
+int get_more_input_notty(t_state *state)
+{
+	char	buff[4096];
+	int		ret;
+	bool	has_read;
+
+	has_read = false;
+	while (1)
+	{
+		ret = read(0, buff, sizeof(buff));
+		if (ret < 0)
+			return (1);
+		if (ret == 0)
+			break ;
+		has_read = true;
+		dyn_str_pushnstr(&state->readline_buff.buff, buff, ret);
+	}
+	buff_readline_update(&state->readline_buff);
+	return (!has_read);
+}
+
 // 1 on ctrl-d
 int	buff_readline(t_state *state, t_dyn_str *ret, char *prompt)
 {
@@ -106,9 +128,13 @@ int	buff_readline(t_state *state, t_dyn_str *ret, char *prompt)
 
 	if (!state->readline_buff.has_line)
 	{
-		if (state->readline_buff.no_readline)
+		if (state->input_method == INP_ARG
+			|| state->input_method == INP_FILE)
 			return (0);
-		code = get_more_input_readline(&state->readline_buff, prompt);
+		if (state->input_method == INP_STDIN_NOTTY)
+			code = get_more_input_notty(state);
+		else
+			code = get_more_input_readline(&state->readline_buff, prompt);
 		if (code == 1) // ctrl - d
 			return (0);
 		if (code == 2) // ctrl-c
