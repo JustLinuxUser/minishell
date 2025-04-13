@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 00:07:42 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/13 00:21:54 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/13 19:07:51 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -332,15 +332,7 @@ t_ast_node	parse_tokens(t_state* state, t_parser *parser, t_deque_tt *tokens)
 
 	parser->res = RES_OK;
 	ret = parse_simple_list(state, parser, tokens);
-	if (parser->res == RES_FatalError)
-	{
-		printf("Parse error!\n");
-	}
-	else if (parser->res == RES_MoreInput)
-	{
-		printf("Need more input\n");
-	}
-	else
+	if (parser->res == RES_OK)
 	{
 		tt = deque_tt_pop_start(tokens).tt;
 		if (tt != TT_END)

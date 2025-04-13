@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/13 18:57:50 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/13 19:05:16 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,6 @@ void err_cmd_other(t_state* state, char* cmd) {
 // returns status
 int actually_run(t_state* state, t_vec_str* args) {
     assert(args->len >= 1);
-    ft_eprintf("executing cmd: %s\n", args->buff[0]);
 	if (builtin_func(args->buff[0])) {
 		exit(builtin_func(args->buff[0])(state, *args));
 	}
@@ -119,8 +118,6 @@ void free_executable_node(t_state *state, t_executable_node *node)
 	t_redir	*curr;
 
     for (size_t i = 0; i < node->redirs.len; i++) {
-		printf("i: %i\n", node->redirs.buff[i]);
-		printf("len: %zu\n", state->redirects.len);
 		curr = &state->redirects.buff[node->redirs.buff[i]];
 		if (curr->should_delete)
 			unlink(curr->fname);

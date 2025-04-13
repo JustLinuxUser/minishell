@@ -1,6 +1,5 @@
 #include "libft/dsa/dyn_str.h"
 #include "libft/ft_printf/ft_printf.h"
-#include "libft/gnl/get_next_line.h"
 #include "minishell.h"
 #include "libft/libft.h"
 #include <assert.h>
@@ -95,7 +94,6 @@ void update_context(t_state *state)
 		return ;
 	free(state->context);
 	state->context = ft_asprintf("%s: line %i", state->base_context, state->readline_buff.line);
-	printf("%p\n", state->context);
 }
 
 int get_more_input_notty(t_state *state)

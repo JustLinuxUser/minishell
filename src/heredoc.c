@@ -6,12 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 13:59:13 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/12 17:43:37 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/13 19:08:29 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft/dsa/dyn_str.h"
-#include "libft/ft_printf/ft_printf.h"
 #include "libft/libft.h"
 #include "minishell.h"
 #include <assert.h>
@@ -209,7 +208,6 @@ int gather_heredocs(t_state* state, t_ast_node* node) {
 		{
 			int wr_fd = ft_mktemp(state, node);
 			t_dyn_str sep = word_to_hrdoc_string(node->children.buff[1]);
-			printf("sep: %.*s\n", (int)sep.len, sep.buff);
 			assert(sep.buff);
 			t_heredoc_req req = {
 				.sep = sep.buff,

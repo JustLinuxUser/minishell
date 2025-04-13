@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 09:39:34 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/13 18:55:32 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/13 19:06:19 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,6 @@ bool	readline_cmd(t_state *state, char *prompt, t_deque_tt *tt)
 
 	deque_tt_clear(tt);
 	stat = buff_readline(state, &state->input, prompt);
-	printf("input: %.*s\n", (int)state->input.len, state->input.buff);
 	free(prompt);
 	if (stat == 0 || stat == 2 || !state->input.len)
 	{
