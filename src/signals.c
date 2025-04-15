@@ -43,9 +43,20 @@ void	die_on_sig(void)
 	struct sigaction	new_action = {};
 
 	new_action.sa_handler = die_sig;
-    sigemptyset(&new_action.sa_mask);
-    new_action.sa_flags = 0;
-    sigaction(SIGINT, &new_action, NULL);
+	sigemptyset(&new_action.sa_mask);
+	new_action.sa_flags = 0;
+	sigaction(SIGINT, &new_action, NULL);
+}
+
+void	default_signal_handlers(void)
+{
+	struct sigaction	new_action = {};
+
+	new_action.sa_handler = SIG_DFL;
+	sigemptyset(&new_action.sa_mask);
+	new_action.sa_flags = 0;
+	sigaction(SIGINT, &new_action, NULL);
+	sigaction(SIGQUIT, &new_action, NULL);
 }
 
 void set_unwind(int sig) {

@@ -6,14 +6,16 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:51:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/19 04:51:40 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/15 18:17:38 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/wait.h>
 #include "vec_exe_res.h"
 #include "../libft/utils/utils.h"
+#include "../minishell.h"
 
 int	vec_exe_res_init(t_vec_exe_res *ret)
 {
@@ -69,10 +71,16 @@ t_exe_res res_pid(int pid)
 	return (t_exe_res){.status = -1, .pid = pid};
 }
 
-int exe_res_to_status(t_exe_res res)
+void	exe_res_set_status(t_exe_res *res)
 {
-	if (res.status != -1)
-		return (res.status);
-	waitpid(res.pid, &res.status, 0);
-	return (res.status);
+	int	status;
+
+	if (res->status != -1)
+		return ;
+	ft_assert(res->pid != -1);
+	waitpid(res->pid, &status, 0);
+	if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
+		res->c_c = true;
+	res->status = WEXITSTATUS(status)
+		+ WIFSIGNALED(status) * 128 + WIFSIGNALED(status) * WTERMSIG(status);
 }

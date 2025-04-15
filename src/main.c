@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 09:39:34 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/13 19:06:19 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/14 22:08:17 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,6 +97,7 @@ t_dyn_str	prompt_more_input(t_parser *parser)
 t_dyn_str	prompt_normal(t_state *state)
 {
 	t_dyn_str	ret;
+
 	dyn_str_init(&ret);
 	dyn_str_push(&ret, RL_PROMPT_START_IGNORE);
 	if (ft_strcmp(state->last_cmd_status, "0") == 0)
@@ -122,8 +123,6 @@ bool	readline_cmd(t_state *state, char *prompt, t_deque_tt *tt)
 	{
 		if (stat == 0)
 			state->should_exit = true;
-		else if (stat == 2)
-			state->should_reset = 1;
 		return (true);
 	}
 	return (false);
@@ -148,19 +147,6 @@ void	get_more_tokens(t_state *state, char *prompt, t_deque_tt *tt)
 	}
 }
 
-void	manage_history(t_state *state)
-{
-	char	*temp;
-
-	if (state->readline_buff.cursor > 1)
-	{
-		temp = ft_strndup(state->readline_buff.buff.buff,
-				state->readline_buff.cursor - 1);
-		add_history(temp);
-		free(temp);
-	}
-	buff_readline_reset(&state->readline_buff);
-}
 
 bool	try_parse_tokens(t_state *state, t_parser *parser, t_deque_tt *tt, char **prompt)
 {
@@ -265,6 +251,7 @@ void	free_all_state(t_state *state)
 	free(state->readline_buff.buff.buff);
 	free_redirects(&state->redirects);
 	free_ast(&state->tree);
+	free_hist(state);
 }
 
 void init_arg(t_state *state, char **argv)
@@ -282,14 +269,15 @@ void init_arg(t_state *state, char **argv)
 	state->input_method = INP_ARG;
 }
 
-void init_file(t_state *state, char **argv)
+void	init_file(t_state *state, char **argv)
 {
 	int	fd;
 
 	fd = open(argv[1], O_RDONLY);
 	if (fd < 0)
 	{
-		ft_eprintf("%s: %s: %s\n", state->base_context, argv[1], strerror(errno));
+		ft_eprintf("%s: %s: %s\n", state->base_context,
+			argv[1], strerror(errno));
 		free_all_state(state);
 		if (errno == EISDIR)
 			exit(127);
@@ -307,7 +295,7 @@ void init_file(t_state *state, char **argv)
 	state->input_method = INP_FILE;
 }
 
-void init_stdin_notty(t_state *state)
+void	init_stdin_notty(t_state *state)
 {
 	state->input_method = INP_STDIN_NOTTY;
 	state->readline_buff.should_update_context = true;
@@ -323,17 +311,13 @@ void	init_setup(t_state *state, char **argv, char **envp)
 	state->base_context = ft_strdup(argv[0]);
 	state->last_cmd_status = ft_strdup("0");
 	if (argv[1] && ft_strcmp(argv[1], "-c") == 0)
-	{
 		init_arg(state, argv);
-	}
 	else if (argv[1])
-	{
 		init_file(state, argv);
-	}
 	else if (!isatty(0) || !isatty(1))
-	{
 		init_stdin_notty(state);
-	}
+	else
+		init_history(state);
 }
 
 int	main(int argc, char **argv, char **envp)

@@ -150,6 +150,12 @@ enum e_input_method {
 	INP_ARG,
 	INP_STDIN_NOTTY,
 };
+typedef struct s_history
+{
+	bool		hist_active;
+	int			append_fd;
+	t_vec_str	hist_cmds;
+}	t_history;
 
 typedef struct s_state {
 	t_dyn_str		input;
@@ -160,8 +166,8 @@ typedef struct s_state {
 	char			*context;
 	char			*pid;
 	char			*last_cmd_status;
+	t_history		hist;
 	bool			should_exit;
-	bool			should_reset;
 	t_vec_redir 	redirects;
 	int				heredoc_idx;
 	t_buff_readline	readline_buff;
@@ -279,6 +285,7 @@ typedef struct executable_node_s {
 }	t_executable_node;
 
 t_exe_res	execute_command(t_state* state, t_executable_node *exe);
+t_exe_res	execute_tree_node(t_state* state, t_executable_node *exe);
 t_dyn_str	word_to_string(t_ast_node node);
 t_dyn_str	word_to_hrdoc_string(t_ast_node node);
 
@@ -316,6 +323,7 @@ void		signal_handling(void);
 void		die_on_sig(void);
 void		set_unwind_sig(void);
 t_dyn_str	getcwd_dyn_str(void);
+void	default_signal_handlers(void);
  
 // TODO: Delete this:
 size_t	get_timestamp_micro(void);
@@ -324,4 +332,9 @@ size_t	get_timestamp_micro(void);
 void expand_word(t_state *state, t_ast_node *node, t_vec_str *args, bool keep_as_one);
 int expand_simple_command(t_state* state, t_ast_node* node, executable_cmd_t *ret, t_vec_int * redirects);
 int redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx);
+
+// hist
+void	manage_history(t_state *state);
+void	init_history(t_state *state);
+void	free_hist(t_state *state);
 #endif

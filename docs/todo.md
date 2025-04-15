@@ -34,6 +34,7 @@
     [x] $?
         [x] Set on syntax error
     [ ] $RANDOM
+    [ ] _=, the path of the cmd
     [x] PWD in new processes (father)
 
 [?] Ctrl-D handling with non empty lines
@@ -66,6 +67,8 @@
 [x] Ambiguous redirect better error messages
 [ ] All open / write calls should be error protected
 
+[ ] return proper exit status when executing, and getting a directory
+
 - [x] Glob expansion
     - [x] sort ascii
     - [x] echo test, becomes echo test test
@@ -74,16 +77,24 @@
 - [ ] History
     - [x] normal history management + multi-line
     - [x] save line to history, even if it contains syntax error
-    - [ ] history file
-        - [ ] history file parsing.
-        - [ ] for \, I would have to escape \ with \\, and `<CR>` with `\<CR>` like zsh
+    - [x] history file
+        - [x] history file parsing.
+        - [x] for \, I would have to escape \ with \\, and `<CR>` with `\<CR>` like zsh, kinda
+        - [ ] Don't save if the same as last cmd
+    - [ ] clear history for <<-
+    - [ ] reload history after <<-
 
 - [x] Executing sources
     - [x] -c
     - [x] file.sh
-    - [ ] echo echo hi | ./minishell
+    - [x] echo echo hi | ./minishell
 
 
+[ ] 
+    - If a command exits with C-c, the shell stops all future executions,
+        unless in interactive mode, in which case, it resets, and reads the next command
+    - C-c gets forwarded to the cmd in the interactive shell
+    - SIGQUIT is ignored by bash
 [ ] Signals (including Ctrl-\)
     [ ] For expansion, it should stop when recieving a signal
 
@@ -93,7 +104,6 @@ e.g: sleep 10; sleep 10; sleep 10
 - Detect C-c when executing a file, and don't even try to read the next command
 
 [ ] Libft, update, push
-
 
 [x] Close fds properly ;(
     [x] cat | ls

@@ -59,7 +59,8 @@ int	get_more_input_readline(t_buff_readline *l, char *prompt)
 	pid = fork();
 	if (pid == 0)
 	{
-		die_on_sig();
+		// die_on_sig();
+		default_signal_handlers();
 		close(pp[0]);
 		bg_readline(pp[1], prompt);
 	}
@@ -76,11 +77,8 @@ int	get_more_input_readline(t_buff_readline *l, char *prompt)
 		wait(&status);
 		if (WIFSIGNALED(status))
 		{
-			ft_eprintf("\n");
-		}
-		if (WEXITSTATUS(status) == 2)
-		{
-			ft_eprintf("\n");
+			ft_printf("\n");
+			return (2);
 		}
 		return (WEXITSTATUS(status));
 	}

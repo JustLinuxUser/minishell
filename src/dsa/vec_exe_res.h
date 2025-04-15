@@ -6,19 +6,21 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:52:15 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/19 04:51:59 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/15 18:14:43 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef VEC_EXE_RES_H
 # define VEC_EXE_RES_H
+# include <stdbool.h>
 # include <stdlib.h>
 
 typedef struct s_exe_res {
 	// -1 means pending
-	int status;
+	int		status;
 	// -1 means no PID
-	int pid;
+	int		pid;
+	bool	c_c;
 } t_exe_res;
 
 
@@ -36,6 +38,6 @@ t_exe_res	vec_exe_res_idx(t_vec_exe_res *v, size_t idx);
 
 t_exe_res res_status(int status);
 t_exe_res res_pid(int pid);
-int exe_res_to_status(t_exe_res res);
+void	exe_res_set_status(t_exe_res *res);
 
 #endif
