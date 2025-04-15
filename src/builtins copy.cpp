@@ -1,17 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   builtins.c                                         :+:      :+:    :+:   */
+/*   builtins copy.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 21:39:29 by armgonza          #+#    #+#             */
-/*   Updated: 2025/04/15 22:46:11 by armgonza         ###   ########.fr       */
+/*   Updated: 2025/04/15 18:31:08 by armgonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dsa/vec_env.h"
-#include "libft/dsa/dyn_str.h"
 #include "libft/ft_printf/ft_printf.h"
 #include "libft/libft.h"
 #include "minishell.h"
@@ -193,10 +192,15 @@ int	builtin_echo(t_state *state, t_vec_str argv)
 
 int	builtin_pwd(t_state *state, t_vec_str argv)
 {
+	char	*cwd;
+	
 	(void)state;
 	(void)argv;
-	ft_printf("%s\n",state->cwd.buff);
-	return (0);
+
+	cwd = getcwd(NULL, 0); // TO DO: obtener CWD en el caso que el directorio haya sido eliminado con RM -RF mientras estamos dentro del direcotrio 
+	ft_printf("%s\n", cwd);
+	free(cwd);
+	return(0);
 }
 int	builtin_exit(t_state *state, t_vec_str argv)
 {
@@ -261,22 +265,23 @@ static bool	is_valid_ident(char *ident)
 	}
 	return (!ident[i]);
 }
-int	builtin_env(t_state *state, t_vec_str argv)
+int builtin_env(t_state *state, t_vec_str argv)
 {
-	size_t	i;
-
+	size_t i;
 	i = 0;
+
 	(void)argv;
-	while (state->env.len > i)
-	{
-		ft_printf("%s=%s\n", state->env.buff[i].key, state->env.buff[i].value);
+	while(state->env.len > i)
+		{
+		ft_printf("%s=%s\n",state->env.buff[i].key,
+							state->env.buff[i].value);
 		i++;
-	}
-	return (0);
+		}
+	return(0);
 }
 int	builtin_export(t_state *state, t_vec_str argv)
 {
-	size_t	i;
+	size_t		i;
 	char	*val;
 	char	*ident;
 	t_env	*env;
@@ -284,7 +289,7 @@ int	builtin_export(t_state *state, t_vec_str argv)
 
 	status = 0;
 	i = 1;
-	if (argv.len == 1)
+	if(argv.len == 1)	
 		builtin_env(state, argv);
 	while (i < argv.len)
 	{
@@ -324,65 +329,49 @@ int	builtin_cd(t_state *state, t_vec_str argv)
 {
 	char	*cwd;
 	char	*home;
+	t_env	cenv;
 	int		e;
 
-	// t_env	cenv;
 	if (argv.len >= 3)
 	{
-		ft_eprintf("%s: %s: too many arguments\n", state->context,
-			argv.buff[0]);
-		return (1);
+		ft_eprintf("%s: %s: too many arguments\n", state->context, // se queda
+			argv.buff[0]); // se queda 
+		return (1); // se queda
 	}
-	home = env_expand(state, "HOME");
-	if (argv.len == 1)
+	cwd = getcwd(NULL, 0);  // guarda cwd en nuestra variable
+	cenv.key = ft_strdup("OLDPWD"); // guarda ese "oldpwd con ese get cwd, sin embargo no gestiona el caso /../.."
+	cenv.value = cwd; // guarda cwd en el valor de el env ???
+	cenv.exported = true; // marca la variable como exportada
+	env_set(&state->env, cenv); // guarda todo lo que hemos seteado de la nueva variable oldpwd con el set de andri
+	home = env_expand(state, "HOME"); // guarda  en la variable home, la ruta obteniendo el home desde el state /../.."
+	if (argv.len == 1); // entramos a la funcion real de CD en el caso de que no haya ningun imput
 	{
-		if (home == NULL)
+		if (home == NULL) // en el caso de que home este eliminada o no seteada, se devuelve el errror (esto es correcto)?
 		{
-			ft_eprintf("%s: cd: HOME not set\n", state->context);
-			return (1);
-		}
-		e = chdir(home);
+			ft_eprintf("%s: cd: HOME not set\n", state->context); // lo dicho arriba
+			return (1); // retornamos codigo de error 
+		}	
+		chdir(home);// <- comienzo real de la logica de CD; 
 	}
-	if (argv.len == 2)
+	if (argv.len == 2) // en el momento que si se entra a CD;
 	{
-		e = chdir(argv.buff[1]);
-	}
-	if (e == -1)
-	{
-		ft_eprintf("%s: %s: %s: %s\n", state->context, argv.buff[0],
-			argv.buff[1], strerror(errno));
-	}
-	cwd = getcwd(NULL, 0);
-	if (cwd)
-	{
-		state->cwd.len = 0;
-		dyn_str_pushstr(&state->cwd, cwd);
-	}
-	else
-	{
-		if (state->cwd.len > 0)
-		{
-		
-			if(!dyn_str_ends_with_str(&state->cwd, "/"))
-				dyn_str_pushstr(&state->cwd, "/");
-			
-			dyn_str_pushstr(&state->cwd, argv.buff[1]);
-		}
-		else
-		{
+		e = chdir(argv.buff[1]); // se hace chdir y se verifica que no devuelva error, en el caso que devuelva error con el buff se imprime el error del codigo
+		if (e == -1)
 			ft_eprintf("%s: %s: %s: %s\n", state->context, argv.buff[0],
 				argv.buff[1], strerror(errno));
-		}
 	}
-
-	free(cwd);
-	return (0);
+	cwd = getcwd(NULL, 0); //se actualiza cwd pero en nuestra variable local, debo meterlo en la variable del state
+	cenv.key = ft_strdup("PWD"); // con esa actualizacion  se actualiza el "pwd" del env debe meterse duplicado en el env y la estructura ?
+	cenv.value = cwd;//lo mismo de arriba este cwd no es el mismo que hay que actualizar en la estructura ?
+	cenv.exported = true;// bla
+	env_set(&state->env, cenv); // bla
+	return(0);
 }
-/*
-int	builtin_unset(t_state *state, t_vec_str argv)
+int builtin_unset(t_state *state, t_vec_str argv)
 {
+	
 }
-*/
+	
 int (*builtin_func(char *name))(t_state *state, t_vec_str argv)
 {
 	if (ft_strcmp(name, "echo") == 0)

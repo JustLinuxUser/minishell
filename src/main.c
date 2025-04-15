@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
+/*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 09:39:34 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/14 22:08:17 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/15 22:55:13 by armgonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,19 +46,6 @@ char	*getpid_hack(void)
 	free(file.buff);
 	ret = ft_strdup(temp[0]);
 	free_tab(temp);
-	return (ret);
-}
-
-t_dyn_str	getcwd_dyn_str(void)
-{
-	t_dyn_str	ret;
-
-	dyn_str_init(&ret);
-	ret.buff = getcwd(0, 0);
-	if (!ret.buff)
-		critical_error_errno();
-	ret.len = ft_strlen(ret.buff);
-	ret.cap = ret.len;
 	return (ret);
 }
 
@@ -252,6 +239,7 @@ void	free_all_state(t_state *state)
 	free_redirects(&state->redirects);
 	free_ast(&state->tree);
 	free_hist(state);
+	free(state->cwd.buff);
 }
 
 void init_arg(t_state *state, char **argv)
@@ -301,15 +289,28 @@ void	init_stdin_notty(t_state *state)
 	state->readline_buff.should_update_context = true;
 }
 
+void	init_cwd(t_state *state)
+{
+	char *cwd;
+	dyn_str_init(&state->cwd);
+	cwd = getcwd(NULL, 0);
+	if(cwd)
+	{
+		dyn_str_pushstr(&state->cwd, cwd);
+	}
+	free(cwd);
+}
+
 void	init_setup(t_state *state, char **argv, char **envp)
 {
 	ignore_sig();
 	*state = (t_state){0};
 	state->pid = getpid_hack();
-	state->env = env_to_vec_env(envp);
 	state->context = ft_strdup(argv[0]);
 	state->base_context = ft_strdup(argv[0]);
 	state->last_cmd_status = ft_strdup("0");
+	init_cwd(state);
+	state->env = env_to_vec_env(state, envp);
 	if (argv[1] && ft_strcmp(argv[1], "-c") == 0)
 		init_arg(state, argv);
 	else if (argv[1])

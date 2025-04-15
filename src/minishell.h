@@ -160,6 +160,7 @@ typedef struct s_history
 typedef struct s_state {
 	t_dyn_str		input;
 	t_vec_env		env;
+	t_dyn_str		cwd;
 	t_ast_node		tree;
 	int				input_method;
 	char			*base_context;
@@ -251,7 +252,7 @@ t_ast_node create_subtoken_node(t_token t, int offset, int end_offset, t_tt tt);
 // heredoc.c
 int gather_heredocs(t_state* state, t_ast_node* node);
 
-t_vec_env env_to_vec_env(char** envp);
+t_vec_env env_to_vec_env(t_state *state, char** envp);
 t_env*	env_get(t_vec_env* env, char* key);
 char* env_expand(t_state* state, char* key);
 char* env_expand_n(t_state* state, char* key, int len);
@@ -322,7 +323,6 @@ void		ignore_sig(void);
 void		signal_handling(void);
 void		die_on_sig(void);
 void		set_unwind_sig(void);
-t_dyn_str	getcwd_dyn_str(void);
 void	default_signal_handlers(void);
  
 // TODO: Delete this:

@@ -16,7 +16,7 @@ t_env	str_to_env(char *str)
 	return (ret);
 }
 
-t_vec_env env_to_vec_env(char **envp)
+t_vec_env env_to_vec_env(t_state *state, char **envp)
 {
 	t_vec_env	ret;
 
@@ -26,8 +26,9 @@ t_vec_env env_to_vec_env(char **envp)
 		vec_env_push(&ret, str_to_env(*envp));
 		envp++;
 	}
-	env_set(&ret, (t_env){.key = ft_strdup("PWD"),
-		.value = getcwd_dyn_str().buff});
+	if (state->cwd.len)
+		env_set(&ret, (t_env){.key = ft_strdup("PWD"),
+			.value = ft_strdup(state->cwd.buff)});
 	return (ret);
 }
 
