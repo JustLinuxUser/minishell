@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 21:39:29 by armgonza          #+#    #+#             */
-/*   Updated: 2025/04/15 22:46:11 by armgonza         ###   ########.fr       */
+/*   Updated: 2025/04/16 23:06:37 by armgonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,7 +195,7 @@ int	builtin_pwd(t_state *state, t_vec_str argv)
 {
 	(void)state;
 	(void)argv;
-	ft_printf("%s\n",state->cwd.buff);
+	ft_printf("%s\n", state->cwd.buff);
 	return (0);
 }
 int	builtin_exit(t_state *state, t_vec_str argv)
@@ -362,10 +362,8 @@ int	builtin_cd(t_state *state, t_vec_str argv)
 	{
 		if (state->cwd.len > 0)
 		{
-		
-			if(!dyn_str_ends_with_str(&state->cwd, "/"))
+			if (!dyn_str_ends_with_str(&state->cwd, "/"))
 				dyn_str_pushstr(&state->cwd, "/");
-			
 			dyn_str_pushstr(&state->cwd, argv.buff[1]);
 		}
 		else
@@ -374,15 +372,37 @@ int	builtin_cd(t_state *state, t_vec_str argv)
 				argv.buff[1], strerror(errno));
 		}
 	}
-
+	free(home);
 	free(cwd);
 	return (0);
 }
-/*
+
+void	try_unset(t_state *state, char *str)
+{
+	size_t	index;
+	t_env	*xenv;
+
+	xenv = env_get(&state->env, str);
+	if (!xenv)
+	{
+		return ;
+	}
+	index = xenv - state->env.buff;
+	vec_env_del(&state->env, index);
+}
+
 int	builtin_unset(t_state *state, t_vec_str argv)
 {
+	size_t	i;
+
+	i = 1;
+	while (i < argv.len)
+	{
+		try_unset(state, argv.buff[i]);
+		i++;
+	}
+	return (0);
 }
-*/
 int (*builtin_func(char *name))(t_state *state, t_vec_str argv)
 {
 	if (ft_strcmp(name, "echo") == 0)
@@ -408,6 +428,10 @@ int (*builtin_func(char *name))(t_state *state, t_vec_str argv)
 	else if (ft_strcmp(name, "env") == 0)
 	{
 		return (builtin_env);
+	}
+	else if (ft_strcmp(name, "unset") == 0)
+	{
+		return (builtin_unset);
 	}
 	return (0);
 }

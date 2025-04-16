@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:52:15 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/11 23:44:51 by armgonza         ###   ########.fr       */
+/*   Updated: 2025/04/16 22:26:58 by armgonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,9 @@ typedef struct s_vec_env
 {
 	size_t	cap;
 	size_t	len;
-	t_env		*buff;
+	t_env	*buff;
 }	t_vec_env;
+void vec_env_del(t_vec_env *v, size_t i);
 int	vec_env_init(t_vec_env *ret);
 int	vec_env_double(t_vec_env *v);
 int	vec_env_push(t_vec_env *v, t_env el);
