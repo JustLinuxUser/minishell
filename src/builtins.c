@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 21:39:29 by armgonza          #+#    #+#             */
-/*   Updated: 2025/04/16 23:06:37 by armgonza         ###   ########.fr       */
+/*   Updated: 2025/04/16 23:15:21 by armgonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -269,7 +269,8 @@ int	builtin_env(t_state *state, t_vec_str argv)
 	(void)argv;
 	while (state->env.len > i)
 	{
-		ft_printf("%s=%s\n", state->env.buff[i].key, state->env.buff[i].value);
+		if(state->env.buff[i].exported)
+			ft_printf("%s=%s\n", state->env.buff[i].key, state->env.buff[i].value);
 		i++;
 	}
 	return (0);
