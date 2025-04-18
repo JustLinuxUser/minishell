@@ -22,7 +22,7 @@
 # define  ANSI_RED "\033[31m"
 # define  ANSI_GREEN "\033[32m"
 # define  ANSI_RESET "\033[0m"
-# define  RL_SPACER_1 "\001\xE2\x80\002\x8B"
+# define  RL_SPACER_1 "\x03"
 
 extern int g_should_unwind;
 
@@ -106,7 +106,7 @@ typedef enum e_ast_t {
 typedef struct redir_s {
 	bool		direction_in;
 	int			fd;
-	char	 *fname;
+	char	 	*fname;
 	bool	should_delete;
 } t_redir;
 
@@ -166,7 +166,8 @@ typedef struct s_state {
 	char			*base_context;
 	char			*context;
 	char			*pid;
-	char			*last_cmd_status;
+	char			*last_cmd_status_s;
+	t_exe_res		last_cmd_status_res;
 	t_history		hist;
 	bool			should_exit;
 	t_vec_redir 	redirects;
@@ -196,9 +197,14 @@ typedef struct executable_cmd_s {
 } executable_cmd_t;
 
 // lexer.c
+typedef struct op_map_s {
+	char* str;
+	t_tt t;
+} op_map_t;
+char* tokenizer(char* str, t_deque_tt* ret);
+
 void free_all_state(t_state *state);
 
-char* tokenizer(char* str, t_deque_tt* ret);
 
 int	vec_redir_init(t_vec_redir *ret);
 int	vec_redir_double(t_vec_redir *v);
@@ -270,6 +276,7 @@ char* expand_word_single(t_state* state, t_ast_node* curr);
 // builtins
 int (*builtin_func(char *name)) (t_state *state, t_vec_str argv);
 
+
 // executor
 typedef struct executable_node_s {
 	int			infd;
@@ -285,16 +292,20 @@ typedef struct executable_node_s {
 	bool		modify_parent_context;
 }	t_executable_node;
 
+void	forward_exit_status(t_exe_res res);
 t_exe_res	execute_command(t_state* state, t_executable_node *exe);
 t_exe_res	execute_tree_node(t_state* state, t_executable_node *exe);
 t_dyn_str	word_to_string(t_ast_node node);
 t_dyn_str	word_to_hrdoc_string(t_ast_node node);
+void	set_cmd_status(t_state *state, t_exe_res res);
 
 // error.c
-void critical_error(char *error);
-void critical_error_errno();
-void warning_error(char *error) ;
-void warning_error_errno() ;
+void	critical_error(char *error);
+void	critical_error_errno();
+void	warning_error(char *error) ;
+void	warning_error_errno();
+void	err_1_errno(t_state *state, char *p1);
+void	err_2(t_state *state, char *p1, char *p2);
 
 // utils.c
 void free_tab(char** tab);
@@ -319,11 +330,10 @@ size_t		matches_pattern(char *name, t_vec_glob patt, size_t offset, bool first);
 void		ft_quicksort(t_vec_str *vec);
 
 // signals.c
-void		ignore_sig(void);
-void		signal_handling(void);
-void		die_on_sig(void);
 void		set_unwind_sig(void);
 void	default_signal_handlers(void);
+void	readline_bg_signals(void);
+void	set_unwind_sig_norestart(void);
  
 // TODO: Delete this:
 size_t	get_timestamp_micro(void);
@@ -337,4 +347,8 @@ int redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx);
 void	manage_history(t_state *state);
 void	init_history(t_state *state);
 void	free_hist(t_state *state);
+
+// free utils
+void	free_all_state(t_state *state);
+void	free_redirects(t_vec_redir *v);
 #endif

@@ -6,13 +6,14 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 09:39:34 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/15 22:55:13 by armgonza         ###   ########.fr       */
+/*   Updated: 2025/04/18 00:54:07 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
+#include "dsa/vec_exe_res.h"
 #include "libft/ft_printf/ft_printf.h"
 #include "minishell.h"
 #include <stdbool.h>
@@ -87,7 +88,7 @@ t_dyn_str	prompt_normal(t_state *state)
 
 	dyn_str_init(&ret);
 	dyn_str_push(&ret, RL_PROMPT_START_IGNORE);
-	if (ft_strcmp(state->last_cmd_status, "0") == 0)
+	if (state->last_cmd_status_res.status == 0)
 		dyn_str_pushstr(&ret, ANSI_GREEN);
 	else
 		dyn_str_pushstr(&ret, ANSI_RED);
@@ -109,6 +110,8 @@ bool	readline_cmd(t_state *state, char *prompt, t_deque_tt *tt)
 	if (stat == 0 || stat == 2 || !state->input.len)
 	{
 		if (stat == 0)
+			state->should_exit = true;
+		if (stat == 2 && state->input_method != INP_READLINE)
 			state->should_exit = true;
 		return (true);
 	}
@@ -134,6 +137,12 @@ void	get_more_tokens(t_state *state, char *prompt, t_deque_tt *tt)
 	}
 }
 
+void	set_cmd_status(t_state *state, t_exe_res res)
+{
+	state->last_cmd_status_res = res;
+	free(state->last_cmd_status_s);
+	state->last_cmd_status_s = ft_itoa(res.status);
+}
 
 bool	try_parse_tokens(t_state *state, t_parser *parser, t_deque_tt *tt, char **prompt)
 {
@@ -151,30 +160,18 @@ bool	try_parse_tokens(t_state *state, t_parser *parser, t_deque_tt *tt, char **p
 		*prompt = prompt_more_input(parser).buff;
 	}
 	else if (parser->res == RES_FatalError)
-	{
-		free(state->last_cmd_status);
-		state->last_cmd_status = ft_itoa(SYNTAX_ERR);
-	}
+		set_cmd_status(state, (t_exe_res){.status = SYNTAX_ERR});
 	free_ast(&state->tree);
 	return (true);
 }
 
-void	set_cmd_status(t_state *state, char *new_status)
-{
-	free(state->last_cmd_status);
-	state->last_cmd_status = new_status;
-}
-
 void	execute_tree(t_state *state)
 {
-	// print_ast_dot(state->tree);
+	print_ast_dot(state->tree);
 	execute_top_level(state);
 	free_ast(&state->tree);
 	if (g_should_unwind)
-	{
-		free(state->last_cmd_status);
-		state->last_cmd_status = ft_itoa(CANCELED);
-	}
+		set_cmd_status(state, (t_exe_res){.status = CANCELED, .c_c = true});
 }
 
 void	parse_and_execute_input(t_state *state)
@@ -189,11 +186,10 @@ void	parse_and_execute_input(t_state *state)
 	while (parser.res == RES_MoreInput)
 	{
 		get_more_tokens(state, prompt, &tt);
-		if (state->should_exit)
-			break ;
 		if (g_should_unwind)
-			set_cmd_status(state, ft_itoa(CANCELED));
-		if (!try_parse_tokens(state, &parser, &tt, &prompt))
+			set_cmd_status(state, (t_exe_res){.status = CANCELED, .c_c = true});
+		if (state->should_exit
+			|| !try_parse_tokens(state, &parser, &tt, &prompt))
 			break ;
 	}
 	if (parser.res == RES_OK)
@@ -207,46 +203,13 @@ void	parse_and_execute_input(t_state *state)
 	free(tt.buff);
 }
 
-void	free_redirects(t_vec_redir *v)
-{
-	size_t	i;
-	t_redir	c;
 
-	i = 0;
-	while (i < v->len)
-	{
-		c = v->buff[i];
-		if (c.should_delete)
-			unlink(c.fname);
-		free(c.fname);
-		i++;
-	}
-	free(v->buff);
-	vec_redir_init(v);
-}
-
-void	free_all_state(t_state *state)
-{
-	free(state->input.buff);
-	state->input = (t_dyn_str){};
-	free(state->last_cmd_status);
-	free(state->pid);
-	free(state->context);
-	free(state->base_context);
-	state->context = 0;
-	state->base_context = 0;
-	free(state->readline_buff.buff.buff);
-	free_redirects(&state->redirects);
-	free_ast(&state->tree);
-	free_hist(state);
-	free(state->cwd.buff);
-}
-
-void init_arg(t_state *state, char **argv)
+void	init_arg(t_state *state, char **argv)
 {
 	if (!argv[2])
 	{
-		ft_eprintf("%s: -c: option requires an argument\n", state->base_context);
+		ft_eprintf("%s: -c: option requires an argument\n",
+			state->base_context);
 		free_all_state(state);
 		exit(SYNTAX_ERR);
 	}
@@ -291,10 +254,11 @@ void	init_stdin_notty(t_state *state)
 
 void	init_cwd(t_state *state)
 {
-	char *cwd;
+	char	*cwd;
+
 	dyn_str_init(&state->cwd);
 	cwd = getcwd(NULL, 0);
-	if(cwd)
+	if (cwd)
 	{
 		dyn_str_pushstr(&state->cwd, cwd);
 	}
@@ -303,12 +267,13 @@ void	init_cwd(t_state *state)
 
 void	init_setup(t_state *state, char **argv, char **envp)
 {
-	ignore_sig();
+	set_unwind_sig();
 	*state = (t_state){0};
 	state->pid = getpid_hack();
 	state->context = ft_strdup(argv[0]);
 	state->base_context = ft_strdup(argv[0]);
-	state->last_cmd_status = ft_strdup("0");
+	set_cmd_status(state, res_status(0));
+	state->last_cmd_status_res = res_status(0);
 	init_cwd(state);
 	state->env = env_to_vec_env(state, envp);
 	if (argv[1] && ft_strcmp(argv[1], "-c") == 0)
@@ -324,7 +289,6 @@ void	init_setup(t_state *state, char **argv, char **envp)
 int	main(int argc, char **argv, char **envp)
 {
 	t_state	state;
-	int		status;
 
 	(void)argc;
 	init_setup(&state, argv, envp);
@@ -338,8 +302,7 @@ int	main(int argc, char **argv, char **envp)
 		free(state.input.buff);
 		state.input = (t_dyn_str){};
 	}
-	status = ft_atoi(state.last_cmd_status);
 	free_env(&state.env);
 	free_all_state(&state);
-	return (status);
+	forward_exit_status(state.last_cmd_status_res);
 }

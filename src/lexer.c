@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 14:56:57 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/11 16:54:32 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/18 12:36:55 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,11 +96,6 @@ static char	*parse_word(t_deque_tt *tokens, char **str)
 	return (0);
 }
 
-typedef struct op_map_s {
-	char* str;
-	t_tt t;
-} op_map_t;
-
 int	longest_matching_str(op_map_t *needles, char *haystack)
 {
 	int	max_idx;
@@ -126,24 +121,25 @@ int	longest_matching_str(op_map_t *needles, char *haystack)
 
 void	parse_op(t_deque_tt *tokens, char **str)
 {
-	op_map_t operators[] = {
-		(op_map_t){"|", TT_PIPE},
-		(op_map_t){"<<", TT_HEREDOC},
-		(op_map_t){"<<-", TT_HEREDOC},
-		(op_map_t){">>", TT_APPEND},
-		(op_map_t){"(", TT_BRACE_LEFT},
-		(op_map_t){")", TT_BRACE_RIGHT},
-		(op_map_t){">", TT_REDIRECT_RIGHT},
-		(op_map_t){"<", TT_REDIRECT_LEFT},
-		(op_map_t){"&&", TT_AND},
-		(op_map_t){"&", TT_END},
-		(op_map_t){"||", TT_OR},
-		(op_map_t){";", TT_SEMICOLON},
-		(op_map_t){0, TT_END},
-	};
+	char		*start;
+	int			op_idx;
+	op_map_t	operators[13];
 
-	char* start = *str;
-	int op_idx = longest_matching_str(operators, *str);
+	operators[0] = (op_map_t){"|", TT_PIPE};
+	operators[1] = (op_map_t){"<<", TT_HEREDOC};
+	operators[2] = (op_map_t){"<<-", TT_HEREDOC};
+	operators[3] = (op_map_t){">>", TT_APPEND};
+	operators[4] = (op_map_t){"(", TT_BRACE_LEFT};
+	operators[5] = (op_map_t){")", TT_BRACE_RIGHT};
+	operators[6] = (op_map_t){">", TT_REDIRECT_RIGHT};
+	operators[7] = (op_map_t){"<", TT_REDIRECT_LEFT};
+	operators[8] = (op_map_t){"&&", TT_AND};
+	operators[9] = (op_map_t){"&", TT_END};
+	operators[10] = (op_map_t){"||", TT_OR};
+	operators[11] = (op_map_t){";", TT_SEMICOLON};
+	operators[12] = (op_map_t){0, TT_END};
+	start = *str;
+	op_idx = longest_matching_str(operators, *str);
 	assert(op_idx != -1);
 	*str += ft_strlen(operators[op_idx].str);
 	deque_tt_push_end(tokens, (t_token){.start = start,
@@ -153,24 +149,28 @@ void	parse_op(t_deque_tt *tokens, char **str)
 
 // If returns 0, it finished properly, if it returns a ptr, make a prompt
 // with that str
-char* tokenizer(char* str, t_deque_tt* ret) {
-	char* prompt = 0;
+char	*tokenizer(char *str, t_deque_tt *ret)
+{
+	char	*prompt;
 
-	while (*str) {
-		if (*str == '\'' || *str == '"' || *str == '$' ||
-			!(is_special_char(*str))) {
+	prompt = 0;
+	while (*str)
+	{
+		if (*str == '\'' || *str == '"' || *str == '$'
+			|| !(is_special_char(*str)))
 			prompt = parse_word(ret, &str);
-		} else if (*str == '\n') {
+		else if (*str == '\n')
+		{
 			deque_tt_push_end(
 				ret, (t_token){.start = str, .len = 1, .tt = TT_NEWLINE});
 			str++;
-		} else if (is_space(*str)) {
-			str++;
-		} else {
-			parse_op(ret, &str);
 		}
+		else if (is_space(*str))
+			str++;
+		else
+			parse_op(ret, &str);
 		if (prompt)
-			break;
+			break ;
 	}
 	deque_tt_push_end(ret, (t_token){.tt = TT_END});
 	return (prompt);

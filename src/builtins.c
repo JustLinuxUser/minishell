@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 21:39:29 by armgonza          #+#    #+#             */
-/*   Updated: 2025/04/18 17:19:35 by armgonza         ###   ########.fr       */
+/*   Updated: 2025/04/18 17:24:08 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -209,7 +209,7 @@ int	builtin_exit(t_state *state, t_vec_str argv)
 		free_all_state(state);
 		exit(0);
 	}
-	err = ft_checked_atoi(argv.buff[1], &ret, 35);
+	err = ft_checked_atoi(argv.buff[1], &ret, 42);
 	if (err != 0)
 	{
 		ft_eprintf("%s: %s: %s: numeric argument required\n", state->context,

@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 13:59:13 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/13 19:08:29 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/18 16:22:25 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,12 +21,12 @@
 #include <unistd.h>
 
 // returns writable fd
-int ft_mktemp(t_state *state, t_ast_node *node)
+int	ft_mktemp(t_state *state, t_ast_node *node)
 {
-	t_redir ret;
-	char *temp;
-	int wr_fd;
-	t_dyn_str fname;
+	t_redir		ret;
+	char		*temp;
+	int			wr_fd;
+	t_dyn_str	fname;
 
 	ret = (t_redir){.direction_in = true, .should_delete = true};
 	dyn_str_init(&fname);
@@ -35,7 +35,6 @@ int ft_mktemp(t_state *state, t_ast_node *node)
 		dyn_str_pushstr(&fname, state->pid);
 	dyn_str_pushstr(&fname, "_");
 	temp = ft_itoa(state->heredoc_idx++);
-
 	dyn_str_pushstr(&fname, temp);
 	ret.fname = fname.buff;
 	free(temp);
@@ -51,14 +50,14 @@ int ft_mktemp(t_state *state, t_ast_node *node)
 	return (wr_fd);
 }
 
-char *first_non_tab(char *line)
+char	*first_non_tab(char *line)
 {
 	while (*line == '\t')
 		line++;
 	return (line);
 }
 
-int env_len (char *line)
+int	env_len(char *line)
 {
 	int	len;
 
@@ -71,18 +70,20 @@ int env_len (char *line)
 		len++;
 	return (len);
 }
-bool is_escapable(char c)
+
+bool	is_escapable(char c)
 {
 	if (c == '\\' || c == '$')
-		return true;
-	return false;
+		return (true);
+	return (false);
 }
 
-void expand_line(t_state *state, t_dyn_str *full_file, char *line)
+void	expand_line(t_state *state, t_dyn_str *full_file, char *line)
 {
-	int	i;
-	int len;
-	bool bs;
+	int		i;
+	int		len;
+	bool	bs;
+	char	*env;
 
 	i = 0;
 	bs = 0;
@@ -99,7 +100,7 @@ void expand_line(t_state *state, t_dyn_str *full_file, char *line)
 			}
 			i++;
 			bs = false;
-			continue;
+			continue ;
 		}
 		if (line[i] == '$')
 		{
@@ -107,14 +108,14 @@ void expand_line(t_state *state, t_dyn_str *full_file, char *line)
 			len = env_len(line + i);
 			if (len)
 			{
-				char *env = env_expand_n(state, line + i, len);
+				env = env_expand_n(state, line + i, len);
 				if (env)
 					dyn_str_pushstr(full_file, env);
 			}
-			else 
+			else
 				dyn_str_push(full_file, line[i]);
 			i += len;
-			continue;
+			continue ;
 		}
 		else if (line[i] == '\\')
 			bs = true;
@@ -124,27 +125,28 @@ void expand_line(t_state *state, t_dyn_str *full_file, char *line)
 	}
 }
 
-typedef struct s_heredoc_req {
-	t_dyn_str full_file;
-	bool finished;
-	char *sep;
-	bool expand;
-	bool remove_tabs;
-} t_heredoc_req;
+typedef struct s_heredoc_req
+{
+	t_dyn_str	full_file;
+	bool		finished;
+	char		*sep;
+	bool		expand;
+	bool		remove_tabs;
+}	t_heredoc_req;
 
 // should brake
-void process_line(t_state *state, t_heredoc_req *req)
+void	process_line(t_state *state, t_heredoc_req *req)
 {
-	t_dyn_str alloc_line;
-	int stat;
-	char *line;
+	t_dyn_str	alloc_line;
+	int			stat;
+	char		*line;
 
 	dyn_str_init(&alloc_line);
 	stat = buff_readline(state, &alloc_line, "heredoc> ");
 	if (stat == 0 || stat == 2)
 	{
 		req->finished = true;
-		return;
+		return ;
 	}
 	if ((req->full_file.len == 0
 			|| req->full_file.buff[req->full_file.len - 1] == '\n')
@@ -152,12 +154,12 @@ void process_line(t_state *state, t_heredoc_req *req)
 	{
 		free(alloc_line.buff);
 		req->finished = true;
-		return;
+		return ;
 	}
 	dyn_str_push(&alloc_line, '\n');
 	if (req->remove_tabs)
 		line = first_non_tab(alloc_line.buff);
-	else 
+	else
 		line = alloc_line.buff;
 	if (req->expand)
 		expand_line(state, &req->full_file, line);
@@ -166,26 +168,27 @@ void process_line(t_state *state, t_heredoc_req *req)
 	free(alloc_line.buff);
 }
 
-
-void write_heredoc(t_state *state, int wr_fd, t_heredoc_req *req)
+void	write_heredoc(t_state *state, int wr_fd, t_heredoc_req *req)
 {
-	while (!req->finished) {
+	while (!req->finished)
+	{
 		process_line(state, req);
 	}
 	if (req->full_file.len)
 		assert(write_to_file(req->full_file.buff, wr_fd) == 0);
 	free(req->full_file.buff);
 }
-//
-bool contains_quotes(t_ast_node node)
+
+bool	contains_quotes(t_ast_node node)
 {
-    if (node.node_type == AST_TOKEN) {
-        if (node.token.tt == TT_DQENVVAR || node.token.tt == TT_DQWORD ||
-            node.token.tt == TT_SQWORD) {
-            return (true);
-        }
-    }
-	for (size_t i = 0; i < node.children.len; i++)
+	size_t	i;
+
+	if (node.node_type == AST_TOKEN
+		&& (node.token.tt == TT_DQENVVAR || node.token.tt == TT_DQWORD
+			|| node.token.tt == TT_SQWORD))
+		return (true);
+	i = 0;
+	while (i < node.children.len)
 	{
 		if (contains_quotes(node.children.buff[i]))
 			return (true);
@@ -193,30 +196,42 @@ bool contains_quotes(t_ast_node node)
 	return (false);
 }
 
-int gather_heredocs(t_state* state, t_ast_node* node) {
-    size_t i;
+void gather_heredoc(t_state *state, t_ast_node *node)
+{
+	int				wr_fd;
+	t_dyn_str		sep;
+	t_heredoc_req	req;
 
-    i = 0;
-    while (i < node->children.len && !g_should_unwind) {
-        gather_heredocs(state, &node->children.buff[i]);
-		i++;
-    }
-    if (node->node_type == AST_REDIRECT)
+	assert(node->children.len >= 1);
+	if (node->children.buff[0].token.tt == TT_HEREDOC)
 	{
-        assert(node->children.len >= 1);
-        if (node->children.buff[0].token.tt == TT_HEREDOC)
-		{
-			int wr_fd = ft_mktemp(state, node);
-			t_dyn_str sep = word_to_hrdoc_string(node->children.buff[1]);
-			assert(sep.buff);
-			t_heredoc_req req = {
-				.sep = sep.buff,
-				.expand = !contains_quotes(node->children.buff[1]),
-				.remove_tabs =
-					ft_strncmp(node->children.buff[0].token.start, "<<-", 3) == 0};
-			write_heredoc(state, wr_fd, &req);
-			free(sep.buff);
-        }
-    }
-    return (0);
+		wr_fd = ft_mktemp(state, node);
+		sep = word_to_hrdoc_string(node->children.buff[1]);
+		assert(sep.buff);
+		req = (t_heredoc_req){
+			.sep = sep.buff,
+			.expand = !contains_quotes(node->children.buff[1]),
+			.remove_tabs
+			= ft_strncmp(node->children.buff[0].token.start, "<<-", 3)
+			== 0};
+		write_heredoc(state, wr_fd, &req);
+		free(sep.buff);
+	}
+}
+
+int	gather_heredocs(t_state *state, t_ast_node *node)
+{
+	size_t			i;
+
+	i = 0;
+	while (i < node->children.len && !g_should_unwind)
+	{
+		gather_heredocs(state, &node->children.buff[i]);
+		i++;
+	}
+	if (node->node_type == AST_REDIRECT)
+	{
+		gather_heredoc(state, node);
+	}
+	return (0);
 }

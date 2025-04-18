@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/28 18:06:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/10 14:54:48 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/16 13:23:45 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,6 @@ t_vec_str	expand_word_glob(t_ast_node word)
 	t_vec_str	args;
 	t_vec_glob	glob;
 
-	set_unwind_sig();
 	vec_str_init(&args);
 	glob = word_to_glob(word);
 	if (glob.len == 0)
@@ -109,7 +108,6 @@ t_vec_str	expand_word_glob(t_ast_node word)
 	free(glob.buff);
 	if (!g_should_unwind)
 		ft_quicksort(&args);
-	ignore_sig();
 	if (g_should_unwind)
 	{
 		for(size_t i = 0; i < args.len; i++)

@@ -25,9 +25,11 @@
     [x] echo
     [x] exit
         [x] properly free all memory
-    [ ] export
+    [x] export
     [-] cd
         [ ] cd -
+        [ ] PWD, OLDPWD
+    [ ] unset
 
 [x] Special envvars
     [x] $$ -> /proc/self/stat, ft_split()[0]
@@ -95,15 +97,25 @@
         unless in interactive mode, in which case, it resets, and reads the next command
     - C-c gets forwarded to the cmd in the interactive shell
     - SIGQUIT is ignored by bash
+
 [ ] Signals (including Ctrl-\)
-    [ ] For expansion, it should stop when recieving a signal
+    [ ] Fix signals with (sleep 10); echo lol
+    [x] For expansion, it should stop when recieving a signal
+    [ ] print newline on C-c somewhere central, mb (stdout)
+        [ ] only if not actually exiting
+    [ ] don't print it in case of not readline
+        [ ] if output is redirected, don't print newline?
+            - aparrently, if the parent exits with c-c, the shell just prints the newline, like we do lol
+    [ ] Restart syscalls after a signal handler stopped
+        - impossible, probably
+        - possible lol!! SA_RESTART
+
+[x] prompt, change inv char to some other char
 
 [ ] Ctrl-D / Ctrl-C management in tokenizer additional input
 - Detect C-c when executing a command, and don't execute the next one.
 e.g: sleep 10; sleep 10; sleep 10
 - Detect C-c when executing a file, and don't even try to read the next command
-
-[ ] Libft, update, push
 
 [x] Close fds properly ;(
     [x] cat | ls
@@ -112,6 +124,18 @@ e.g: sleep 10; sleep 10; sleep 10
 [x] Make sure that all the vec / deque data types can be initialized  with = {0}
     [x] In minishell
     [x] in libft
+
+[x] libft fix dyn array types
+    - [x] dyn str, is using more the the malloc on init
+    - [x] resonable initial alloc size
+    - [-] mb make normal types just be wrappers against central vec type
+    - [-] str slices
+    - [-] more algorithms
+
+[x] Libft checked atoi, bit 3
+    - [x] modify exit to use the proper nums
+
+- [ ] env, don't search in reverse
 
 [x] Expansion of the special env vars
 

@@ -1,6 +1,7 @@
 #include "dsa/vec_str.h"
 #include "libft/dsa/dyn_str.h"
 #include "libft/libft.h"
+#include "libft/utils/utils.h"
 #include "minishell.h"
 #include <fcntl.h>
 #include <readline/history.h>
@@ -125,13 +126,9 @@ void	manage_history(t_state *state)
 
 	if (state->readline_buff.cursor > 1 && state->hist.hist_active
 		&& (!state->hist.hist_cmds.len
-			|| ft_strlen(
+			|| !str_slice_eq_str(state->readline_buff.buff.buff,
+				state->readline_buff.cursor - 1,
 				state->hist.hist_cmds.buff[state->hist.hist_cmds.len - 1])
-			!= state->readline_buff.cursor - 1
-			|| ft_strncmp(
-				state->hist.hist_cmds.buff[state->hist.hist_cmds.len - 1],
-				state->readline_buff.buff.buff,
-				state->readline_buff.cursor - 1)
 		))
 	{
 		hist_entry = ft_strndup(state->readline_buff.buff.buff,
@@ -149,8 +146,8 @@ void	manage_history(t_state *state)
 			}
 			free(enc_hist_entry);
 		}
-            }
-        buff_readline_reset(&state->readline_buff);
+	}
+	buff_readline_reset(&state->readline_buff);
 }
 
 void	init_history(t_state *state)

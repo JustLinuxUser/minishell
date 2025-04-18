@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/15 18:33:05 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/18 01:07:12 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "minishell.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <stddef.h>
@@ -55,21 +54,6 @@ char	*exe_path(char **path_dirs, char *exe_name)
 	return (free(temp.buff), NULL);
 }
 
-void	err_cmd_not_found(t_state *state, char *cmd)
-{
-	ft_eprintf("%s: %s: command not found\n", state->context, cmd);
-}
-
-void	err_no_path_var(t_state *state, char *cmd)
-{
-	ft_eprintf("%s: %s: No such file or directory\n", state->context, cmd);
-}
-
-void	err_cmd_other(t_state *state, char *cmd)
-{
-	ft_eprintf("%s: %s: %s\n", state->context, cmd, strerror(errno));
-}
-
 char	*find_cmd_path(t_state *state, t_vec_str *args)
 {
 	char	*path;
@@ -79,7 +63,7 @@ char	*find_cmd_path(t_state *state, t_vec_str *args)
 	path = env_expand(state, "PATH");
 	if (!path)
 	{
-		err_no_path_var(state, args->buff[0]);
+		err_2(state, "command not found", args->buff[0]);
 		free_all_state(state);
 		return (0);
 	}
@@ -88,7 +72,7 @@ char	*find_cmd_path(t_state *state, t_vec_str *args)
 	free_tab(path_dirs);
 	if (!path_of_exe)
 	{
-		err_cmd_not_found(state, args->buff[0]);
+		err_2(state, "command not found", args->buff[0]);
 		free_all_state(state);
 		return (0);
 	}
@@ -110,7 +94,7 @@ int	actually_run(t_state *state, t_vec_str *args)
 	vec_str_push(args, 0);
 	envp = get_envp(state);
 	execve(path_of_exe, args->buff, envp);
-	err_cmd_other(state, args->buff[0]);
+	err_1_errno(state, args->buff[0]);
 	free_all_state(state);
 	free_tab(args->buff);
 	free_tab(envp);
@@ -177,17 +161,17 @@ void	set_up_redirection(t_state *state, t_executable_node *exe)
 	i = 0;
 	while (i < exe->redirs.len)
 	{
-		redir = state->redirects.buff[exe->redirs.buff[i]];
+		redir = state->redirects.buff[exe->redirs.buff[i++]];
 		if (redir.direction_in)
 			dup2(redir.fd, 0);
 		else
 			dup2(redir.fd, 1);
 		close(redir.fd);
-		i++;
 	}
 }
 
-t_exe_res	execute_builtin_cmd_fg(t_state *state, executable_cmd_t *cmd, t_executable_node *exe)
+t_exe_res	execute_builtin_cmd_fg(t_state *state, executable_cmd_t *cmd,
+	t_executable_node *exe)
 {
 	int		stdin_bak;
 	int		stdout_bak;
@@ -213,7 +197,7 @@ t_exe_res	execute_cmd_bg(t_state *state, t_executable_node *exe, executable_cmd_
 	pid = fork();
 	if (pid == 0)
 	{
-		die_on_sig();
+		default_signal_handlers();
 		set_up_redirection(state, exe);
 		env_extend(&state->env, &cmd->pre_assigns);
 		exit(actually_run(state, &cmd->argv));
@@ -223,7 +207,7 @@ t_exe_res	execute_cmd_bg(t_state *state, t_executable_node *exe, executable_cmd_
 	return (res_pid(pid));
 }
 
-t_exe_res	execute_simple_command(t_state* state, t_executable_node *exe)
+t_exe_res	execute_simple_command(t_state *state, t_executable_node *exe)
 {
 	executable_cmd_t	cmd;
 
@@ -267,7 +251,8 @@ void	set_up_redir_pipeline_child(bool is_last, t_executable_node *exe,
 	}
 }
 
-void	execute_pipeline_children(t_state *state, t_executable_node *exe, t_vec_exe_res *results)
+void	execute_pipeline_children(t_state *state, t_executable_node *exe,
+	t_vec_exe_res *results)
 {
 	size_t				i;
 	t_executable_node	curr_exe;
@@ -343,23 +328,16 @@ t_exe_res	execute_simple_list(t_state *state, t_executable_node *exe)
 		exe_curr = *exe;
 		exe_curr.node = &exe->node->children.buff[i];
 		if (should_execute(status, op))
+		{
 			status = execute_tree_node(state, &exe_curr);
+			assert(status.status != -1);
+		}
 		i++;
 		if (i < exe->node->children.len)
 			op = exe->node->children.buff[i].token.tt;
 		i++;
 	}
 	return (status);
-}
-
-void	forward_exit_status(t_exe_res res)
-{
-	if (res.c_c)
-	{
-		default_signal_handlers();
-		kill(0, SIGINT);
-	}
-	exit(res.status);
 }
 
 // returns pid
@@ -370,7 +348,7 @@ t_exe_res	execute_subshell(t_state *state, t_executable_node *exe)
 	pid = fork();
 	if (pid == 0)
 	{
-		die_on_sig();
+		set_unwind_sig();
 		set_up_redirection(state, exe);
 		exe->node = &exe->node->children.buff[0];
 		forward_exit_status(execute_tree_node(state, exe));
@@ -422,8 +400,7 @@ t_exe_res	execute_tree_node(t_state *state, t_executable_node *exe)
 		status = execute_simple_list(state, exe);
 	else
 		assert("Unreachable" == 0);
-	free(state->last_cmd_status);
-	state->last_cmd_status = ft_itoa(status.status);
+	set_cmd_status(state, status);
 	return (status);
 }
 
@@ -441,6 +418,12 @@ void	execute_top_level(t_state *state)
 	{
 		res = execute_tree_node(state, &exe);
 		if (res.c_c)
-			ft_printf("\n");
+		{
+			if (state->input_method == INP_READLINE)
+				ft_printf("\n");
+			else
+				state->should_exit = true;
+		}
+		state->last_cmd_status_res = res;
 	}
 }

@@ -9,6 +9,7 @@ t_env	str_to_env(char *str)
 	char	*key_pos;
 
 	key_pos = ft_strchr(str, '=') + 1;
+	ft_assert(key_pos != 0);
 	ret.exported = true;
 	ret.key = malloc(key_pos - str);
 	ft_strlcpy(ret.key, str, key_pos - str);
@@ -55,51 +56,37 @@ char	**get_envp(t_state*state)
 t_env	*env_get(t_vec_env *env, char *key)
 {
 	t_env	*curr;
-	int		i;
+	size_t	i;
 
-	i = env->len - 1;
-	while (i >= 0)
+	i = 0;
+	while (i < env->len)
 	{
 		curr = vec_env_idx(env, i);
 		if (ft_strcmp(key, curr->key) == 0)
 			return (curr);
-		i--;
+		i++;
 	}
 	return (0);
 }
 
-char	*env_expand(t_state *state, char *key)
-{
-	t_env	*curr;
-	int		i;
-
-	i = state->env.len - 1;
-	if (ft_strcmp(key, "?") == 0)
-		return (state->last_cmd_status);
-	else if (ft_strcmp(key, "$") == 0 && state->pid)
-		return (state->pid);
-	while (i >= 0)
-	{
-		curr = vec_env_idx(&state->env, i);
-		if (ft_strcmp(key, curr->key) == 0)
-			return (curr->value);
-		i--;
-	}
-	return (0);
-}
 
 char	*env_expand_n(t_state *state, char *key, int len)
 {
 	t_env	*curr;
 
-	if (ft_strncmp(key, "?", len) == 0)
-		return (state->last_cmd_status);
-	else if (ft_strncmp(key, "$", len) == 0 && state->pid)
+	if (ft_strncmp(key, "?", len) == 0 && len == 1)
+		return (state->last_cmd_status_s);
+	else if (ft_strncmp(key, "$", len) == 0 && state->pid && len == 1)
 		return (state->pid);
 	curr = env_nget(&state->env, key, len);
 	if (curr == 0 || curr->key == 0)
 		return (0);
 	return (curr->value);
+}
+
+char	*env_expand(t_state *state, char *key)
+{
+	return (env_expand_n(state, key, ft_strlen(key)));
 }
 
 int	env_set(t_vec_env *env, t_env new)

@@ -52,12 +52,40 @@ t_ast_node	new_env_node(char *new_start)
 			.tt = TT_ENVVAR}});
 }
 
+void	split_envvar(t_token *curr_t, t_ast_node *curr_node, t_vec_nd *ret)
+{
+	char	**things;
+	int		i;
+
+	if (!curr_t->start)
+		return ;
+	// IFS
+	things = ft_split(curr_t->start, ' ');
+	if (things[0])
+	{
+		vec_nd_push(&curr_node->children, new_env_node(things[0]));
+		i = 1;
+		while (things[i])
+		{
+			vec_nd_push(ret, *curr_node);
+			*curr_node = (t_ast_node){.node_type = AST_WORD};
+			vec_nd_push(&curr_node->children, new_env_node(things[i]));
+			i++;
+		}
+	}
+	else if (curr_node->children.len)
+	{
+		vec_nd_push(ret, *curr_node);
+		*curr_node = (t_ast_node){.node_type = AST_WORD};
+	}
+	free(things);
+}
+
 // node -> split node
 t_vec_nd	split_words(t_ast_node *node)
 {
 	t_vec_nd	ret;
 	t_token		*curr_t;
-	char		**things;
 	t_ast_node	curr_node;
 	int			i;
 
@@ -68,40 +96,13 @@ t_vec_nd	split_words(t_ast_node *node)
 	{
 		assert(node->children.buff[i].node_type == AST_TOKEN);
 		curr_t = &node->children.buff[i].token;
-		if (curr_t->tt == TT_WORD
-			|| curr_t->tt == TT_SQWORD
-			|| curr_t->tt == TT_DQWORD
-			|| curr_t->tt == TT_DQENVVAR)
+		if (curr_t->tt == TT_WORD || curr_t->tt == TT_SQWORD
+			|| curr_t->tt == TT_DQWORD || curr_t->tt == TT_DQENVVAR)
 			vec_nd_push(&curr_node.children, node->children.buff[i]);
 		else if (curr_t->tt == TT_ENVVAR)
-		{
-			if (!curr_t->start)
-				continue ;
-			// IFS
-			things = ft_split(curr_t->start, ' ');
-			if (things[0])
-			{
-				vec_nd_push(&curr_node.children, new_env_node(things[0]));
-				int i = 1;
-				while (things[i])
-				{
-					vec_nd_push(&ret, curr_node);
-					curr_node = (t_ast_node){.node_type = AST_WORD};
-					vec_nd_push(&curr_node.children, new_env_node(things[i]));
-					i++;
-				}
-			}
-			else if (curr_node.children.len)
-			{
-				vec_nd_push(&ret, curr_node);
-				curr_node = (t_ast_node){.node_type = AST_WORD};
-			}
-			free(things);
-		}
+			split_envvar(curr_t, &curr_node, &ret);
 		else
-		{
 			assert("Unreachable" == 0);
-		}
 	}
 	if (curr_node.children.len)
 		vec_nd_push(&ret, curr_node);
@@ -300,11 +301,34 @@ t_token_old	get_full_word_from_word(t_ast_node word)
 	return (ret);
 }
 
+bool create_redir(t_tt tt, char *fname, t_redir *ret)
+{
+	assert(tt != TT_HEREDOC && "HEREDOCS are handled separately");
+	ret->fname = fname;
+	ret->direction_in = tt == TT_REDIRECT_LEFT;
+	if (!ret->fname)
+		return (false);
+	if (tt == TT_REDIRECT_LEFT)
+		ret->fd = open(ret->fname, O_RDONLY);
+	else if (tt == TT_REDIRECT_RIGHT)
+		ret->fd = open(ret->fname, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	else if (tt == TT_APPEND)
+		ret->fd = open(ret->fname, O_WRONLY | O_CREAT | O_APPEND, 0666);
+	if (ret->fd < 0)
+	{
+		free(ret->fname);
+		return (false);
+	}
+	ret->should_delete = false;
+	return (true);
+}
+
 int	redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx)
 {
 	t_redir		ret;
 	t_tt		tt;
-	t_token_old	full_word;
+	t_token_old	full_token;
+	char		*fname;
 
 	assert(curr->node_type == AST_REDIRECT);
 	if (curr->has_redirect)
@@ -313,42 +337,54 @@ int	redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx)
 		return (0);
 	}
 	tt = curr->children.buff[0].token.tt;
-	assert(tt != TT_HEREDOC && "HEREDOCS are handled separately");
-	ret.direction_in = tt == TT_REDIRECT_LEFT;
-	full_word = get_full_word_from_word(curr->children.buff[1]);
-	ret.fname = expand_word_single(state, vec_nd_idx(&curr->children, 1));
-	if (!ret.fname)
+	full_token = get_full_word_from_word(curr->children.buff[1]);
+	fname = expand_word_single(state, vec_nd_idx(&curr->children, 1));
+	if (!create_redir(tt, fname, &ret))
 	{
-		ft_eprintf("%s: %.*s: ambigous redirect\n", state->context, full_word.len, full_word.start);
+		ft_eprintf("%s: %.*s: ambigous redirect\n",
+			state->context, full_token.len, full_token.start);
 		return (-1);
 	}
-	if (tt == TT_REDIRECT_LEFT)
-		ret.fd = open(ret.fname, O_RDONLY);
-	else if (tt == TT_REDIRECT_RIGHT)
-		ret.fd = open(ret.fname, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	else if (tt == TT_APPEND)
-		ret.fd = open(ret.fname, O_WRONLY | O_CREAT | O_APPEND, 0666);
-	if (ret.fd < 0)
-	{
-		free(ret.fname);
-		ft_eprintf("%s: %.*s: ambigous redirect\n", state->context, full_word.len, full_word.start);
-		return (-1);
-	}
-	ret.should_delete = false;
+	curr->redir_idx = state->redirects.len;
+	*redir_idx = state->redirects.len;
 	curr->has_redirect = true;
 	vec_redir_push(&state->redirects, ret);
-	curr->redir_idx = state->redirects.len - 1;
-	*redir_idx = state->redirects.len - 1;
 	return (0);
+}
+
+void	expand_node_glob(t_ast_node *node, t_vec_str *args, bool keep_as_one)
+{
+	t_vec_str	glob_words;
+	t_dyn_str	temp;
+	size_t		j;
+
+	glob_words = expand_word_glob(*node);
+	if (g_should_unwind)
+		return ;
+	dyn_str_init(&temp);
+	j = 0;
+	while (j < glob_words.len)
+	{
+		if (!keep_as_one)
+			vec_str_push(args, glob_words.buff[j]);
+		else
+		{
+			dyn_str_pushstr(&temp, glob_words.buff[j]);
+			free(glob_words.buff[j]);
+		}
+		if (j++ + 1 < glob_words.len && keep_as_one)
+			dyn_str_push(&temp, ' ');
+	}
+	if (keep_as_one)
+		vec_str_push(args, temp.buff);
+	free(glob_words.buff);
+	free_ast(node);
 }
 
 void	expand_word(t_state *state, t_ast_node *node, t_vec_str *args, bool keep_as_one)
 {
 	t_vec_nd	words;
-	t_vec_str	glob_words;
-	t_dyn_str	temp;
 	size_t		i;
-	size_t		j;
 
 	expand_tilde_word(state, node);
 	expand_env_vars(state, node);
@@ -363,36 +399,15 @@ void	expand_word(t_state *state, t_ast_node *node, t_vec_str *args, bool keep_as
 	i = 0;
 	while (i < words.len)
 	{
-		glob_words = expand_word_glob(words.buff[i]);
+		expand_node_glob(&words.buff[i], args, keep_as_one);
 		if (g_should_unwind)
-		{
 			while (i < words.len)
 				free_ast(&words.buff[i++]);
+		if (g_should_unwind)
 			break ;
-		}
-		dyn_str_init(&temp);
-		j = 0;
-		while (j < glob_words.len)
-		{
-			if (!keep_as_one)
-				vec_str_push(args, glob_words.buff[j]);
-			else
-			{
-				dyn_str_pushstr(&temp, glob_words.buff[j]);
-				free(glob_words.buff[j]);
-			}
-			if (keep_as_one && j + 1 < glob_words.len)
-				dyn_str_push(&temp, ' ');
-			j++;
-		}
-		if (keep_as_one)
-			vec_str_push(args, temp.buff);
-		free(glob_words.buff);
-		free_ast(&words.buff[i]);
 		i++;
 	}
-	free(words.buff);
-	free_ast(node);
+	return (free(words.buff), free_ast(node));
 }
 
 bool	is_export(t_ast_node word)
@@ -415,6 +430,7 @@ int	expand_simple_command(t_state *state, t_ast_node *node, executable_cmd_t *re
 	bool		export;
 	t_ast_node	*curr;
 	size_t		i;
+	int			redir_idx;
 
 	*ret = (executable_cmd_t){};
 	found_first = false;
@@ -427,9 +443,7 @@ int	expand_simple_command(t_state *state, t_ast_node *node, executable_cmd_t *re
 		if (curr->node_type == AST_WORD)
 		{
 			if (!found_first && is_export(*curr))
-			{
 				export = true;
-			}
 			expand_word(state, curr, &ret->argv, false);
 			if (g_should_unwind)
 				return (1);
@@ -438,9 +452,7 @@ int	expand_simple_command(t_state *state, t_ast_node *node, executable_cmd_t *re
 		else if (curr->node_type == AST_ASSIGNMENT_WORD)
 		{
 			if (!found_first)
-			{
 				vec_env_push(&ret->pre_assigns, assignment_to_env(state, curr));
-			}
 			else
 			{
 				assignment_word_to_word(curr);
@@ -449,19 +461,18 @@ int	expand_simple_command(t_state *state, t_ast_node *node, executable_cmd_t *re
 					expand_word(state, curr, &ret->argv, true);
 				else
 					expand_word(state, curr, &ret->argv, false);
+				if (g_should_unwind)
+					return (1);
 			}
 		}
 		else if (curr->node_type == AST_REDIRECT)
 		{
-			int	redir_idx;
 			if (redirect_from_ast_redir(state, curr, &redir_idx))
 				return (AMBIGUOUS_REDIRECT);
 			vec_int_push(redirects, redir_idx);
 		}
 		else
-		{
 			assert("Unimplemented" == 0);
-		}
 		i++;
 	}
 	return (0);

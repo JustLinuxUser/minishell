@@ -6,10 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:51:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/15 18:17:38 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/16 19:26:27 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/wait.h>
@@ -78,7 +79,9 @@ void	exe_res_set_status(t_exe_res *res)
 	if (res->status != -1)
 		return ;
 	ft_assert(res->pid != -1);
-	waitpid(res->pid, &status, 0);
+	while (1)
+		if (waitpid(res->pid, &status, 0) != -1)
+			break ;
 	if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
 		res->c_c = true;
 	res->status = WEXITSTATUS(status)
