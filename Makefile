@@ -29,7 +29,7 @@ src/libft/libft.a: src/libft
 ${TARGET}: Makefile build ${OBJS} ${LIBFT_A}
 	${CC} ${CFLAGS} -o ${TARGET} ${OBJS} ${LIBS}
 
-${OUT_DIR}/%.o: ${SRCS_DIR}/%.c ${HEADERES} 
+${OUT_DIR}/%.o: ${SRCS_DIR}/%.c ${HEADERS}
 	mkdir -p $$(dirname $@)
 	${CC} ${CFLAGS} -c $< -o $@
 

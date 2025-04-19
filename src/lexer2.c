@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 21:31:30 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/18 21:31:33 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/19 18:02:58 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ static char	*parse_word(t_deque_tt *tokens, char **str)
 	return (0);
 }
 
-int	longest_matching_str(op_map_t *needles, char *haystack)
+int	longest_matching_str(t_op_map *needles, char *haystack)
 {
 	int	max_idx;
 	int	max;
@@ -70,21 +70,21 @@ void	parse_op(t_deque_tt *tokens, char **str)
 {
 	char		*start;
 	int			op_idx;
-	op_map_t	operators[13];
+	t_op_map	operators[13];
 
-	operators[0] = (op_map_t){"|", TT_PIPE};
-	operators[1] = (op_map_t){"<<", TT_HEREDOC};
-	operators[2] = (op_map_t){"<<-", TT_HEREDOC};
-	operators[3] = (op_map_t){">>", TT_APPEND};
-	operators[4] = (op_map_t){"(", TT_BRACE_LEFT};
-	operators[5] = (op_map_t){")", TT_BRACE_RIGHT};
-	operators[6] = (op_map_t){">", TT_REDIRECT_RIGHT};
-	operators[7] = (op_map_t){"<", TT_REDIRECT_LEFT};
-	operators[8] = (op_map_t){"&&", TT_AND};
-	operators[9] = (op_map_t){"&", TT_END};
-	operators[10] = (op_map_t){"||", TT_OR};
-	operators[11] = (op_map_t){";", TT_SEMICOLON};
-	operators[12] = (op_map_t){0, TT_END};
+	operators[0] = (t_op_map){"|", TT_PIPE};
+	operators[1] = (t_op_map){"<<", TT_HEREDOC};
+	operators[2] = (t_op_map){"<<-", TT_HEREDOC};
+	operators[3] = (t_op_map){">>", TT_APPEND};
+	operators[4] = (t_op_map){"(", TT_BRACE_LEFT};
+	operators[5] = (t_op_map){")", TT_BRACE_RIGHT};
+	operators[6] = (t_op_map){">", TT_REDIRECT_RIGHT};
+	operators[7] = (t_op_map){"<", TT_REDIRECT_LEFT};
+	operators[8] = (t_op_map){"&&", TT_AND};
+	operators[9] = (t_op_map){"&", TT_END};
+	operators[10] = (t_op_map){"||", TT_OR};
+	operators[11] = (t_op_map){";", TT_SEMICOLON};
+	operators[12] = (t_op_map){0, TT_END};
 	start = *str;
 	op_idx = longest_matching_str(operators, *str);
 	assert(op_idx != -1);

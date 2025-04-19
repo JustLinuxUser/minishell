@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:53:24 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 07:53:27 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/19 18:02:39 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void	set_up_redirection(t_state *state, t_executable_node *exe)
 	}
 }
 
-t_exe_res	execute_builtin_cmd_fg(t_state *state, executable_cmd_t *cmd,
+t_exe_res	execute_builtin_cmd_fg(t_state *state, t_executable_cmd *cmd,
 	t_executable_node *exe)
 {
 	int		stdin_bak;
@@ -87,7 +87,7 @@ t_exe_res	execute_builtin_cmd_fg(t_state *state, executable_cmd_t *cmd,
 }
 
 t_exe_res	execute_cmd_bg(t_state *state,
-		t_executable_node *exe, executable_cmd_t *cmd)
+		t_executable_node *exe, t_executable_cmd *cmd)
 {
 	int	pid;
 
@@ -106,7 +106,7 @@ t_exe_res	execute_cmd_bg(t_state *state,
 
 t_exe_res	execute_simple_command(t_state *state, t_executable_node *exe)
 {
-	executable_cmd_t	cmd;
+	t_executable_cmd	cmd;
 
 	if (expand_simple_command(state, exe->node, &cmd, &exe->redirs))
 	{

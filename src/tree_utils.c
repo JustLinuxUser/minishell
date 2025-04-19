@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 14:53:04 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/18 21:26:54 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/19 17:25:28 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,4 +24,17 @@ void	ast_postorder_traversal(t_ast_node *node, void (*f)(t_ast_node *node))
 		i++;
 	}
 	f(node);
+}
+
+void	free_node(t_ast_node *node)
+{
+	if (node->node_type == AST_TOKEN && node->token.allocated)
+		free(node->token.start);
+	free(node->children.buff);
+	*node = (t_ast_node){};
+}
+
+void	free_ast(t_ast_node *node)
+{
+	ast_postorder_traversal(node, free_node);
 }

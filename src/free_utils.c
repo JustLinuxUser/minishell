@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 23:17:24 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 07:49:11 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/19 18:02:39 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ void	free_all_state(t_state *state)
 	free(state->cwd.buff);
 }
 
-void	free_executable_cmd(executable_cmd_t cmd)
+void	free_executable_cmd(t_executable_cmd cmd)
 {
 	size_t	i;
 

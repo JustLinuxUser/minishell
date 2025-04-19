@@ -6,111 +6,6 @@
 #include <fcntl.h>
 #include <stdio.h>
 
-void	expand_token(t_state *state, t_token	*curr_tt)
-{
-	char	*temp;
-
-	temp = env_expand_n(state, curr_tt->start, curr_tt->len);
-	curr_tt->start = temp;
-	if (curr_tt->start)
-		curr_tt->len = ft_strlen(temp);
-	else
-		curr_tt->len = 0;
-	curr_tt->allocated = false;
-}
-
-void	expand_env_vars(t_state *state, t_ast_node *node)
-{
-	t_token	*curr_tt;
-	size_t	i;
-
-	i = 0;
-	while (i < node->children.len)
-	{
-		assert(node->children.buff[i].node_type == AST_TOKEN);
-		curr_tt = &node->children.buff[i].token;
-		if (curr_tt->tt == TT_WORD || curr_tt->tt == TT_SQWORD
-			|| curr_tt->tt == TT_DQWORD)
-		{
-		}
-		else if (curr_tt->tt == TT_DQENVVAR || curr_tt->tt == TT_ENVVAR)
-		{
-			expand_token(state, curr_tt);
-		}
-		else
-			assert("Unreachable" == 0);
-		i++;
-	}
-}
-
-t_ast_node	new_env_node(char *new_start)
-{
-	return ((t_ast_node){.node_type = AST_TOKEN,
-		.token = {.allocated = true,
-			.len = ft_strlen(new_start),
-			.start = new_start,
-			.tt = TT_ENVVAR}});
-}
-
-void	split_envvar(t_token *curr_t, t_ast_node *curr_node, t_vec_nd *ret)
-{
-	char	**things;
-	int		i;
-
-	if (!curr_t->start)
-		return ;
-	// IFS
-	things = ft_split(curr_t->start, ' ');
-	if (things[0])
-	{
-		vec_nd_push(&curr_node->children, new_env_node(things[0]));
-		i = 1;
-		while (things[i])
-		{
-			vec_nd_push(ret, *curr_node);
-			*curr_node = (t_ast_node){.node_type = AST_WORD};
-			vec_nd_push(&curr_node->children, new_env_node(things[i]));
-			i++;
-		}
-	}
-	else if (curr_node->children.len)
-	{
-		vec_nd_push(ret, *curr_node);
-		*curr_node = (t_ast_node){.node_type = AST_WORD};
-	}
-	free(things);
-}
-
-// node -> split node
-t_vec_nd	split_words(t_ast_node *node)
-{
-	t_vec_nd	ret;
-	t_token		*curr_t;
-	t_ast_node	curr_node;
-	int			i;
-
-	vec_nd_init(&ret);
-	curr_node = (t_ast_node){.node_type = AST_WORD};
-	i = -1;
-	while (++i < (int)node->children.len)
-	{
-		assert(node->children.buff[i].node_type == AST_TOKEN);
-		curr_t = &node->children.buff[i].token;
-		if (curr_t->tt == TT_WORD || curr_t->tt == TT_SQWORD
-			|| curr_t->tt == TT_DQWORD || curr_t->tt == TT_DQENVVAR)
-			vec_nd_push(&curr_node.children, node->children.buff[i]);
-		else if (curr_t->tt == TT_ENVVAR)
-			split_envvar(curr_t, &curr_node, &ret);
-		else
-			assert("Unreachable" == 0);
-	}
-	if (curr_node.children.len)
-		vec_nd_push(&ret, curr_node);
-	free(node->children.buff);
-	*node = (t_ast_node){};
-	return (ret);
-}
-
 t_dyn_str	word_to_string(t_ast_node node)
 {
 	t_token		curr;
@@ -209,63 +104,6 @@ void	assignment_word_to_word(t_ast_node *node)
 	*node = ret;
 }
 
-bool	token_starts_with(t_token t, char *str)
-{
-	if (t.len < (int)ft_strlen(str))
-		return (false);
-	return (ft_strncmp(t.start, str, ft_strlen(str)) == 0);
-}
-
-void	expand_tilde_token(t_state *state, t_token *t)
-{
-	int			template_len;
-	char		*env_val;
-	t_dyn_str	s;
-
-	template_len = 2;
-	if (token_starts_with(*t, "~+"))
-		env_val = env_expand(state, "PWD");
-	else if (token_starts_with(*t, "~-"))
-		env_val = env_expand(state, "OLDPWD");
-	else
-	{
-		env_val = env_expand(state, "HOME");
-		template_len = 1;
-	}
-	if (!env_val)
-		return ;
-	dyn_str_init(&s);
-	if (env_val)
-		dyn_str_pushstr(&s, env_val);
-	t->allocated = true;
-	dyn_str_pushnstr(&s, t->start + template_len, t->len - template_len);
-	t->start = s.buff;
-	t->len = s.len;
-}
-
-void	expand_tilde_word(t_state *state, t_ast_node *curr)
-{
-	t_token	*first;
-	bool	should_expand;
-
-	assert(curr->children.len);
-	if (curr->children.buff[0].token.tt != TT_WORD)
-		return ;
-	first = &curr->children.buff[0].token;
-	should_expand = false;
-	should_expand |= token_starts_with(*first, "~")
-		&& curr->children.len == 1 && first->len == 1;
-	should_expand |= token_starts_with(*first, "~/");
-	should_expand |= token_starts_with(*first, "~+")
-		&& curr->children.len == 1 && first->len == 2;
-	should_expand |= token_starts_with(*first, "~+/");
-	should_expand |= token_starts_with(*first, "~-")
-		&& curr->children.len == 1 && first->len == 2;
-	should_expand |= token_starts_with(*first, "~-/");
-	if (should_expand)
-		expand_tilde_token(state, first);
-}
-
 char	*expand_word_single(t_state *state, t_ast_node *curr)
 {
 	t_vec_str	args;
@@ -301,7 +139,7 @@ t_token_old	get_full_word_from_word(t_ast_node word)
 	return (ret);
 }
 
-bool create_redir(t_tt tt, char *fname, t_redir *ret)
+bool	create_redir(t_tt tt, char *fname, t_redir *ret)
 {
 	assert(tt != TT_HEREDOC && "HEREDOCS are handled separately");
 	ret->fname = fname;
@@ -381,7 +219,8 @@ void	expand_node_glob(t_ast_node *node, t_vec_str *args, bool keep_as_one)
 	free_ast(node);
 }
 
-void	expand_word(t_state *state, t_ast_node *node, t_vec_str *args, bool keep_as_one)
+void	expand_word(t_state *state, t_ast_node *node,
+	t_vec_str *args, bool keep_as_one)
 {
 	t_vec_nd	words;
 	size_t		i;
@@ -424,7 +263,7 @@ bool	is_export(t_ast_node word)
 	return (true);
 }
 
-int	expand_simple_command(t_state *state, t_ast_node *node, executable_cmd_t *ret, t_vec_int *redirects)
+int	expand_simple_command(t_state *state, t_ast_node *node, t_executable_cmd *ret, t_vec_int *redirects)
 {
 	bool		found_first;
 	bool		export;
@@ -432,7 +271,7 @@ int	expand_simple_command(t_state *state, t_ast_node *node, executable_cmd_t *re
 	size_t		i;
 	int			redir_idx;
 
-	*ret = (executable_cmd_t){};
+	*ret = (t_executable_cmd){};
 	found_first = false;
 	export = false;
 	vec_str_init(&ret->argv);
