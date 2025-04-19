@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 00:31:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/04 09:47:12 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/18 21:22:33 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,14 +38,6 @@ t_token	*deque_tt_idx(t_deque_tt *ret, int idx)
 	return (i);
 }
 
-t_token	*deque_tt_idx_wrapping(t_deque_tt *ret, int idx)
-{
-	t_token	*i;
-
-	i = &ret->buff[ft_smod((ret->start + idx), ret->cap)];
-	return (i);
-}
-
 int	deque_tt_clone(t_deque_tt *ret, const t_deque_tt proto)
 {
 	int	i;
@@ -61,12 +53,12 @@ int	deque_tt_clone(t_deque_tt *ret, const t_deque_tt proto)
 	return (0);
 }
 
-t_token deque_tt_peek(t_deque_tt *ret)
+t_token	deque_tt_peek(t_deque_tt *ret)
 {
 	return (*deque_tt_idx(ret, 0));
 }
 
-void deque_tt_clear(t_deque_tt *ret)
+void	deque_tt_clear(t_deque_tt *ret)
 {
 	ret->cap = 0;
 	ret->start = 0;

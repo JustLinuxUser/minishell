@@ -1,30 +1,27 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   buffered_readline.c                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/19 07:23:53 by anddokhn          #+#    #+#             */
+/*   Updated: 2025/04/19 07:58:22 by anddokhn         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "libft/dsa/dyn_str.h"
 #include "libft/ft_printf/ft_printf.h"
 #include "minishell.h"
 #include "libft/libft.h"
 #include <assert.h>
-#include <errno.h>
 #include <readline/readline.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <sys/time.h>
 
 int	g_should_unwind = 0;
-
-void	buff_readline_init(t_buff_readline *ret)
-{
-	*ret = (t_buff_readline){};
-}
-
-size_t	get_timestamp_micro(void)
-{
-	struct timeval	tv;
-
-	gettimeofday(&tv, 0);
-	return (tv.tv_usec / 1000 + (tv.tv_sec * 1000));
-}
 
 /* exit codes:
 *
@@ -49,10 +46,28 @@ void	bg_readline(int outfd, char *prompt)
 	exit(0);
 }
 
+int	attach_input_readline(t_buff_readline *l, int pp[2], int pid)
+{
+	int	status;
+
+	close(pp[1]);
+	dyn_str_append_fd(pp[0], &l->buff);
+	buff_readline_update(l);
+	close(pp[0]);
+	while (1)
+		if (waitpid(pid, &status, 0) != -1)
+			break ;
+	if (WIFSIGNALED(status))
+	{
+		ft_printf("\n");
+		return (2);
+	}
+	return (WEXITSTATUS(status));
+}
+
 int	get_more_input_readline(t_buff_readline *l, char *prompt)
 {
 	int	pp[2];
-	int	status;
 	int	pid;
 
 	if (pipe(pp))
@@ -68,59 +83,10 @@ int	get_more_input_readline(t_buff_readline *l, char *prompt)
 		critical_error_errno();
 	else
 	{
-		close(pp[1]);
-		dyn_str_append_fd(pp[0], &l->buff);
-		buff_readline_update(l);
-		close(pp[0]);
-		while (1)
-			if (waitpid(pid, &status, 0) != -1)
-				break ;
-		if (WIFSIGNALED(status))
-		{
-			ft_printf("\n");
-			return (2);
-		}
-		return (WEXITSTATUS(status));
+		return (attach_input_readline(l, pp, pid));
 	}
 	ft_assert("Unreachable" == 0);
 	return (0);
-}
-
-void	update_context(t_state *state)
-{
-	if (!state->readline_buff.should_update_context)
-		return ;
-	free(state->context);
-	state->context = ft_asprintf("%s: line %i", state->base_context, state->readline_buff.line);
-}
-
-int get_more_input_notty(t_state *state)
-{
-	char	buff[4096];
-	int		ret;
-	int		status;
-
-	status = 1;
-	set_unwind_sig_norestart();
-	while (1)
-	{
-		ret = read(0, buff, sizeof(buff));
-		status = 2;
-		if (ret < 0 && errno == EINTR)
-			break ;
-		status = 1;
-		if (ret < 0)
-			break ;
-		if (ret == 0)
-			break ;
-		status = 0;
-		dyn_str_pushnstr(&state->readline_buff.buff, buff, ret);
-		if (ft_strnchr(buff, '\n', ret))
-			break ;
-	}
-	set_unwind_sig();
-	buff_readline_update(&state->readline_buff);
-	return (status);
 }
 
 int	return_new_line(t_state *state, t_dyn_str *ret)
@@ -172,17 +138,4 @@ int	buff_readline(t_state *state, t_dyn_str *ret, char *prompt)
 		state->readline_buff.has_line = true;
 	}
 	return (return_new_line(state, ret));
-}
-
-void	buff_readline_update(t_buff_readline *l)
-{
-	l->has_line = l->cursor != l->buff.len;
-}
-
-void	buff_readline_reset(t_buff_readline *l)
-{
-	ft_memmove(l->buff.buff, l->buff.buff + l->cursor, l->buff.len - l->cursor);
-	l->buff.len -= l->cursor;
-	l->cursor = 0;
-	buff_readline_update(l);
 }

@@ -189,6 +189,8 @@ typedef struct s_state {
 int buff_readline(t_state *state, t_dyn_str *ret, char *prompt);
 void buff_readline_update(t_buff_readline *l);
 void buff_readline_reset(t_buff_readline *l);
+void	update_context(t_state *state);
+int	get_more_input_notty(t_state *state);
 
 typedef struct executable_cmd_s {
 	t_vec_env pre_assigns;
@@ -202,6 +204,8 @@ typedef struct op_map_s {
 	t_tt t;
 } op_map_t;
 char* tokenizer(char* str, t_deque_tt* ret);
+int	advance_dquoted(char **str);
+int	advance_squoted(char **str);
 
 void free_all_state(t_state *state);
 
@@ -220,7 +224,6 @@ t_token	deque_tt_pop_end(t_deque_tt *ret);
 t_token	deque_tt_pop_start(t_deque_tt *ret);
 int		deque_tt_clone(t_deque_tt *ret, const t_deque_tt proto);
 t_token	*deque_tt_idx(t_deque_tt *ret, int idx);
-t_token	*deque_tt_idx_wrapping(t_deque_tt *ret, int idx);
 
 t_token deque_tt_peek(t_deque_tt *ret);
 void deque_tt_clear(t_deque_tt *ret);
@@ -230,7 +233,6 @@ int			vec_nd_double(t_vec_nd *v);
 int			vec_nd_push(t_vec_nd *v, t_ast_node el);
 t_ast_node	vec_nd_pop(t_vec_nd *v);
 t_ast_node	*vec_nd_idx(t_vec_nd *v, size_t idx);
-int			vec_nd_insert_vec_replacing(t_vec_nd *v, t_vec_nd new, int idx);
 void		vec_nd_push_vec(t_vec_nd *ret, t_vec_nd *second);
 void		vec_nd_free(t_vec_nd *ret);
 t_ast_node parse_tokens(t_state *state, t_parser *res, t_deque_tt* tokens);
@@ -247,7 +249,9 @@ void		print_tokens(t_deque_tt tokens);
 
 // reparser.c
 void reparse_assignment_words(t_ast_node* node);
-void reparse_words(t_ast_node* node);
+void	reparse_envvar(t_ast_node *ret, int *i, t_token t, t_tt tt);
+void reparse_words(t_ast_node *node);
+t_ast_node	reparse_word(t_token t);
 //[a-zA-Z_]
 bool is_var_name_p1(char c);
 //[a-zA-Z0-9_]
@@ -256,12 +260,25 @@ bool is_var_name_p2(char c);
 t_ast_node create_subtoken_node(t_token t, int offset, int end_offset, t_tt tt);
 
 // heredoc.c
-int gather_heredocs(t_state* state, t_ast_node* node);
+typedef struct s_heredoc_req
+{
+	t_dyn_str	full_file;
+	bool		finished;
+	char		*sep;
+	bool		expand;
+	bool		remove_tabs;
+}	t_heredoc_req;
+int gather_heredocs(t_state *state, t_ast_node *node);
 
-t_vec_env env_to_vec_env(t_state *state, char** envp);
+
+int		env_len(char *line);
+int		ft_mktemp(t_state *state, t_ast_node *node);
+t_vec_env	env_to_vec_env(t_state *state, char** envp);
 t_env*	env_get(t_vec_env* env, char* key);
+char	*first_non_tab(char *line);
 char* env_expand(t_state* state, char* key);
 char* env_expand_n(t_state* state, char* key, int len);
+void	expand_line(t_state *state, t_dyn_str *full_file, char *line);
 
 t_env* env_nget(t_vec_env* env, char* key, int len);
 char**	get_envp(t_state* state);
@@ -269,7 +286,6 @@ void free_env(t_vec_env *env);
 bool is_special_char(char c);
 bool is_space(char c);
 
-void execute_top_level(t_state *state);
 
 
 char* expand_word_single(t_state* state, t_ast_node* curr);
@@ -292,9 +308,15 @@ typedef struct executable_node_s {
 	bool		modify_parent_context;
 }	t_executable_node;
 
+void execute_top_level(t_state *state);
+t_exe_res	execute_pipeline(t_state *state, t_executable_node *exe);
+
+void	set_up_redirection(t_state *state, t_executable_node *exe);
+t_exe_res	execute_simple_command(t_state *state, t_executable_node *exe);
 void	forward_exit_status(t_exe_res res);
 t_exe_res	execute_command(t_state* state, t_executable_node *exe);
 t_exe_res	execute_tree_node(t_state* state, t_executable_node *exe);
+t_exe_res	execute_simple_list(t_state *state, t_executable_node *exe);
 t_dyn_str	word_to_string(t_ast_node node);
 t_dyn_str	word_to_hrdoc_string(t_ast_node node);
 void	set_cmd_status(t_state *state, t_exe_res res);
@@ -335,9 +357,6 @@ void	default_signal_handlers(void);
 void	readline_bg_signals(void);
 void	set_unwind_sig_norestart(void);
  
-// TODO: Delete this:
-size_t	get_timestamp_micro(void);
-
 // expanding
 void expand_word(t_state *state, t_ast_node *node, t_vec_str *args, bool keep_as_one);
 int expand_simple_command(t_state* state, t_ast_node* node, executable_cmd_t *ret, t_vec_int * redirects);
@@ -347,8 +366,28 @@ int redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx);
 void	manage_history(t_state *state);
 void	init_history(t_state *state);
 void	free_hist(t_state *state);
+void	parse_history_file(t_state *state);
+t_dyn_str	encode_cmd_hist(char *cmd);
 
 // free utils
 void	free_all_state(t_state *state);
 void	free_redirects(t_vec_redir *v);
+void	free_executable_node(t_state *state, t_executable_node *node);
+void	free_executable_cmd(executable_cmd_t cmd);
+
+// prompt
+t_dyn_str	prompt_normal(t_state *state);
+t_dyn_str	prompt_more_input(t_parser *parser);
+
+// init
+void	init_setup(t_state *state, char **argv, char **envp);
+
+// hack
+char	*getpid_hack(void);
+
+// execute_input
+void	parse_and_execute_input(t_state *state);
+
+// cmd_path
+char	*find_cmd_path(t_state *state, t_vec_str *args);
 #endif

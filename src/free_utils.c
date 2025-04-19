@@ -6,10 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 23:17:24 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/17 23:17:24 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/19 07:49:11 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft/libft.h"
 #include "minishell.h"
 #include <unistd.h>
 
@@ -46,4 +47,43 @@ void	free_all_state(t_state *state)
 	free_ast(&state->tree);
 	free_hist(state);
 	free(state->cwd.buff);
+}
+
+void	free_executable_cmd(executable_cmd_t cmd)
+{
+	size_t	i;
+
+	i = 0;
+	while (i < cmd.pre_assigns.len)
+	{
+		free(cmd.pre_assigns.buff[i].value);
+		free(cmd.pre_assigns.buff[i].key);
+		i++;
+	}
+	i = 0;
+	while (i < cmd.argv.len)
+	{
+		free(cmd.argv.buff[i]);
+		i++;
+	}
+	free(cmd.pre_assigns.buff);
+	free(cmd.argv.buff);
+}
+
+void	free_executable_node(t_state *state, t_executable_node *node)
+{
+	t_redir	*curr;
+	size_t	i;
+
+	i = 0;
+	while (i < node->redirs.len)
+	{
+		curr = &state->redirects.buff[node->redirs.buff[i]];
+		if (curr->should_delete)
+			unlink(curr->fname);
+		free(curr->fname);
+		ft_memset(curr, 0, sizeof(*curr));
+		i++;
+	}
+	free(node->redirs.buff);
 }

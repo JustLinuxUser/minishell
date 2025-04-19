@@ -6,14 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/28 18:06:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/16 13:23:45 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/18 22:34:39 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../dsa/vec_str.h"
 #include "../libft/dsa/dyn_str.h"
 #include "../libft/libft.h"
-#include "../libft/utils/utils.h"
 #include "../minishell.h"
 #include "../dsa/vec_glob.h"
 #include <assert.h>
@@ -44,8 +43,7 @@ int	process_dir(t_dir_matcher matcher)
 	diren = readdir(matcher.dir);
 	if (!diren)
 		return (0);
-	if (ft_strcmp(diren->d_name, ".") == 0
-		|| ft_strcmp(diren->d_name, "..") == 0)
+	if (!ft_strcmp(diren->d_name, ".") || !ft_strcmp(diren->d_name, ".."))
 		return (1);
 	res = matches_pattern(diren->d_name, matcher.glob, matcher.offset, true);
 	dyn_str_init(&next_path);
@@ -57,8 +55,7 @@ int	process_dir(t_dir_matcher matcher)
 		else
 		{
 			vec_str_push(matcher.args, ft_strdup(next_path.buff));
-			free(next_path.buff);
-			return (1);
+			return (free(next_path.buff), 1);
 		}
 		match_dir(matcher.args, matcher.glob, next_path.buff, res + 1);
 		free(next_path.buff);
@@ -109,13 +106,6 @@ t_vec_str	expand_word_glob(t_ast_node word)
 	if (!g_should_unwind)
 		ft_quicksort(&args);
 	if (g_should_unwind)
-	{
-		for(size_t i = 0; i < args.len; i++)
-		{
-			free(args.buff[i]);
-		}
-		free(args.buff);
-		vec_str_init(&args);
-	}
+		free_vec_str(&args);
 	return (args);
 }

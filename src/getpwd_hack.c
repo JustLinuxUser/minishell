@@ -1,38 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   errors.c                                           :+:      :+:    :+:   */
+/*   getpwd_hack.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/19 07:39:44 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 07:40:48 by anddokhn         ###   ########.fr       */
+/*   Created: 2025/04/19 07:33:56 by anddokhn          #+#    #+#             */
+/*   Updated: 2025/04/19 07:33:59 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft/ft_printf/ft_printf.h"
+#include "libft/dsa/dyn_str.h"
+#include "libft/libft.h"
 #include "minishell.h"
-#include <errno.h>
-#include <string.h>
+#include <fcntl.h>
 
-void	critical_error(char *error)
+char	*getpid_hack(void)
 {
-	ft_eprintf("[ERROR] %s\n", error);
-	exit(1);
-}
+	int			fd;
+	t_dyn_str	file;
+	char		*ret;
+	char		**temp;
 
-void	critical_error_errno(void)
-{
-	ft_eprintf("[ERROR] %s\n", strerror(errno));
-	exit(1);
-}
-
-void	warning_error(char *error)
-{
-	ft_eprintf("[WARNING] %s\n", error);
-}
-
-void	warning_error_errno(void)
-{
-	ft_eprintf("[WARNING] %s\n", strerror(errno));
+	fd = open("/proc/self/stat", O_RDONLY);
+	if (fd < 0)
+	{
+		warning_error("Cannot get PID.");
+		return (0);
+	}
+	dyn_str_init(&file);
+	dyn_str_append_fd(fd, &file);
+	temp = ft_split(file.buff, ' ');
+	free(file.buff);
+	ret = ft_strdup(temp[0]);
+	free_tab(temp);
+	return (ret);
 }

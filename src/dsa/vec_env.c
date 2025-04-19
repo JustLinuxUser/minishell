@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:51:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/17 20:37:37 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/18 21:18:17 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,10 +59,4 @@ t_env	vec_env_pop(t_vec_env *v)
 {
 	ft_assert(v->len > 0);
 	return (v->buff[--v->len]);
-}
-
-t_env	*vec_env_idx(t_vec_env *v, size_t idx)
-{
-	ft_assert(idx < v->len);
-	return (&v->buff[idx]);
 }

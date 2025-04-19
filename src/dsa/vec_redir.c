@@ -6,10 +6,9 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/23 12:32:37 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/23 12:33:07 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/18 21:18:28 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #include <stdlib.h>
 #include "../minishell.h"

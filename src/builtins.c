@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 21:39:29 by armgonza          #+#    #+#             */
-/*   Updated: 2025/04/18 17:24:08 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/18 21:13:24 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ int	mini_atoi_base(char *str, int base, int len)
 {
 	int		i;
 	int		res;
-	char	strb[16] = "0123456789ABCDEF";
+	char	*strb = "0123456789ABCDEF";
 	char	strc;
 	char	*strn;
 

@@ -1,30 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   vec_nd2.c                                          :+:      :+:    :+:   */
+/*   vec_env4.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/18 21:28:33 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/18 21:28:34 by anddokhn         ###   ########.fr       */
+/*   Created: 2025/04/18 21:17:43 by anddokhn          #+#    #+#             */
+/*   Updated: 2025/04/18 21:17:57 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../minishell.h"
+#include "vec_env.h"
+#include "../libft/utils/utils.h"
 
-void	vec_nd_push_vec(t_vec_nd *ret, t_vec_nd *second)
+t_env	*vec_env_idx(t_vec_env *v, size_t idx)
 {
-	int	i;
-
-	i = -1;
-	while (++i < (int)second->len)
-	{
-		vec_nd_push(ret, *vec_nd_idx(second, i));
-	}
-}
-
-void	vec_nd_free(t_vec_nd *ret)
-{
-	free(ret->buff);
-	*ret = (t_vec_nd){0};
+	ft_assert(idx < v->len);
+	return (&v->buff[idx]);
 }

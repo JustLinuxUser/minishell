@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   qsort.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/18 22:52:19 by anddokhn          #+#    #+#             */
+/*   Updated: 2025/04/18 22:52:36 by anddokhn         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../dsa/vec_str.h"
 #include "../libft/libft.h"
 
@@ -12,10 +24,10 @@ void	swap_sort_point(char **p1, char **p2)
 
 int	partition(t_vec_str *vec, int low, int high)
 {
-	int				i;
-	int				p_idx;
-	int				j;
-	char		*p;
+	int		i;
+	int		p_idx;
+	int		j;
+	char	*p;
 
 	p_idx = (high - low) / 2 + low;
 	swap_sort_point(&vec->buff[low], &vec->buff[p_idx]);
@@ -47,10 +59,10 @@ void	quicksort_inner(t_vec_str *vec, int low, int high)
 	}
 }
 
-
-void ft_quicksort(t_vec_str *vec)
+void	ft_quicksort(t_vec_str *vec)
 {
-	if (vec->len > 1) {
+	if (vec->len > 1)
+	{
 		quicksort_inner(vec, 0, vec->len - 1);
 	}
 }

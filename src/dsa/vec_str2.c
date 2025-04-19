@@ -1,30 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   vec_nd2.c                                          :+:      :+:    :+:   */
+/*   vec_str2.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/18 21:28:33 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/18 21:28:34 by anddokhn         ###   ########.fr       */
+/*   Created: 2025/04/18 22:35:07 by anddokhn          #+#    #+#             */
+/*   Updated: 2025/04/18 22:35:11 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../minishell.h"
+#include "vec_str.h"
+#include <stddef.h>
 
-void	vec_nd_push_vec(t_vec_nd *ret, t_vec_nd *second)
+void	free_vec_str(t_vec_str *args)
 {
-	int	i;
+	size_t	i;
 
-	i = -1;
-	while (++i < (int)second->len)
+	i = 0;
+	while (i < args->len)
 	{
-		vec_nd_push(ret, *vec_nd_idx(second, i));
+		free(args->buff[i]);
+		i++;
 	}
-}
-
-void	vec_nd_free(t_vec_nd *ret)
-{
-	free(ret->buff);
-	*ret = (t_vec_nd){0};
+	free(args->buff);
+	vec_str_init(args);
 }

@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 14:53:38 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/18 01:07:00 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/19 07:28:22 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,15 @@ void	forward_exit_status(t_exe_res res)
 	{
 		default_signal_handlers();
 		kill(0, SIGINT);
-		while (true) {};
+		while (true)
+			;
 	}
 	exit(res.status);
+}
+
+void	set_cmd_status(t_state *state, t_exe_res res)
+{
+	state->last_cmd_status_res = res;
+	free(state->last_cmd_status_s);
+	state->last_cmd_status_s = ft_itoa(res.status);
 }

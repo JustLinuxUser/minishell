@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:51:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/17 19:24:15 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/18 22:36:00 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int	vec_str_init(t_vec_str *ret)
 
 int	vec_str_double(t_vec_str *v)
 {
-	char *	*temp;
+	char	**temp;
 	size_t	i;
 
 	v->cap *= 2;
@@ -38,7 +38,7 @@ int	vec_str_double(t_vec_str *v)
 	return (0);
 }
 
-int	vec_str_push(t_vec_str *v, char * el)
+int	vec_str_push(t_vec_str *v, char *el)
 {
 	if (v->len == v->cap)
 		if (vec_str_double(v))
@@ -47,13 +47,13 @@ int	vec_str_push(t_vec_str *v, char * el)
 	return (0);
 }
 
-char *	vec_str_pop(t_vec_str *v)
+char	*vec_str_pop(t_vec_str *v)
 {
 	ft_assert(v->len > 0);
 	return (v->buff[--v->len]);
 }
 
-char *	vec_str_idx(t_vec_str *v, size_t idx)
+char	*vec_str_idx(t_vec_str *v, size_t idx)
 {
 	ft_assert(idx < v->len);
 	return (v->buff[idx]);
