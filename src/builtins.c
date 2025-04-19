@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 21:39:29 by armgonza          #+#    #+#             */
-/*   Updated: 2025/04/18 21:13:24 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/19 19:43:34 by armgonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 #include <string.h>
 #include <unistd.h>
 
-int	mini_atoi_base(char *str, int base, int len)
+int	mini_atoi_base(char **str, int base, int len)
 {
 	int		i;
 	int		res;
@@ -30,7 +30,7 @@ int	mini_atoi_base(char *str, int base, int len)
 
 	i = 0;
 	res = 0;
-	while (str[i] && len > i)
+	while (*str && len > i)
 	{
 		strc = ft_toupper(str[i]);
 		strn = ft_strchr(strb, strc);
@@ -61,26 +61,19 @@ static void	parse_numeric_escape(char **str)
 
 	len = 0;
 	if (**str == '0')
+		{
 		base = 8;
+		len = 3;
+		}
 	else if (**str == 'x')
+		{
 		base = 16;
+		len = 2;
+		}
 	else
 		return ;
 	(*str)++;
-	while (base == 8 && len < 3 && **str >= '0' && **str <= '7')
-	{
-		val[len] = **str;
-		len++;
-		(*str)++;
-	}
-	while (base == 16 && len < 2 && is_hex_digit(**str))
-	{
-		val[len] = **str;
-		len++;
-		(*str)++;
-	}
-	(*str)--;
-	write(1, &(char){mini_atoi_base(val, base, len)}, 1);
+	write(1, &(char){mini_atoi_base(&*str, base, len)}, 1);
 }
 
 static void	e_parser(char *str)
@@ -190,7 +183,6 @@ int	builtin_echo(t_state *state, t_vec_str argv)
 		ft_printf("\n");
 	return (0);
 }
-
 int	builtin_pwd(t_state *state, t_vec_str argv)
 {
 	(void)state;
@@ -209,7 +201,7 @@ int	builtin_exit(t_state *state, t_vec_str argv)
 		free_all_state(state);
 		exit(0);
 	}
-	err = ft_checked_atoi(argv.buff[1], &ret, 42);
+	err = ft_checked_atoi(argv.buff[1], &ret, 35);
 	if (err != 0)
 	{
 		ft_eprintf("%s: %s: %s: numeric argument required\n", state->context,
