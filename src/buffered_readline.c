@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:23:53 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 07:58:22 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/19 20:16:35 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,9 +101,9 @@ int	return_new_line(t_state *state, t_dyn_str *ret)
 	ft_assert(temp != 0);
 	len = temp - (state->readline_buff.buff.buff
 			+ state->readline_buff.cursor);
+	dyn_str_init_alloc(ret);
 	dyn_str_pushnstr(ret, state->readline_buff.buff.buff
 		+ state->readline_buff.cursor, len);
-	dyn_str_init_alloc(ret);
 	state->readline_buff.cursor += len + 1;
 	state->readline_buff.has_line = state->readline_buff.cursor
 		!= state->readline_buff.buff.len;

@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 22:51:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/18 22:52:06 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/19 20:15:39 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ t_dyn_str	encode_cmd_hist(char *cmd)
 {
 	t_dyn_str	ret;
 
-	dyn_str_init_alloc(&ret);
+	dyn_str_init(&ret);
 	while (*cmd)
 	{
 		if (*cmd == '\\')
