@@ -6,11 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:29:37 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 17:36:05 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 22:59:16 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 #include <stdbool.h>
 
 bool	is_compund_list_op(t_tt tt)

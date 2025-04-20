@@ -6,11 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 07:56:55 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 22:55:36 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 
 #include <assert.h>
 #include <fcntl.h>
@@ -21,8 +21,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "libft/ft_printf/ft_printf.h"
-#include "dsa/vec_exe_res.h"
+#include "../libft/ft_printf/ft_printf.h"
+#include "../dsa/vec_exe_res.h"
 
 // returns pid
 t_exe_res	execute_subshell(t_state *state, t_executable_node *exe)

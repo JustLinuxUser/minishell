@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:35:12 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 07:35:37 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 21:36:13 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,14 +49,16 @@ t_dyn_str	prompt_normal(t_state *state)
 	t_dyn_str	ret;
 
 	dyn_str_init(&ret);
-	dyn_str_push(&ret, RL_PROMPT_START_IGNORE);
 	if (state->last_cmd_status_res.status == 0)
 		dyn_str_pushstr(&ret, ANSI_GREEN);
 	else
+	{
 		dyn_str_pushstr(&ret, ANSI_RED);
+		dyn_str_pushstr(&ret, state->last_cmd_status_s);
+		dyn_str_pushstr(&ret, " ");
+	}
 	dyn_str_pushstr(&ret, PROMPT);
 	dyn_str_pushstr(&ret, ANSI_RESET);
-	dyn_str_push(&ret, RL_PROMPT_END_IGNORE);
 	dyn_str_pushstr(&ret, RL_SPACER_1);
 	dyn_str_pushstr(&ret, RL_SPACER_1);
 	return (ret);

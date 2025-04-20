@@ -6,11 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 06:53:56 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 06:53:57 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 22:56:46 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 
 bool	is_escapable(char c)
 {

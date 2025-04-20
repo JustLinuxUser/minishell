@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:46:59 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 18:15:24 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 23:43:48 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,12 +28,12 @@
 # define CANCELED 130
 # define SYNTAX_ERR 2
 # define AMBIGUOUS_REDIRECT 1
-# define PROMPT "❯ "
+# define PROMPT "\001❯ \002"
 # define HIST_FILE ".minishell_history"
 
-# define ANSI_RED "\033[31m"
-# define ANSI_GREEN "\033[32m"
-# define ANSI_RESET "\033[0m"
+# define ANSI_RED "\001\033[31m\002"
+# define ANSI_GREEN "\001\033[32m\002"
+# define ANSI_RESET "\001\033[0m\002"
 # define RL_SPACER_1 "\x03"
 
 extern int	g_should_unwind;
@@ -314,6 +314,18 @@ bool		is_special_char(char c);
 bool		is_space(char c);
 
 // expander
+typedef struct s_expander_simple_cmd
+{
+	bool		found_first;
+	bool		export;
+	int			exit_stat;
+	t_ast_node	*curr;
+	size_t		i;
+}	t_expander_simple_cmd;
+t_env		assignment_to_env(t_state *state, t_ast_node *node);
+void		assignment_word_to_word(t_ast_node *node);
+t_token_old	get_old_token(t_ast_node word);
+
 char		*expand_word_single(t_state *state, t_ast_node *curr);
 void		expand_env_vars(t_state *state, t_ast_node *node);
 void		expand_tilde_word(t_state *state, t_ast_node *curr);
@@ -392,7 +404,7 @@ int			expand_simple_command(t_state *state, t_ast_node *node,
 				t_executable_cmd *ret, t_vec_int *redirects);
 int			redirect_from_ast_redir(t_state *state,
 				t_ast_node *curr, int *redir_idx);
-t_vec_nd	split_words(t_ast_node *node);
+t_vec_nd	split_words(t_state *state, t_ast_node *node);
 
 // hist
 void		manage_history(t_state *state);
@@ -421,7 +433,7 @@ char		*getpid_hack(void);
 void		parse_and_execute_input(t_state *state);
 
 // cmd_path
-char		*find_cmd_path(t_state *state, t_vec_str *args);
+int			find_cmd_path(t_state *state, char *cmd_name, char **path_of_exe);
 
 // parser
 #endif

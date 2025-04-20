@@ -6,11 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:22:54 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 17:23:04 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 22:57:11 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 #include <stdbool.h>
 
 bool	is_simple_list_op(t_tt tt)

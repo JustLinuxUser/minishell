@@ -6,11 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:45:10 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 07:45:12 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 22:55:11 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 #include <assert.h>
 #include <unistd.h>
 

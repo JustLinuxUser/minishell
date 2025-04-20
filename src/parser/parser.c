@@ -6,13 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 00:07:42 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 17:35:33 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 22:56:57 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <assert.h>
 #include <stdio.h>
-#include "minishell.h"
+#include "../minishell.h"
 
 bool	is_simple_cmd_token(t_tt tt)
 {

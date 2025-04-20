@@ -6,13 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 13:59:13 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 06:53:47 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 22:56:28 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft/dsa/dyn_str.h"
-#include "libft/libft.h"
-#include "minishell.h"
+#include "../libft/dsa/dyn_str.h"
+#include "../libft/libft.h"
+#include "../minishell.h"
 #include <assert.h>
 #include <fcntl.h>
 #include <readline/readline.h>

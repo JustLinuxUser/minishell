@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:23:53 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 20:25:04 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 22:45:46 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "libft/ft_printf/ft_printf.h"
 #include "minishell.h"
 #include "libft/libft.h"
-#include <assert.h>
 #include <readline/readline.h>
 #include <stdbool.h>
 #include <sys/wait.h>

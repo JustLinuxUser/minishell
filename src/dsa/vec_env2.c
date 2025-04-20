@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 21:16:50 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/18 21:16:51 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 23:56:28 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,10 @@ t_vec_env	env_to_vec_env(t_state *state, char **envp)
 	}
 	if (state->cwd.len)
 		env_set(&ret, (t_env){.key = ft_strdup("PWD"),
-			.value = ft_strdup(state->cwd.buff)});
+			.value = ft_strdup(state->cwd.buff), .exported = true});
+	if (state->cwd.len)
+		env_set(&ret, (t_env){.key = ft_strdup("IFS"),
+			.value = ft_strdup(" \t\n"), .exported = false});
 	return (ret);
 }
 
@@ -89,6 +92,8 @@ char	*env_expand_n(t_state *state, char *key, int len)
 		return (state->last_cmd_status_s);
 	else if (ft_strncmp(key, "$", len) == 0 && state->pid && len == 1)
 		return (state->pid);
+	else if (len == 0)
+		return ("$");
 	curr = env_nget(&state->env, key, len);
 	if (curr == 0 || curr->key == 0)
 		return (0);

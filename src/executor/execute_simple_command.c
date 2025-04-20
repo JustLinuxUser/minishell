@@ -6,12 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:53:24 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 18:02:39 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 23:44:49 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 #include <assert.h>
+#include <stdbool.h>
 #include <unistd.h>
 
 // returns status
@@ -19,11 +20,14 @@ int	actually_run(t_state *state, t_vec_str *args)
 {
 	char	*path_of_exe;
 	char	**envp;
+	int		status;
 
 	assert(args->len >= 1);
 	if (builtin_func(args->buff[0]))
 		exit(builtin_func(args->buff[0])(state, *args));
-	path_of_exe = find_cmd_path(state, args);
+	status = find_cmd_path(state, args->buff[0], &path_of_exe);
+	if (status)
+		return (status);
 	if (!path_of_exe)
 		return (COMMAND_NOT_FOUND);
 	vec_str_push(args, 0);

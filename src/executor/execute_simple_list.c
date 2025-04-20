@@ -6,13 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:56:33 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 07:56:34 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 22:55:26 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "dsa/vec_exe_res.h"
-#include "libft/utils/utils.h"
-#include "minishell.h"
+#include "../dsa/vec_exe_res.h"
+#include "../libft/utils/utils.h"
+#include "../minishell.h"
 #include <assert.h>
 
 bool	should_execute(t_exe_res prev_status, t_tt prev_op)

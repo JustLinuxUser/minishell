@@ -6,12 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 08:11:39 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 16:01:27 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 22:56:13 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft/libft.h"
-#include "minishell.h"
+#include "../dsa/vec_env.h"
+#include "../libft/libft.h"
+#include "../minishell.h"
 #include <assert.h>
 
 void	expand_token(t_state *state, t_token	*curr_tt)
@@ -60,14 +61,15 @@ t_ast_node	new_env_node(char *new_start)
 			.tt = TT_ENVVAR}});
 }
 
-void	split_envvar(t_token *curr_t, t_ast_node *curr_node, t_vec_nd *ret)
+void	split_envvar(t_state *state, t_token *curr_t,
+			t_ast_node *curr_node, t_vec_nd *ret)
 {
 	char	**things;
 	int		i;
 
 	if (!curr_t->start)
 		return ;
-	things = ft_split(curr_t->start, ' ');
+	things = ft_split_str(curr_t->start, env_get_ifs(&state->env));
 	if (things[0])
 	{
 		vec_nd_push(&curr_node->children, new_env_node(things[0]));
@@ -89,7 +91,7 @@ void	split_envvar(t_token *curr_t, t_ast_node *curr_node, t_vec_nd *ret)
 }
 
 // node -> split node
-t_vec_nd	split_words(t_ast_node *node)
+t_vec_nd	split_words(t_state *state, t_ast_node *node)
 {
 	t_vec_nd	ret;
 	t_token		*curr_t;
@@ -107,7 +109,7 @@ t_vec_nd	split_words(t_ast_node *node)
 			|| curr_t->tt == TT_DQWORD || curr_t->tt == TT_DQENVVAR)
 			vec_nd_push(&curr_node.children, node->children.buff[i]);
 		else if (curr_t->tt == TT_ENVVAR)
-			split_envvar(curr_t, &curr_node, &ret);
+			split_envvar(state, curr_t, &curr_node, &ret);
 		else
 			assert("Unreachable" == 0);
 	}

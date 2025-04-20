@@ -6,12 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/05 17:26:17 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 07:12:09 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 22:57:25 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft/libft.h"
-#include "minishell.h"
+#include "../minishell.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>

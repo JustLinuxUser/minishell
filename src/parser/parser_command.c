@@ -6,11 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:35:05 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 17:35:15 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 22:57:03 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 
 bool	is_redirect(t_tt tt)
 {

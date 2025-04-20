@@ -6,23 +6,15 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 09:39:34 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 07:39:18 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/20 22:45:22 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
-#include <assert.h>
 #include "dsa/vec_exe_res.h"
 #include "minishell.h"
 #include <stdbool.h>
-#include <stdio.h>
 
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <fcntl.h>
-#include <stdlib.h>
 #include "libft/libft.h"
-
 #include "libft/dsa/dyn_str.h"
 
 bool	readline_cmd(t_state *state, char *prompt, t_deque_tt *tt)
@@ -106,17 +98,16 @@ void	parse_and_execute_input(t_state *state)
 		get_more_tokens(state, prompt, &tt);
 		if (g_should_unwind)
 			set_cmd_status(state, (t_exe_res){.status = CANCELED, .c_c = true});
-		if (state->should_exit
+		if (state->should_exit || g_should_unwind
 			|| !try_parse_tokens(state, &parser, &tt, &prompt))
 			break ;
 	}
 	if (parser.res == RES_OK)
-	{
 		execute_tree(state);
-		manage_history(state);
-	}
 	manage_history(state);
 	free (parser.parse_stack.buff);
 	parser.parse_stack = (t_vec_int){};
 	free(tt.buff);
+	state->should_exit |= g_should_unwind
+		&& state->input_method != INP_READLINE;
 }
