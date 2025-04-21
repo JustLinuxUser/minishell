@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
+/*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:46:59 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 23:43:48 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/21 21:26:40 by armgonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
