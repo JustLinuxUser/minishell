@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:53:24 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 23:44:49 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/21 01:04:54 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,8 @@ int	actually_run(t_state *state, t_vec_str *args)
 	status = find_cmd_path(state, args->buff[0], &path_of_exe);
 	if (status)
 		return (status);
-	if (!path_of_exe)
-		return (COMMAND_NOT_FOUND);
 	vec_str_push(args, 0);
-	envp = get_envp(state);
+	envp = get_envp(state, path_of_exe);
 	execve(path_of_exe, args->buff, envp);
 	err_1_errno(state, args->buff[0]);
 	free_all_state(state);

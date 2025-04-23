@@ -6,19 +6,11 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 09:39:34 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:41:17 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/21 01:03:54 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
-#include <assert.h>
 #include "minishell.h"
-#include <stdbool.h>
-#include <stdio.h>
-
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <fcntl.h>
 #include <stdlib.h>
 
 #include "libft/dsa/dyn_str.h"

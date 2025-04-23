@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 00:24:14 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:56:37 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/21 15:59:34 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ bool	contains_quotes(t_ast_node node)
 	{
 		if (contains_quotes(node.children.buff[i]))
 			return (true);
+		i++;
 	}
 	return (false);
 }

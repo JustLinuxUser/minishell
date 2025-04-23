@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:46:59 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/21 21:26:40 by armgonza         ###   ########.fr       */
+/*   Updated: 2025/04/23 20:21:57 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,9 @@
 # define ANSI_RESET "\001\033[0m\002"
 # define RL_SPACER_1 "\x03"
 
+# define LEXER_SQUOTE_PROMPT "squote> "
+# define LEXER_DQUOTE_PROMPT "dquote> "
+
 extern int	g_should_unwind;
 
 typedef enum s_res_t
@@ -43,6 +46,7 @@ typedef enum s_res_t
 	RES_OK,
 	RES_FatalError,
 	RES_MoreInput,
+	RES_Init,
 }	t_res_t;
 
 typedef struct s_parser
@@ -55,8 +59,9 @@ typedef struct s_parser
 typedef struct s_buff_readline
 {
 	bool		has_line;
-	int			line;
 	bool		should_update_context;
+	bool		has_finished;
+	int			line;
 	t_dyn_str	buff;
 	size_t		cursor;
 }	t_buff_readline;
@@ -308,7 +313,7 @@ char		*env_expand_n(t_state *state, char *key, int len);
 void		expand_line(t_state *state, t_dyn_str *full_file, char *line);
 
 t_env		*env_nget(t_vec_env *env, char *key, int len);
-char		**get_envp(t_state *state);
+char		**get_envp(t_state *state, char *exe_path);
 void		free_env(t_vec_env *env);
 bool		is_special_char(char c);
 bool		is_space(char c);

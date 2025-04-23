@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:23:53 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:45:46 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/21 21:11:44 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ int	return_new_line(t_state *state, t_dyn_str *ret)
 	state->readline_buff.has_line = state->readline_buff.cursor
 		!= state->readline_buff.buff.len;
 	if (len == 0)
-		return (1);
+		return (state->readline_buff.has_finished = true, 1);
 	return (4);
 }
 
@@ -118,7 +118,7 @@ int	buff_readline(t_state *state, t_dyn_str *ret, char *prompt)
 {
 	int		code;
 
-	if (!state->readline_buff.has_line)
+	if (!state->readline_buff.has_line && !state->readline_buff.has_finished)
 	{
 		if (state->input_method == INP_ARG || state->input_method == INP_FILE)
 			return (0);
@@ -134,7 +134,8 @@ int	buff_readline(t_state *state, t_dyn_str *ret, char *prompt)
 			set_cmd_status(state, (t_exe_res){.status = CANCELED, .c_c = true});
 			return (2);
 		}
-		dyn_str_push(&state->readline_buff.buff, '\n');
+		if (state->input_method == INP_READLINE)
+			dyn_str_push(&state->readline_buff.buff, '\n');
 		state->readline_buff.has_line = true;
 	}
 	return (return_new_line(state, ret));

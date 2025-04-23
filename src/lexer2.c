@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 21:31:30 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 18:02:58 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/21 20:19:11 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,12 +28,12 @@ static char	*parse_word(t_deque_tt *tokens, char **str)
 		else if (**str == '\'')
 		{
 			if (advance_squoted(str))
-				return ("squote> ");
+				return (LEXER_SQUOTE_PROMPT);
 		}
 		else if (**str == '"')
 		{
 			if (advance_dquoted(str))
-				return ("dquote> ");
+				return (LEXER_DQUOTE_PROMPT);
 		}
 		else
 			break ;
@@ -101,6 +101,7 @@ char	*tokenizer(char *str, t_deque_tt *ret)
 	char	*prompt;
 
 	prompt = 0;
+	deque_tt_clear(ret);
 	while (*str)
 	{
 		if (*str == '\'' || *str == '"' || *str == '$'

@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 21:16:50 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 23:56:28 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/21 01:03:09 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,21 +48,29 @@ t_vec_env	env_to_vec_env(t_state *state, char **envp)
 	return (ret);
 }
 
-char	**get_envp(t_state*state)
+char	**get_envp(t_state *state, char *exe_path)
 {
 	char		**ret;
 	size_t		i;
+	size_t		j;
 	t_dyn_str	s;
 
+	env_set(&state->env, (t_env){.key = ft_strdup("_"),
+		.value = ft_strdup(exe_path),
+		.exported = true});
 	ret = ft_calloc(state->env.len + 1, sizeof(char *));
 	i = 0;
+	j = 0;
 	while (i < state->env.len)
 	{
-		dyn_str_init(&s);
-		dyn_str_pushstr(&s, state->env.buff[i].key);
-		dyn_str_push(&s, '=');
-		dyn_str_pushstr(&s, state->env.buff[i].value);
-		ret[i] = s.buff;
+		if (state->env.buff[i].exported)
+		{
+			dyn_str_init(&s);
+			dyn_str_pushstr(&s, state->env.buff[i].key);
+			dyn_str_push(&s, '=');
+			dyn_str_pushstr(&s, state->env.buff[i].value);
+			ret[j++] = s.buff;
+		}
 		i++;
 	}
 	return (ret);
