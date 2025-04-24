@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
+/*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:39:33 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 07:39:34 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/24 23:28:03 by armgonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,13 @@ void	init_cwd(t_state *state)
 	if (cwd)
 	{
 		dyn_str_pushstr(&state->cwd, cwd);
+	}
+	else 
+	{
+	ft_eprintf("shell-init: error retrieving current directory:"
+		" getcwd: cannot access parent directories:"
+		" No such file or directory\nsh: 0: "
+		"getcwd() failed: No such file or directory\n");
 	}
 	free(cwd);
 }
