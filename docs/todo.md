@@ -121,6 +121,10 @@ e.g: sleep 10; sleep 10; sleep 10
     [x] cat | ls
 
 
+[x] git submodule
+    - Seams fine
+[ ] Makefiles leak 
+
 [x] Make sure that all the vec / deque data types can be initialized  with = {0}
     [x] In minishell
     [x] in libft

@@ -12,7 +12,7 @@ OBJS := ${SOURCES:%.c=${OUT_DIR}/%.o}
 ifdef OPT
 	CFLAGS := -fPIE -Wall -Wextra -O3 -flto
 else
-	CFLAGS := -Wall -Wextra -g3 -ggdb -fsanitize=address
+	CFLAGS := -Wall -Wextra -g3 -ggdb -fsanitize=address,leak
 endif
 
 LIBFT_A := src/libft/libft.a
