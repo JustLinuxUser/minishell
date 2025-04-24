@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:23:53 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/21 21:11:44 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/24 18:48:11 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,25 +109,26 @@ int	return_new_line(t_state *state, t_dyn_str *ret)
 	state->readline_buff.has_line = state->readline_buff.cursor
 		!= state->readline_buff.buff.len;
 	if (len == 0)
-		return (state->readline_buff.has_finished = true, 1);
+		return (1);
 	return (4);
 }
 
-// 1 on ctrl-d
 int	buff_readline(t_state *state, t_dyn_str *ret, char *prompt)
 {
 	int		code;
 
-	if (!state->readline_buff.has_line && !state->readline_buff.has_finished)
+	if (state->readline_buff.has_finished)
+		return (0);
+	if (!state->readline_buff.has_line)
 	{
 		if (state->input_method == INP_ARG || state->input_method == INP_FILE)
-			return (0);
+			return (state->readline_buff.has_finished = true, 0);
 		if (state->input_method == INP_STDIN_NOTTY)
 			code = get_more_input_notty(state);
 		else
 			code = get_more_input_readline(&state->readline_buff, prompt);
 		if (code == 1)
-			return (0);
+			return (state->readline_buff.has_finished = true, 0);
 		if (code == 2)
 		{
 			g_should_unwind = 1;

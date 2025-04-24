@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 00:31:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/18 21:22:33 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/24 17:52:05 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ void	deque_tt_double_if_needed(t_deque_tt *ret)
 	if (ret->cap > ret->len)
 		return ;
 	ft_assert(deque_tt_init(&new, ret->cap * 2 + 1) == 0);
+	new.looking_for = ret->looking_for;
 	while (ret->len)
 	{
 		deque_tt_push_end(&new, deque_tt_pop_start(ret));

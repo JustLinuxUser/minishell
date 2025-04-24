@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:22:54 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:57:11 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/24 19:15:25 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,8 +60,9 @@ t_ast_node	parse_simple_list(t_state *state,
 
 	ret = (t_ast_node){.node_type = AST_SIMPLE_LIST};
 	next = deque_tt_peek(tokens).tt;
-	if (is_simple_cmd_token(next) || next == TT_BRACE_LEFT)
-		vec_nd_push(&ret.children, parse_pipeline(state, parser, tokens));
+	if (!is_simple_cmd_token(next) && next != TT_BRACE_LEFT)
+		return (unexpected(state, parser, ret, tokens));
+	vec_nd_push(&ret.children, parse_pipeline(state, parser, tokens));
 	if (parser->res != RES_OK)
 		return (ret);
 	while (1)

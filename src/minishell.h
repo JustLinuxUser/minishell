@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:46:59 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/23 20:21:57 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/24 17:30:13 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,6 +156,7 @@ typedef struct s_deque_tt
 	int		start;
 	int		end;
 	t_token	*buff;
+	char	looking_for;
 }	t_deque_tt;
 
 enum e_input_method

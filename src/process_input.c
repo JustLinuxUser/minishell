@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 09:39:34 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/23 15:30:54 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/24 19:30:53 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "libft/ft_printf/ft_printf.h"
 #include "minishell.h"
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "libft/libft.h"
 #include "libft/dsa/dyn_str.h"
@@ -21,27 +22,30 @@
 // 1 - EOF
 //
 // 2 - C-c
-int	readline_cmd(t_state *state, char *prompt)
+int	readline_cmd(t_state *state, char **prompt)
 {
 	int			stat;
 
-	stat = buff_readline(state, &state->input, prompt);
-	free(prompt);
-	if (stat == 0 || stat == 2 || !state->input.len)
+	stat = buff_readline(state, &state->input, *prompt);
+	free(*prompt);
+	*prompt = 0;
+	if (stat == 0)
 	{
-		if (stat == 0)
+		if (!state->input.len)
 		{
+			if (state->input_method == INP_READLINE)
+				ft_eprintf("exit\n");
 			state->should_exit = true;
-			return (1);
 		}
-		if (stat == 2 && state->input_method != INP_READLINE)
-		{
-			state->should_exit = true;
-			return (2);
-		}
-		return (true);
+		return (1);
 	}
-	return (false);
+	if (stat == 2)
+	{
+		if (state->input_method != INP_READLINE)
+			state->should_exit = true;
+		return (2);
+	}
+	return (0);
 }
 
 bool	ends_with_bs(t_dyn_str s)
@@ -64,39 +68,51 @@ bool	ends_with_bs(t_dyn_str s)
 	return (unterminated);
 }
 
-// true - EOF
-bool	get_more_tokens(t_state *state, char *prompt, t_deque_tt *tt)
+void	extend_bs(t_state *state)
+{
+	char	*prompt;
+
+	while (ends_with_bs(state->input))
+	{
+		dyn_str_pop(&state->input);
+		prompt = ft_strdup("> ");
+		if (readline_cmd(state, &prompt))
+			return ;
+	}
+}
+
+
+void	get_more_tokens(t_state *state, char **prompt, t_deque_tt *tt)
 {
 	int		stat;
-	bool	is_bs;
 
-	is_bs = false;
-	while (prompt)
+	while (*prompt)
 	{
 		stat = readline_cmd(state, prompt);
-		if (stat == 1 && !is_bs)
-			return (true);
-		else if (stat != 1 && stat)
-			break ;
-		if (ends_with_bs(state->input))
+		if (stat)
 		{
-			dyn_str_pop(&state->input);
-			prompt = ft_strdup("> ");
-			is_bs = true;
-			continue ;
+			if (stat == 1 && state->input.len)
+			{
+				ft_eprintf("%s: unexpected EOF while looking for matching `%c'\n",
+				   state->context, tt->looking_for);
+				if (!state->last_cmd_status_res.status)
+					set_cmd_status(state, (t_exe_res){.status = SYNTAX_ERR});
+				state->should_exit = true;
+			}
+			return ;
 		}
+		extend_bs(state);
 		dyn_str_push(&state->input, '\n');
-		prompt = tokenizer(state->input.buff, tt);
-		if (prompt)
-			prompt = ft_strdup(prompt);
+		*prompt = tokenizer(state->input.buff, tt);
+		if (!stat && *prompt)
+			*prompt = ft_strdup(*prompt);
 	}
-	return (false);
 }
 
 bool	try_parse_tokens(t_state *state, t_parser *parser,
 	t_deque_tt *tt, char **prompt)
 {
-	if (!tt->len)
+	if (tt->len <= 2)
 	{
 		buff_readline_reset(&state->readline_buff);
 		return (false);
@@ -134,16 +150,22 @@ void	parse_and_execute_input(t_state *state)
 	deque_tt_init(&tt, 100);
 	while (parser.res == RES_MoreInput || parser.res == RES_Init)
 	{
-		if (get_more_tokens(state, prompt, &tt) && parser.res == RES_MoreInput)
+		get_more_tokens(state, &prompt, &tt);
+		if (state->should_exit)
+			break ;
+		if (g_should_unwind)
+		{
+			set_cmd_status(state, (t_exe_res){.status = CANCELED, .c_c = true});
+			break;
+		}
+		if (state->readline_buff.has_finished && parser.res == RES_MoreInput)
 		{
 			ft_eprintf("%s: syntax error: unexpected end of file\n",
 				state->context);
 			set_cmd_status(state, (t_exe_res){.status = SYNTAX_ERR});
+			break ;
 		}
-		if (g_should_unwind)
-			set_cmd_status(state, (t_exe_res){.status = CANCELED, .c_c = true});
-		if (state->should_exit || g_should_unwind
-			|| !try_parse_tokens(state, &parser, &tt, &prompt))
+		if (!try_parse_tokens(state, &parser, &tt, &prompt))
 			break ;
 	}
 	if (parser.res == RES_OK)

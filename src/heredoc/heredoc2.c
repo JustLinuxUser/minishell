@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 00:24:14 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/21 15:59:34 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/24 13:30:04 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,10 @@ void	process_line(t_state *state, t_heredoc_req *req)
 
 	dyn_str_init(&alloc_line);
 	stat = buff_readline(state, &alloc_line, "heredoc> ");
+	state->readline_buff.has_finished = false;
+	if (stat == 0)
+		ft_eprintf("%s: warning: here-document at line %i delimited by end-of-file (wanted `%s')\n",
+			 state->context, state->readline_buff.line, req->sep);
 	if (stat == 0 || stat == 2)
 		return ((void)(req->finished = true));
 	if ((req->full_file.len == 0
