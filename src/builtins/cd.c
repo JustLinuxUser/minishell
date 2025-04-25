@@ -1,10 +1,28 @@
 #include "builtins.h"
+#include <stdlib.h>
+
+static void update_pwd_vars(t_state *state)
+{
+	t_env* PWD = env_get(&state->env,"PWD");
+	
+	if(PWD == NULL)
+		try_unset(state, "OLDPWD");
+	else
+	{
+
+	env_set(&state->env, (t_env){.exported = PWD->exported, .key = ft_strdup("OLDPWD"), 
+										.value = ft_strdup(PWD->value)});
+	}
+	env_set(&state->env, (t_env){.exported = true, .key = ft_strdup("PWD"), 
+										.value = ft_strdup(state->cwd.buff)});
+}
 
 int	builtin_cd(t_state *state, t_vec_str argv)
 {
 	char	*cwd;
 	char	*home;
 	int		e;
+	char	*oldpwd;
 
 	// t_env	cenv;
 	if (argv.len >= 3)
@@ -23,8 +41,18 @@ int	builtin_cd(t_state *state, t_vec_str argv)
 		}
 		e = chdir(home);
 	}
-	
-	if (argv.len == 2) 
+	oldpwd = env_expand(state, "OLDPWD");
+	if (!ft_strcmp("-", argv.buff[1]))
+	{
+		if (oldpwd == NULL)
+		 	{
+			ft_eprintf("%s: cd: OLDPWD not set\n", state->context);
+			return(1);
+			}
+		ft_printf("%s\n",oldpwd);
+		e = chdir(oldpwd);
+	}
+	else if (argv.len == 2) 
 	{
 		e = chdir(argv.buff[1]);
 	}
@@ -49,14 +77,7 @@ int	builtin_cd(t_state *state, t_vec_str argv)
 		dyn_str_pushstr(&state->cwd, argv.buff[1]);
 	}
 	free(cwd);
+	update_pwd_vars (state);
 	return (0);
 }
-//to do  errors;
-
-//manejar el entorno de pwd y oldpwd
-
-// inicializacion de la minishell el getcwd al inicio de la minishell (errores en caso de que nos quiten el entorno etc bla)
-
-// cd - // cd oldpwd fin
-
-//norminettear todo
+//exit no imprime ext si no estoy en readline

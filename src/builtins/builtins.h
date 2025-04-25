@@ -12,14 +12,13 @@
 # include <string.h>
 # include <unistd.h>
 
-/* ───────── helpers de echo (5 en total) ───────── */
 int		mini_atoi_base(char **str, int base, int len);
 void	parse_numeric_escape(char **str);
 void	e_parser(char *str);
 int		parse_flags(t_vec_str argv, int *n, int *e, int *E);
 void	print_args(int e, int E, t_vec_str argv, size_t i);
+void 	try_unset(t_state *state, char *key);
 
-/* ───────── prototipos de built‑ins ───────── */
 int		builtin_echo(t_state *state, t_vec_str argv);
 int		builtin_pwd(t_state *state, t_vec_str argv);
 int		builtin_exit(t_state *state, t_vec_str argv);
