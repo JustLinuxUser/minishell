@@ -107,10 +107,4 @@ int	builtin_cd(t_state *state, t_vec_str argv)
 	return (0);
 }
 
-//manejar el entorno de pwd y oldpwd
-
-// cd - // cd oldpwd fin
-
-//norminettear todo
-
-//exit no imprime ext si no estoy en readline
+//norminetear

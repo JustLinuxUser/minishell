@@ -1,11 +1,11 @@
 #include "builtins.h"
 
-int	parse_flags(t_vec_str argv, int *n, int *e, int *E)
+int	parse_flags(t_vec_str argv, int *n, int *e)
 {
 	size_t	i;
 	size_t	j;
+	
 	i = 1;
-	*E = 0;
 	while (i < argv.len && argv.buff[i][0] == '-' && argv.buff[i][1])
 	{
 		j = 1;
@@ -19,9 +19,9 @@ int	parse_flags(t_vec_str argv, int *n, int *e, int *E)
 			if (argv.buff[i][j] == 'n')
 				*n = 1;
 			if (argv.buff[i][j] == 'e')
-				*e = 1, *E = 0;
+				*e = 1;
 			if (argv.buff[i][j] == 'E')
-				*E = 1, *e = 0;
+				*e = 0;
 			j++;
 		}
 		i++;
@@ -29,15 +29,19 @@ int	parse_flags(t_vec_str argv, int *n, int *e, int *E)
 	return (i);
 }
 
-void	print_args(int e, int E, t_vec_str argv, size_t i)
+int		print_args(int e, t_vec_str argv, size_t i)
 {
 	while (i < argv.len)
 	{
-		if (e && !E)
-			e_parser(argv.buff[i]);
+		if (e)
+		{
+			if (e_parser(argv.buff[i]))
+				return(1);
+		}
 		else
 			ft_printf("%s", argv.buff[i]);
 		if (++i < argv.len)
 			ft_printf(" ");
 	}
+	return 0;
 }

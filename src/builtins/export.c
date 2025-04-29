@@ -4,17 +4,23 @@ void parse_export_arg(char *str, char **ident, char **val)
 {
 	char *eq = ft_strchr(str, '=');
 	if (eq)
-	{	*ident = ft_strndup(str, eq - str);
-		*val   = ft_strdup(eq + 1); }
+	{
+		*ident = ft_strndup(str, eq - str);
+		*val   = ft_strdup(eq + 1);
+	}
 	else
-	{	*ident = ft_strdup(str); *val = NULL; }
+	{	
+		*ident = ft_strdup(str); *val = NULL; 
+	}
 }
 
 static bool is_valid_ident(char *id)
 {
 	int i = 0;
-	if (!is_var_name_p1(id[0])) return false;
-	while (id[i] && is_var_name_p2(id[i])) i++;
+	if (!is_var_name_p1(id[0]))
+		return false;
+	while (id[i] && is_var_name_p2(id[i])) 
+		i++;
 	return !id[i];
 }
 
@@ -36,9 +42,11 @@ int	builtin_export(t_state *st, t_vec_str av)
 				env_set(&st->env, (t_env){true, id, val});
 		}
 		else
-		{	ft_eprintf("%s: %s: `%s' not valid identifier\n",
+		{	
+			ft_eprintf("%s: %s: `%s' not valid identifier\n",
 				st->context, av.buff[0], av.buff[i]);
-			free(id); free(val); status = 1; }
+			free(id); free(val); status = 1;
+		}
 		i++;
 	}
 	return status;

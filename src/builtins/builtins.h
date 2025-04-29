@@ -14,9 +14,9 @@
 
 int		mini_atoi_base(char **str, int base, int len);
 void	parse_numeric_escape(char **str);
-void	e_parser(char *str);
-int		parse_flags(t_vec_str argv, int *n, int *e, int *E);
-void	print_args(int e, int E, t_vec_str argv, size_t i);
+int		e_parser(char *str);
+int		parse_flags(t_vec_str argv, int *n, int *e);
+int		print_args(int e, t_vec_str argv, size_t i);
 void 	try_unset(t_state *state, char *key);
 
 int		builtin_echo(t_state *state, t_vec_str argv);
@@ -27,6 +27,7 @@ int		builtin_env(t_state *state, t_vec_str argv);
 int		builtin_export(t_state *state, t_vec_str argv);
 int		builtin_unset(t_state *state, t_vec_str argv);
 
-int (*builtin_func(char *name))(t_state *state, t_vec_str argv);
+int 	(*builtin_func(char *name))(t_state *state,
+									t_vec_str argv);
 
 #endif
