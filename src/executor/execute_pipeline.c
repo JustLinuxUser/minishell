@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:45:10 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:55:11 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/25 17:43:38 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ void	set_up_redir_pipeline_child(bool is_last, t_executable_node *exe,
 	}
 	else
 	{
-		curr_exe->next_infd = 0;
+		curr_exe->next_infd = -1;
 		curr_exe->outfd = dup(exe->outfd);
 	}
 }

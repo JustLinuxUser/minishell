@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 13:59:13 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:56:28 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/28 10:35:32 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,4 +68,44 @@ int	env_len(char *line)
 	while (is_var_name_p2(line[len]))
 		len++;
 	return (len);
+}
+
+void	gather_heredoc(t_state *state, t_ast_node *node)
+{
+	int				wr_fd;
+	t_dyn_str		sep;
+	t_heredoc_req	req;
+
+	assert(node->children.len >= 1);
+	if (node->children.buff[0].token.tt == TT_HEREDOC)
+	{
+		wr_fd = ft_mktemp(state, node);
+		sep = word_to_hrdoc_string(node->children.buff[1]);
+		assert(sep.buff);
+		req = (t_heredoc_req){
+			.sep = sep.buff,
+			.expand = !contains_quotes(node->children.buff[1]),
+			.remove_tabs
+			= ft_strncmp(node->children.buff[0].token.start, "<<-", 3)
+			== 0};
+		write_heredoc(state, wr_fd, &req);
+		free(sep.buff);
+	}
+}
+
+int	gather_heredocs(t_state *state, t_ast_node *node)
+{
+	size_t	i;
+
+	i = 0;
+	while (i < node->children.len && !g_should_unwind)
+	{
+		gather_heredocs(state, &node->children.buff[i]);
+		i++;
+	}
+	if (node->node_type == AST_REDIRECT)
+	{
+		gather_heredoc(state, node);
+	}
+	return (0);
 }

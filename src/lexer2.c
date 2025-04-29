@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 21:31:30 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/24 17:56:33 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/28 10:17:10 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,23 @@
 #include "minishell.h"
 #include <assert.h>
 
+static void	advance_bs(char **str)
+{
+	ft_assert(**str == '\\');
+	if ((*str)[1])
+		*str += 1;
+	*str += 1;
+}
+
 static char	*parse_word(t_deque_tt *tokens, char **str)
 {
 	char	*start;
 
 	start = *str;
-	while (1)
+	while (**str)
 	{
 		if (**str == '\\')
-			(*str) += 2;
+			advance_bs(str);
 		else if (!is_special_char(**str) || **str == '$')
 			(*str)++;
 		else if (**str == '\'')
@@ -102,7 +110,7 @@ char	*tokenizer(char *str, t_deque_tt *ret)
 
 	prompt = 0;
 	deque_tt_clear(ret);
-	while (*str)
+	while (str && *str)
 	{
 		if (*str == '\'' || *str == '"' || *str == '$'
 			|| !(is_special_char(*str)))

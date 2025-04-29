@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:39:33 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/24 23:28:03 by armgonza         ###   ########.fr       */
+/*   Updated: 2025/04/29 11:14:30 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ void	init_arg(t_state *state, char **argv)
 		exit(SYNTAX_ERR);
 	}
 	dyn_str_pushstr(&state->readline_buff.buff, argv[2]);
-	dyn_str_push(&state->readline_buff.buff, '\n');
 	buff_readline_update(&state->readline_buff);
 	state->readline_buff.should_update_context = true;
 	state->input_method = INP_ARG;
@@ -76,12 +75,12 @@ void	init_cwd(t_state *state)
 	{
 		dyn_str_pushstr(&state->cwd, cwd);
 	}
-	else 
+	else
 	{
-	ft_eprintf("shell-init: error retrieving current directory:"
-		" getcwd: cannot access parent directories:"
-		" No such file or directory\nsh: 0: "
-		"getcwd() failed: No such file or directory\n");
+		ft_eprintf("shell-init: error retrieving current directory:"
+			" getcwd: cannot access parent directories:"
+			" No such file or directory\nsh: 0: "
+			"getcwd() failed: No such file or directory\n");
 	}
 	free(cwd);
 }
@@ -101,7 +100,7 @@ void	init_setup(t_state *state, char **argv, char **envp)
 		init_arg(state, argv);
 	else if (argv[1])
 		init_file(state, argv);
-	else if (!isatty(0) || !isatty(1))
+	else if (!isatty(0))
 		init_stdin_notty(state);
 	else
 		init_history(state);

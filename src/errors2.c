@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:40:58 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 17:35:53 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/28 15:30:20 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "minishell.h"
 #include <errno.h>
 #include <string.h>
+#include "libft/libft.h"
 
 void	err_cmd_not_found(t_state *state, char *cmd)
 {

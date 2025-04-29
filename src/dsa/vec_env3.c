@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 21:16:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/18 21:17:03 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/25 22:54:01 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,13 @@ int	env_set(t_vec_env *env, t_env new)
 
 void	env_extend(t_vec_env *dest, t_vec_env *src)
 {
+	t_env	curr;
+
 	while (src->len)
 	{
-		env_set(dest, vec_env_pop(src));
+		curr = vec_env_pop(src);
+		curr.exported = true;
+		env_set(dest, curr);
 	}
 	free(src->buff);
 	vec_env_init(src);

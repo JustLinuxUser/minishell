@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 23:17:24 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 18:02:39 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/28 23:00:16 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,4 +86,5 @@ void	free_executable_node(t_state *state, t_executable_node *node)
 		i++;
 	}
 	free(node->redirs.buff);
+	vec_int_init(&node->redirs);
 }

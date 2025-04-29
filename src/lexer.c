@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 14:56:57 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/18 21:30:40 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/27 17:44:22 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,14 +51,10 @@ int	advance_dquoted(char **str)
 
 int	advance_squoted(char **str)
 {
-	char	prev;
-
 	assert(**str == '\'');
 	(*str)++;
-	prev = 0;
-	while (**str && (**str != '\'' || prev == '\\'))
+	while (**str && **str != '\'')
 	{
-		prev = **str;
 		(*str)++;
 	}
 	if (**str != '\'')

@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/20 21:27:11 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:55:59 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/28 19:07:16 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ bool	create_redir(t_tt tt, char *fname, t_redir *ret)
 
 int	redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx)
 {
-	t_redir		ret;
+	t_redir		new_redir;
 	t_tt		tt;
 	t_token_old	full_token;
 	char		*fname;
@@ -48,13 +48,13 @@ int	redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx)
 	assert(curr->node_type == AST_REDIRECT);
 	if (curr->has_redirect)
 	{
-		ret = state->redirects.buff[curr->redir_idx];
+		*redir_idx = curr->redir_idx;
 		return (0);
 	}
 	tt = curr->children.buff[0].token.tt;
 	full_token = get_old_token(curr->children.buff[1]);
 	fname = expand_word_single(state, vec_nd_idx(&curr->children, 1));
-	if (!create_redir(tt, fname, &ret))
+	if (!create_redir(tt, fname, &new_redir))
 	{
 		ft_eprintf("%s: %.*s: ambigous redirect\n",
 			state->context, full_token.len, full_token.start);
@@ -63,6 +63,6 @@ int	redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx)
 	curr->redir_idx = state->redirects.len;
 	*redir_idx = state->redirects.len;
 	curr->has_redirect = true;
-	vec_redir_push(&state->redirects, ret);
+	vec_redir_push(&state->redirects, new_redir);
 	return (0);
 }

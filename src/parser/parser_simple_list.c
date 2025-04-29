@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:22:54 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/24 19:15:25 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/28 10:20:45 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ t_ast_node	parse_simple_list(t_state *state,
 	}
 	if (deque_tt_peek(tokens).tt == TT_NEWLINE)
 		deque_tt_pop_start(tokens);
-	else
+	else if (deque_tt_peek(tokens).tt != TT_END)
 		return (unexpected(state, parser, ret, tokens));
 	return (ret);
 }

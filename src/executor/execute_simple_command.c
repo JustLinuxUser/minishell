@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:53:24 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/21 01:04:54 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/28 22:57:54 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include "../libft/libft.h"
 
 // returns status
 int	actually_run(t_state *state, t_vec_str *args)
@@ -44,18 +45,10 @@ void	set_up_redirection(t_state *state, t_executable_node *exe)
 	t_redir	redir;
 	size_t	i;
 
-	if (exe->next_infd)
+	if (exe->next_infd != -1)
 		close(exe->next_infd);
-	if (exe->outfd != 1)
-	{
-		dup2(exe->outfd, 1);
-		close(exe->outfd);
-	}
-	if (exe->infd != 0)
-	{
-		dup2(exe->infd, 0);
-		close(exe->infd);
-	}
+	dup2(exe->outfd, 1);
+	dup2(exe->infd, 0);
 	i = 0;
 	while (i < exe->redirs.len)
 	{

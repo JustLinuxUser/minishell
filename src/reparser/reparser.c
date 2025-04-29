@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/05 17:26:17 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/21 20:30:37 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/28 10:25:13 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,10 @@ void	reparse_bs(t_ast_node *ret, int *i, t_token t)
 
 	assert(t.start[(*i)++] == '\\');
 	prev_start = *i;
-	assert(*i < t.len);
-	(*i)++;
+	if (*i == t.len)
+		prev_start--;
+	else
+		(*i)++;
 	vec_nd_push(&ret->children,
 		create_subtoken_node(t, prev_start, *i, TT_WORD));
 }

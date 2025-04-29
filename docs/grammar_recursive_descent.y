@@ -38,4 +38,5 @@ simple_command_element: {(WORD | ASSIGNMENT_WORD | redirection)}+;
    Lists are used within commands such as if, for, while.  */
 
 r_compound_list 	: {\n+} r_pipeline {('&&' | '||' | ';' | '\n') {\n+} r_pipeline} {;}{\n+}
+				 													    or ), meaning end of list
 %%

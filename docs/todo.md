@@ -161,7 +161,7 @@ case:
 
 # bugs:
 - unexpected EOF, for lexer,
-    - [ ] Only sets the error code if there is no prev error code
+    - [x] Only sets the error code if there is no prev error code
     - [x] and parser
         - [x] Always sets exit code to SYNTAX_ERR
 - [x] printing exit on Ctrl-D, only when interactive though
@@ -196,12 +196,43 @@ case:
 
     - -c doesn't add a \n in the end,
     - buff_readline doesn't always expect a newline to be there
-    - \ without any char afterwards is just a \
+    - [?] \ without any char afterwards is just a \
     - parser doesn't expect a newline at the end to be there always, doesn't execute if the flag is already set
-    - [ ] parser should not reset the status of the command unless there is at least one token
+    - [x] parser should not reset the status of the command unless there is at least one token
     - [x] `; ls` fails critically
     - [ ] check all the parser code, to ensure that the unexpected is called everywere
     - [x] ` ` fails critically, and the newline token gets printed, why?
+    - [x] `echo hi | (echo hello | cat -e)`, cat, bad file desc
+    - [x] close all unnesessary fds
+    - [ ] check if `echo '\''hello'`
+        - fails critically
+    - [ ] Heredoc sep, in files, and in heredocs, related to searching for sep, when getting a newline terminated line
+    - [ ] backslashes don't work well with newline additions
+    - [ ] multiline string should have nls
+    - [ ] ./minishell -c '\'
+        - does nothing
+    - [ ] ./minishell -c '\\'
+        - fails critically
+    - [ ] ./minishell -c 'echo \' doesn't print anything
+    - [ ] ./minishell -c 'echo \\' fails
+    - [ ] redo the checking if the line is empty
+    - [ ] extend bs behaves differently if there actually is a newline afterwards or not, and for some reason when reading a file, it assumes that one is always there
+
+    - [ ] syntax error for some reason
+    ```bash
+    (ls -la
+    
+
+
+
+    )
+    ```
+
+
+    - [ ] heredocs, are reversed, the last redir in should count only, same with hrdocs
+    - [ ] don't segfault on ft_assert, do an exit, only segfault with an option set
+    - [ ] `cat /dev/urandom > /dev/null | cat` dies
+
 
 ## Handling of Ctrl-D
 - Ctrl-D in get_tokens prints exit on interactive

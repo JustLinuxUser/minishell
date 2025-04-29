@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:23:53 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/24 18:48:11 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/28 10:26:45 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,74 +18,22 @@
 #include <stdbool.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <sys/time.h>
 
 int	g_should_unwind = 0;
 
-/* exit codes:
-*
-* 0 - verything ok
-*
-* 1 - ctrl-d
-*
-* 2 - ctrl-c / ctrl-\
-*/
-void	bg_readline(int outfd, char *prompt)
+int	return_last_line(t_state *state, t_dyn_str *ret)
 {
-	char	*ret;
+	int		len;
 
-	ret = readline(prompt);
-	if (!ret)
-	{
-		close(outfd);
-		exit (1);
-	}
-	write_to_file(ret, outfd);
-	close(outfd);
-	exit(0);
-}
-
-int	attach_input_readline(t_buff_readline *l, int pp[2], int pid)
-{
-	int	status;
-
-	close(pp[1]);
-	dyn_str_append_fd(pp[0], &l->buff);
-	buff_readline_update(l);
-	close(pp[0]);
-	while (1)
-		if (waitpid(pid, &status, 0) != -1)
-			break ;
-	if (WIFSIGNALED(status))
-	{
-		ft_printf("\n");
-		return (2);
-	}
-	return (WEXITSTATUS(status));
-}
-
-int	get_more_input_readline(t_buff_readline *l, char *prompt)
-{
-	int	pp[2];
-	int	pid;
-
-	if (pipe(pp))
-		critical_error_errno();
-	pid = fork();
-	if (pid == 0)
-	{
-		readline_bg_signals();
-		close(pp[0]);
-		bg_readline(pp[1], prompt);
-	}
-	else if (pid < 0)
-		critical_error_errno();
-	else
-	{
-		return (attach_input_readline(l, pp, pid));
-	}
-	ft_assert("Unreachable" == 0);
-	return (0);
+	len = state->readline_buff.buff.len - state->readline_buff.cursor;
+	dyn_str_pushnstr(ret, state->readline_buff.buff.buff
+		+ state->readline_buff.cursor, len);
+	state->readline_buff.cursor = 0;
+	state->readline_buff.buff.len = 0;
+	state->readline_buff.has_line = false;
+	if (len == 0)
+		return (1);
+	return (4);
 }
 
 int	return_new_line(t_state *state, t_dyn_str *ret)
@@ -97,15 +45,16 @@ int	return_new_line(t_state *state, t_dyn_str *ret)
 	update_context(state);
 	temp = ft_strchr(state->readline_buff.buff.buff
 			+ state->readline_buff.cursor, '\n');
-	ft_assert(temp != 0);
+	if (temp == 0)
+		return (return_last_line(state, ret));
 	len = temp - (state->readline_buff.buff.buff
-			+ state->readline_buff.cursor);
+			+ state->readline_buff.cursor) + 1;
 	if (len)
 	{
 		dyn_str_pushnstr(ret, state->readline_buff.buff.buff
 			+ state->readline_buff.cursor, len);
 	}
-	state->readline_buff.cursor += len + 1;
+	state->readline_buff.cursor += len;
 	state->readline_buff.has_line = state->readline_buff.cursor
 		!= state->readline_buff.buff.len;
 	if (len == 0)

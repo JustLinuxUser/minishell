@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:55:36 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/28 18:54:16 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,7 @@ void	execute_top_level(t_state *state)
 		if (res.c_c)
 		{
 			if (state->input_method == INP_READLINE)
-				ft_printf("\n");
+				ft_eprintf("\n");
 			else
 				state->should_exit = true;
 		}

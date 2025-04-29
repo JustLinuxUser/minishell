@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 00:24:14 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/24 13:30:04 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/28 12:47:10 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,29 +14,61 @@
 #include "../minishell.h"
 #include <assert.h>
 
+bool	get_line_heredoc(t_state *state,
+		t_heredoc_req *req, t_dyn_str *alloc_line)
+{
+	int			stat;
+
+	dyn_str_init(alloc_line);
+	stat = buff_readline(state, alloc_line, "heredoc> ");
+	state->readline_buff.has_finished = false;
+	if (stat == 0)
+		ft_eprintf("%s: warning: here-document at"
+			" line %i delimited by end-of-file (wanted `%s')\n",
+			state->context, state->readline_buff.line, req->sep);
+	if (stat == 0 || stat == 2)
+	{
+		req->finished = true;
+		return (true);
+	}
+	return (false);
+}
+
+static bool	is_sep(t_heredoc_req *req, t_dyn_str *alloc_line)
+{
+	size_t	sep_len;
+
+	sep_len = ft_strlen(req->sep);
+	if ((req->full_file.len == 0
+			|| req->full_file.buff[req->full_file.len - 1] == '\n'))
+	{
+		if (ft_strcmp(alloc_line->buff, req->sep) == 0)
+		{
+			return (true);
+		}
+		else if (alloc_line->buff[alloc_line->len - 1] == '\n'
+			&& sep_len + 1 == alloc_line->len
+			&& ft_strncmp(alloc_line->buff, req->sep, sep_len) == 0)
+		{
+			return (true);
+		}
+	}
+	return (false);
+}
+
 // should brake
 void	process_line(t_state *state, t_heredoc_req *req)
 {
 	t_dyn_str	alloc_line;
-	int			stat;
 	char		*line;
 
-	dyn_str_init(&alloc_line);
-	stat = buff_readline(state, &alloc_line, "heredoc> ");
-	state->readline_buff.has_finished = false;
-	if (stat == 0)
-		ft_eprintf("%s: warning: here-document at line %i delimited by end-of-file (wanted `%s')\n",
-			 state->context, state->readline_buff.line, req->sep);
-	if (stat == 0 || stat == 2)
-		return ((void)(req->finished = true));
-	if ((req->full_file.len == 0
-			|| req->full_file.buff[req->full_file.len - 1] == '\n')
-		&& ft_strcmp(alloc_line.buff, req->sep) == 0)
+	if (get_line_heredoc(state, req, &alloc_line))
+		return ;
+	if (is_sep(req, &alloc_line))
 	{
 		free(alloc_line.buff);
 		return ((void)(req->finished = true));
 	}
-	dyn_str_push(&alloc_line, '\n');
 	if (req->remove_tabs)
 		line = first_non_tab(alloc_line.buff);
 	else
@@ -75,44 +107,4 @@ bool	contains_quotes(t_ast_node node)
 		i++;
 	}
 	return (false);
-}
-
-void	gather_heredoc(t_state *state, t_ast_node *node)
-{
-	int				wr_fd;
-	t_dyn_str		sep;
-	t_heredoc_req	req;
-
-	assert(node->children.len >= 1);
-	if (node->children.buff[0].token.tt == TT_HEREDOC)
-	{
-		wr_fd = ft_mktemp(state, node);
-		sep = word_to_hrdoc_string(node->children.buff[1]);
-		assert(sep.buff);
-		req = (t_heredoc_req){
-			.sep = sep.buff,
-			.expand = !contains_quotes(node->children.buff[1]),
-			.remove_tabs
-			= ft_strncmp(node->children.buff[0].token.start, "<<-", 3)
-			== 0};
-		write_heredoc(state, wr_fd, &req);
-		free(sep.buff);
-	}
-}
-
-int	gather_heredocs(t_state *state, t_ast_node *node)
-{
-	size_t	i;
-
-	i = 0;
-	while (i < node->children.len && !g_should_unwind)
-	{
-		gather_heredocs(state, &node->children.buff[i]);
-		i++;
-	}
-	if (node->node_type == AST_REDIRECT)
-	{
-		gather_heredoc(state, node);
-	}
-	return (0);
 }

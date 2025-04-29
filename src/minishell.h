@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:46:59 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/24 20:29:11 by armgonza         ###   ########.fr       */
+/*   Updated: 2025/04/29 11:14:41 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,6 +207,7 @@ typedef struct s_state
 int			buff_readline(t_state *state, t_dyn_str *ret, char *prompt);
 void		buff_readline_update(t_buff_readline *l);
 void		buff_readline_reset(t_buff_readline *l);
+int			get_more_input_readline(t_buff_readline *l, char *prompt);
 void		update_context(t_state *state);
 int			get_more_input_notty(t_state *state);
 
@@ -303,6 +304,8 @@ typedef struct s_heredoc_req
 	bool		remove_tabs;
 }	t_heredoc_req;
 int			gather_heredocs(t_state *state, t_ast_node *node);
+bool		contains_quotes(t_ast_node node);
+void		write_heredoc(t_state *state, int wr_fd, t_heredoc_req *req);
 
 int			env_len(char *line);
 int			ft_mktemp(t_state *state, t_ast_node *node);
