@@ -1,28 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   echo.c                                             :+:      :+:    :+:   */
+/*   home_setter.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/29 23:25:09 by armgonza          #+#    #+#             */
-/*   Updated: 2025/05/01 21:23:57 by armgonza         ###   ########.fr       */
+/*   Created: 2025/05/01 23:08:33 by armgonza          #+#    #+#             */
+/*   Updated: 2025/05/01 23:18:47 by armgonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "builtins.h"
+#include <stdlib.h>
 
-int	builtin_echo(t_state *state, t_vec_str argv)
+int	cd_home(int *e, t_state *state)
 {
-	int		n;
-	int		e;
-	size_t	first_arg_print;
+	char	*home;
 
-	n = 0;
-	e = 0;
-	(void)state;
-	first_arg_print = parse_flags(argv, &n, &e);
-	if (!print_args(e, argv, first_arg_print) && !n)
-		ft_printf("\n");
+	home = env_expand(state, "HOME");
+	if (home == NULL)
+	{
+		ft_eprintf("%s: cd: HOME not set\n", state->context);
+		return (1);
+	}
+	*e = chdir(home);
 	return (0);
 }

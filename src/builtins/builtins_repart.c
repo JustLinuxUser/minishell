@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   builtins_repart.c                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/29 23:25:29 by armgonza          #+#    #+#             */
+/*   Updated: 2025/05/01 20:05:51 by armgonza         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "builtins.h"
 
-int (*builtin_func(char *name))(t_state *state, t_vec_str argv)
+int	(*builtin_func(char *name))(t_state *state, t_vec_str argv)
 {
 	if (!name)
 		return (0);

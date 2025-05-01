@@ -1,52 +1,60 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   cd.c                                               :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/29 23:25:00 by armgonza          #+#    #+#             */
+/*   Updated: 2025/05/01 21:21:32 by armgonza         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "builtins.h"
 #include <stdlib.h>
 
-static void update_pwd_vars(t_state *state)
+static void	update_pwd_vars(t_state *state)
 {
-	t_env* PWD = env_get(&state->env,"PWD");
-	
-	if(PWD == NULL)
+	t_env	*pwd;
+
+	pwd = env_get(&state->env, "PWD");
+	if (pwd == NULL)
 		try_unset(state, "OLDPWD");
 	else
 	{
-
-	env_set(&state->env, (t_env){.exported = PWD->exported, .key = ft_strdup("OLDPWD"), 
-										.value = ft_strdup(PWD->value)});
+		env_set(&state->env, (t_env){.exported = pwd->exported,
+			.key = ft_strdup("OLDPWD"), .value = ft_strdup(pwd->value)});
 	}
-	env_set(&state->env, (t_env){.exported = true, .key = ft_strdup("PWD"), 
-										.value = ft_strdup(state->cwd.buff)});
+	env_set(&state->env, (t_env){.exported = true, .key = ft_strdup("PWD"),
+		.value = ft_strdup(state->cwd.buff)});
 }
 
-static void	cd_check_args(t_state *state, t_vec_str argv, int *ret)
+static int	cd_check_args(t_state *state, t_vec_str argv)
 {
 	if (argv.len >= 3)
 	{
-		ft_eprintf("%s: %s: too many arguments\n",
-			state->context, argv.buff[0]);
-		*ret = 1;
+		ft_eprintf("%s: %s: too many arguments\n", state->context,
+			argv.buff[0]);
+		return (1);
 	}
+	return (0);
 }
 
-static void	cd_do_chdir(t_state *state, t_vec_str argv,
-				char *home, char *oldpwd, int *e, int *ret)
+static int	cd_do_chdir(t_state *state, t_vec_str argv, int *e)
 {
+	char	*oldpwd;
+
+	oldpwd = env_expand(state, "OLDPWD");
 	if (argv.len == 1)
 	{
-		if (home == NULL)
-		{
-			ft_eprintf("%s: cd: HOME not set\n", state->context);
-			*ret = 1;
-			return ;
-		}
-		*e = chdir(home);
+		return (cd_home(e, state));
 	}
 	if (argv.len >= 2 && !ft_strcmp("-", argv.buff[1]))
 	{
 		if (oldpwd == NULL)
 		{
 			ft_eprintf("%s: cd: OLDPWD not set\n", state->context);
-			*ret = 1;
-			return ;
+			return (1);
 		}
 		ft_printf("%s\n", oldpwd);
 		*e = chdir(oldpwd);
@@ -55,6 +63,7 @@ static void	cd_do_chdir(t_state *state, t_vec_str argv,
 	{
 		*e = chdir(argv.buff[1]);
 	}
+	return (0);
 }
 
 static void	cd_refresh_cwd(t_state *state, t_vec_str argv, char *cwd)
@@ -67,7 +76,8 @@ static void	cd_refresh_cwd(t_state *state, t_vec_str argv, char *cwd)
 	else
 	{
 		ft_eprintf("cd: error retrieving current directory: getcwd:"
-			" cannot access parent directories: No such file or directory \n");
+			" cannot access parent directories:"
+			" No such file or directory \n");
 		if (!dyn_str_ends_with_str(&state->cwd, "/") && state->cwd.buff)
 			dyn_str_pushstr(&state->cwd, "/");
 		if (argv.len == 2)
@@ -78,28 +88,23 @@ static void	cd_refresh_cwd(t_state *state, t_vec_str argv, char *cwd)
 int	builtin_cd(t_state *state, t_vec_str argv)
 {
 	char	*cwd;
-	char	*home;
-	int		e = 0;
-	char	*oldpwd;
-	int		ret = 0;
+	int		e;
+	char	*arg;
 
-	cd_check_args(state, argv, &ret);
-	if (ret)
+	arg = "";
+	e = 0;
+	if (cd_check_args(state, argv))
 		return (1);
-
-	home = env_expand(state, "HOME");
-	oldpwd = env_expand(state, "OLDPWD");
-	cd_do_chdir(state, argv, home, oldpwd, &e, &ret);
-	if (ret)
+	if (cd_do_chdir(state, argv, &e))
 		return (1);
-
+	if (argv.len >= 2)
+		arg = argv.buff[1];
 	if (e == -1)
 	{
-		ft_eprintf("%s: %s: %s: %s\n", state->context, argv.buff[0],
-			argv.len >= 2 ? argv.buff[1] : "", strerror(errno));
+		ft_eprintf("%s: %s: %s: %s\n", state->context, argv.buff[0], arg,
+			strerror(errno));
 		return (1);
 	}
-
 	cwd = getcwd(NULL, 0);
 	cd_refresh_cwd(state, argv, cwd);
 	free(cwd);
@@ -107,4 +112,4 @@ int	builtin_cd(t_state *state, t_vec_str argv)
 	return (0);
 }
 
-//norminetear
+// norminetear
