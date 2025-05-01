@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 23:17:24 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/28 23:00:16 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/30 22:26:14 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,21 +70,8 @@ void	free_executable_cmd(t_executable_cmd cmd)
 	free(cmd.argv.buff);
 }
 
-void	free_executable_node(t_state *state, t_executable_node *node)
+void	free_executable_node(t_executable_node *node)
 {
-	t_redir	*curr;
-	size_t	i;
-
-	i = 0;
-	while (i < node->redirs.len)
-	{
-		curr = &state->redirects.buff[node->redirs.buff[i]];
-		if (curr->should_delete)
-			unlink(curr->fname);
-		free(curr->fname);
-		ft_memset(curr, 0, sizeof(*curr));
-		i++;
-	}
 	free(node->redirs.buff);
 	vec_int_init(&node->redirs);
 }

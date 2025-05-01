@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:46:59 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/29 11:14:41 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/30 22:26:29 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -425,7 +425,7 @@ t_dyn_str	encode_cmd_hist(char *cmd);
 // free utils
 void		free_all_state(t_state *state);
 void		free_redirects(t_vec_redir *v);
-void		free_executable_node(t_state *state, t_executable_node *node);
+void		free_executable_node(t_executable_node *node);
 void		free_executable_cmd(t_executable_cmd cmd);
 
 // prompt

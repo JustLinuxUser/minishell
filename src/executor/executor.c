@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/28 18:54:16 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/30 22:27:18 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,8 @@
 // returns pid
 t_exe_res	execute_subshell(t_state *state, t_executable_node *exe)
 {
-	int	pid;
+	int			pid;
+	t_exe_res	res;
 
 	pid = fork();
 	if (pid == 0)
@@ -35,10 +36,13 @@ t_exe_res	execute_subshell(t_state *state, t_executable_node *exe)
 		set_unwind_sig();
 		set_up_redirection(state, exe);
 		exe->node = &exe->node->children.buff[0];
-		forward_exit_status(execute_tree_node(state, exe));
+		res = execute_tree_node(state, exe);
+		free_executable_node(exe);
+		forward_exit_status(res);
 	}
 	if (pid < 0)
 		critical_error_errno();
+	free_executable_node(exe);
 	return (res_pid(pid));
 }
 

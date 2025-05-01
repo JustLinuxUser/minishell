@@ -241,6 +241,8 @@ case:
 - On bs, we execute on Ctrl-D
     - By checking if input is empty? Mb?
 
+- [ ] better error handling
+
 ```bash
 andrii@arch> echo hello\<Return>
 > <Ctrl-d>

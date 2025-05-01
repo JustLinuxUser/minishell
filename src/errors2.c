@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:40:58 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/28 15:30:20 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/30 20:17:28 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,12 @@ t_ast_node	unexpected(t_state *state, t_parser *parser,
 	t_token	t;
 
 	t = deque_tt_peek(tokens);
-	ft_printf("%s: syntax error near unexpected token `%.*s'\n",
-		state->context, t.len, t.start);
+	if (ft_strncmp(t.start, "\n", t.len) == 0)
+		ft_printf("%s: syntax error near unexpected token `newline'\n",
+			state->context);
+	else
+		ft_printf("%s: syntax error near unexpected token `%.*s'\n",
+			state->context, t.len, t.start);
 	parser->res = RES_FatalError;
 	return (ret);
 }

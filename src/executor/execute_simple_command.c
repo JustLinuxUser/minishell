@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:53:24 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/28 22:57:54 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/04/30 22:28:21 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ t_exe_res	execute_builtin_cmd_fg(t_state *state, t_executable_cmd *cmd,
 	close(stdin_bak);
 	close(stdout_bak);
 	free_executable_cmd(*cmd);
-	free_executable_node(state, exe);
+	free_executable_node(exe);
 	return (res_status(status));
 }
 
@@ -95,7 +95,7 @@ t_exe_res	execute_cmd_bg(t_state *state,
 		exit(actually_run(state, &cmd->argv));
 	}
 	free_executable_cmd(*cmd);
-	free_executable_node(state, exe);
+	free_executable_node(exe);
 	return (res_pid(pid));
 }
 
@@ -106,7 +106,7 @@ t_exe_res	execute_simple_command(t_state *state, t_executable_node *exe)
 	if (expand_simple_command(state, exe->node, &cmd, &exe->redirs))
 	{
 		free_executable_cmd(cmd);
-		free_executable_node(state, exe);
+		free_executable_node(exe);
 		if (g_should_unwind)
 			return (res_status(CANCELED));
 		return (res_status(AMBIGUOUS_REDIRECT));
@@ -121,7 +121,7 @@ t_exe_res	execute_simple_command(t_state *state, t_executable_node *exe)
 		if (exe->modify_parent_context)
 			env_extend(&state->env, &cmd.pre_assigns);
 		free_executable_cmd(cmd);
-		free_executable_node(state, exe);
+		free_executable_node(exe);
 		return (res_status(0));
 	}
 }
