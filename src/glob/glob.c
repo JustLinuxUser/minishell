@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/28 18:06:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/18 22:34:39 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:09 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #include "../libft/libft.h"
 #include "../minishell.h"
 #include "../dsa/vec_glob.h"
-#include <assert.h>
 #include <dirent.h>
 #include <stdio.h>
 

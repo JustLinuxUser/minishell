@@ -6,13 +6,12 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:09:10 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:57:32 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:08 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libft/libft.h"
 #include "../minishell.h"
-#include <assert.h>
 #include <stdbool.h>
 
 //[a-zA-Z_]
@@ -50,7 +49,7 @@ void	reparse_envvar(t_ast_node *ret, int *i, t_token t, t_tt tt)
 {
 	int	prev_start;
 
-	assert(t.start[(*i)++] == '$');
+	ft_assert(t.start[(*i)++] == '$');
 	prev_start = *i;
 	if (reparse_special_envvar(ret, i, t, tt))
 		return ;

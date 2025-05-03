@@ -6,14 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 15:25:40 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/05 00:32:01 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:08 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libft/libft.h"
 #include "../dsa/vec_glob.h"
 #include "../minishell.h"
-#include <assert.h>
 
 void	tokenize_star_glob(t_vec_glob *ret, t_token t, int *i)
 {
@@ -81,7 +80,7 @@ t_vec_glob	word_to_glob(t_ast_node word)
 	while (i < word.children.len)
 	{
 		curr_node = *vec_nd_idx(&word.children, i);
-		assert(curr_node.node_type == AST_TOKEN);
+		ft_assert(curr_node.node_type == AST_TOKEN);
 		curr_t = curr_node.token;
 		tokenize_word_glob(&ret, curr_t);
 		i++;

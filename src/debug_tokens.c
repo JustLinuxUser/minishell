@@ -6,13 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:45:12 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 17:46:31 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:11:02 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <assert.h>
 #include <stdio.h>
+#include "libft/libft.h"
 
 char	*tt_to_str_p2(t_tt tt)
 {
@@ -36,7 +36,7 @@ char	*tt_to_str_p2(t_tt tt)
 		return ("TT_OR");
 	if (tt == TT_AND)
 		return ("TT_AND");
-	assert(false);
+	ft_assert(false);
 	return (0);
 }
 

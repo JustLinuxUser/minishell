@@ -6,11 +6,10 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:51:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/18 22:53:28 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:09 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/wait.h>

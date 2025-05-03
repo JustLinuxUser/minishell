@@ -6,16 +6,16 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/30 22:27:18 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:34 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-#include <assert.h>
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdio.h>
+#include "../libft/libft.h"
 
 #include <readline/readline.h>
 #include <string.h>
@@ -53,18 +53,18 @@ t_exe_res	execute_command(t_state *state, t_executable_node *exe)
 	size_t		i;
 	int			redir_idx;
 
-	assert(exe->node->children.len >= 1);
+	ft_assert(exe->node->children.len >= 1);
 	if (exe->node->children.buff[0].node_type == AST_SIMPLE_COMMAND)
 	{
 		exe->node = &exe->node->children.buff[0];
 		return (execute_simple_command(state, exe));
 	}
-	assert(exe->node->children.buff[0].node_type == AST_SUBSHELL);
+	ft_assert(exe->node->children.buff[0].node_type == AST_SUBSHELL);
 	i = 0;
 	while (++i < exe->node->children.len)
 	{
 		curr = vec_nd_idx(&exe->node->children, i);
-		assert(curr->node_type == AST_REDIRECT);
+		ft_assert(curr->node_type == AST_REDIRECT);
 		if (redirect_from_ast_redir(state, curr, &redir_idx))
 			return (res_status(AMBIGUOUS_REDIRECT));
 		vec_int_push(&exe->redirs, redir_idx);
@@ -87,7 +87,7 @@ t_exe_res	execute_tree_node(t_state *state, t_executable_node *exe)
 	else if (t == AST_SIMPLE_LIST || t == AST_COMPOUND_LIST)
 		status = execute_simple_list(state, exe);
 	else
-		assert("Unreachable" == 0);
+		ft_assert("Unreachable" == 0);
 	set_cmd_status(state, status);
 	return (status);
 }

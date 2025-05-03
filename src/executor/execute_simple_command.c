@@ -6,12 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:53:24 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/30 22:28:21 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:08 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
-#include <assert.h>
 #include <stdbool.h>
 #include <unistd.h>
 #include "../libft/libft.h"
@@ -23,7 +22,7 @@ int	actually_run(t_state *state, t_vec_str *args)
 	char	**envp;
 	int		status;
 
-	assert(args->len >= 1);
+	ft_assert(args->len >= 1);
 	if (builtin_func(args->buff[0]))
 		exit(builtin_func(args->buff[0])(state, *args));
 	status = find_cmd_path(state, args->buff[0], &path_of_exe);

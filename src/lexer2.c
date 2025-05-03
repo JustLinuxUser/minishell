@@ -6,13 +6,12 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 21:31:30 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/28 10:17:10 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:08 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft/libft.h"
 #include "minishell.h"
-#include <assert.h>
 
 static void	advance_bs(char **str)
 {
@@ -95,7 +94,7 @@ void	parse_op(t_deque_tt *tokens, char **str)
 	operators[12] = (t_op_map){0, TT_END};
 	start = *str;
 	op_idx = longest_matching_str(operators, *str);
-	assert(op_idx != -1);
+	ft_assert(op_idx != -1);
 	*str += ft_strlen(operators[op_idx].str);
 	deque_tt_push_end(tokens, (t_token){.start = start,
 		.len = *str - start,

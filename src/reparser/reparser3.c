@@ -6,13 +6,12 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:12:52 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:57:40 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:09 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libft/libft.h"
 #include "../minishell.h"
-#include <assert.h>
 
 void	reparse_words(t_ast_node	*node)
 {
@@ -23,7 +22,7 @@ void	reparse_words(t_ast_node	*node)
 
 	if (node->node_type == AST_WORD)
 	{
-		assert(node->children.len == 1);
+		ft_assert(node->children.len == 1);
 		tok = node->children.buff[0].token;
 		full_word = (t_token_old){.start = tok.start,
 			.len = tok.len, .present = true};

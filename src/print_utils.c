@@ -6,13 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 21:24:06 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/18 21:24:23 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:11:13 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft/ft_printf/ft_printf.h"
+#include "libft/libft.h"
 #include "minishell.h"
-#include <assert.h>
 #include <stdio.h>
 
 char	*node_name(t_ast_t tn)
@@ -37,7 +37,7 @@ char	*node_name(t_ast_t tn)
 		return ("AST_COMMAND");
 	if (tn == AST_ASSIGNMENT_WORD)
 		return ("AST_ASSIGNMENT_WORD");
-	assert("Unreachable" == 0);
+	ft_assert("Unreachable" == 0);
 }
 
 void	print_node(t_ast_node node)

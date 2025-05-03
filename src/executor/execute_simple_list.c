@@ -6,21 +6,20 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:56:33 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:55:26 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:08 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../dsa/vec_exe_res.h"
 #include "../libft/utils/utils.h"
 #include "../minishell.h"
-#include <assert.h>
 
 bool	should_execute(t_exe_res prev_status, t_tt prev_op)
 {
 	if (prev_status.c_c)
 		return (false);
 	ft_assert(prev_status.status != -1);
-	assert(prev_op == TT_SEMICOLON || prev_op == TT_NEWLINE
+	ft_assert(prev_op == TT_SEMICOLON || prev_op == TT_NEWLINE
 		|| prev_op == TT_AND || prev_op == TT_OR);
 	if (prev_op == TT_SEMICOLON || prev_op == TT_NEWLINE)
 		return (true);
@@ -48,7 +47,7 @@ t_exe_res	execute_simple_list(t_state *state, t_executable_node *exe)
 		if (should_execute(status, op))
 		{
 			status = execute_tree_node(state, &exe_curr);
-			assert(status.status != -1);
+			ft_assert(status.status != -1);
 		}
 		i++;
 		if (i < exe->node->children.len)

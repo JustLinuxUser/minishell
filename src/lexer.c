@@ -6,13 +6,12 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 14:56:57 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/27 17:44:22 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:08 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft/libft.h"
 #include "minishell.h"
-#include <assert.h>
 
 bool	is_space(char c)
 {
@@ -35,7 +34,7 @@ int	advance_dquoted(char **str)
 {
 	char	prev;
 
-	assert(**str == '\"');
+	ft_assert(**str == '\"');
 	(*str)++;
 	prev = 0;
 	while (**str && (**str != '\"' || prev == '\\'))
@@ -51,7 +50,7 @@ int	advance_dquoted(char **str)
 
 int	advance_squoted(char **str)
 {
-	assert(**str == '\'');
+	ft_assert(**str == '\'');
 	(*str)++;
 	while (**str && **str != '\'')
 	{

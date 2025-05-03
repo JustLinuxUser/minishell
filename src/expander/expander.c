@@ -6,16 +6,16 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/20 21:26:20 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:55:48 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:44 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../dsa/vec_str.h"
 #include "../minishell.h"
-#include <assert.h>
 #include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include "../libft/libft.h"
 
 char	*expand_word_single(t_state *state, t_ast_node *curr)
 {
@@ -45,10 +45,10 @@ t_token_old	get_old_token(t_ast_node word)
 {
 	t_token_old	ret;
 
-	assert(word.node_type == AST_WORD);
-	assert(word.children.len);
+	ft_assert(word.node_type == AST_WORD);
+	ft_assert(word.children.len);
 	ret = word.children.buff[0].token.full_word;
-	assert(ret.present);
+	ft_assert(ret.present);
 	return (ret);
 }
 

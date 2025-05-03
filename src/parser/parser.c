@@ -6,12 +6,12 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 00:07:42 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/28 09:43:03 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:10:20 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <assert.h>
 #include <stdio.h>
+#include "../libft/libft.h"
 #include "../minishell.h"
 
 bool	is_simple_cmd_token(t_tt tt)
@@ -97,8 +97,8 @@ t_ast_node	parse_tokens(t_state *state, t_parser *parser, t_deque_tt *tokens)
 		{
 			printf("Got token: %s\n", tt_to_str(tt));
 		}
-		assert(tt == TT_END);
-		assert(tokens->len == 0);
+		ft_assert(tt == TT_END);
+		ft_assert(tokens->len == 0);
 		reparse_words(&ret);
 		reparse_assignment_words(&ret);
 	}

@@ -6,14 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/20 21:27:11 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/28 19:07:16 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:09 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libft/ft_printf/ft_printf.h"
 #include "../libft/utils/utils.h"
 #include "../minishell.h"
-#include <assert.h>
 #include <fcntl.h>
 
 bool	create_redir(t_tt tt, char *fname, t_redir *ret)
@@ -45,7 +44,7 @@ int	redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx)
 	t_token_old	full_token;
 	char		*fname;
 
-	assert(curr->node_type == AST_REDIRECT);
+	ft_assert(curr->node_type == AST_REDIRECT);
 	if (curr->has_redirect)
 	{
 		*redir_idx = curr->redir_idx;

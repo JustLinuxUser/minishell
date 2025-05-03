@@ -6,18 +6,18 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 13:59:13 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/28 10:35:32 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:10:11 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libft/dsa/dyn_str.h"
 #include "../libft/libft.h"
 #include "../minishell.h"
-#include <assert.h>
 #include <fcntl.h>
 #include <readline/readline.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "../libft/libft.h"
 
 // returns writable fd
 int	ft_mktemp(t_state *state, t_ast_node *node)
@@ -76,12 +76,12 @@ void	gather_heredoc(t_state *state, t_ast_node *node)
 	t_dyn_str		sep;
 	t_heredoc_req	req;
 
-	assert(node->children.len >= 1);
+	ft_assert(node->children.len >= 1);
 	if (node->children.buff[0].token.tt == TT_HEREDOC)
 	{
 		wr_fd = ft_mktemp(state, node);
 		sep = word_to_hrdoc_string(node->children.buff[1]);
-		assert(sep.buff);
+		ft_assert(sep.buff != 0);
 		req = (t_heredoc_req){
 			.sep = sep.buff,
 			.expand = !contains_quotes(node->children.buff[1]),

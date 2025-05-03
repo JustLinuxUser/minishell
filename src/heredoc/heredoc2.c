@@ -6,13 +6,12 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 00:24:14 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/28 12:47:10 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:08 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libft/libft.h"
 #include "../minishell.h"
-#include <assert.h>
 
 bool	get_line_heredoc(t_state *state,
 		t_heredoc_req *req, t_dyn_str *alloc_line)
@@ -87,7 +86,7 @@ void	write_heredoc(t_state *state, int wr_fd, t_heredoc_req *req)
 		process_line(state, req);
 	}
 	if (req->full_file.len)
-		assert(write_to_file(req->full_file.buff, wr_fd) == 0);
+		ft_assert(write_to_file(req->full_file.buff, wr_fd) == 0);
 	free(req->full_file.buff);
 }
 

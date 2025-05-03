@@ -6,13 +6,12 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 16:11:16 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:56:19 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:09 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libft/libft.h"
 #include "../minishell.h"
-#include <assert.h>
 #include <stdbool.h>
 
 bool	token_starts_with(t_token t, char *str)
@@ -54,7 +53,7 @@ void	expand_tilde_word(t_state *state, t_ast_node *curr)
 	t_token	*first;
 	bool	should_expand;
 
-	assert(curr->children.len);
+	ft_assert(curr->children.len);
 	if (curr->children.buff[0].token.tt != TT_WORD)
 		return ;
 	first = &curr->children.buff[0].token;

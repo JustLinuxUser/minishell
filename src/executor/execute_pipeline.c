@@ -6,13 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:45:10 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/25 17:43:38 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:26 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
-#include <assert.h>
 #include <unistd.h>
+#include "../libft/libft.h"
 
 void	set_up_redir_pipeline_child(bool is_last, t_executable_node *exe,
 	t_executable_node *curr_exe, int (*pp)[2])
@@ -45,7 +45,7 @@ void	execute_pipeline_children(t_state *state, t_executable_node *exe,
 	while (i < exe->node->children.len)
 	{
 		curr_exe.node = vec_nd_idx(&exe->node->children, i);
-		assert(curr_exe.node->node_type == AST_COMMAND);
+		ft_assert(curr_exe.node->node_type == AST_COMMAND);
 		set_up_redir_pipeline_child(i == exe->node->children.len - 1,
 			exe, &curr_exe, &pp);
 		vec_exe_res_push(results, execute_command(state, &curr_exe));

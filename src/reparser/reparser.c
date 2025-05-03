@@ -6,13 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/05 17:26:17 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/28 10:25:13 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:10:28 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
-#include <assert.h>
 #include <stdbool.h>
+#include "../libft/libft.h"
 #include <stddef.h>
 
 void	reparse_dquote(t_ast_node *ret, int *i, t_token t)
@@ -20,7 +20,7 @@ void	reparse_dquote(t_ast_node *ret, int *i, t_token t)
 	int		prev_start;
 	char	prev;
 
-	assert(t.start[(*i)++] == '"');
+	ft_assert(t.start[(*i)++] == '"');
 	prev_start = *i;
 	prev = 0;
 	while (*i < t.len && (t.start[*i] != '"' || prev == '\\'))
@@ -41,27 +41,27 @@ void	reparse_dquote(t_ast_node *ret, int *i, t_token t)
 	}
 	vec_nd_push(&ret->children,
 		create_subtoken_node(t, prev_start, *i, TT_DQWORD));
-	assert(t.start[(*i)++] == '"');
+	ft_assert(t.start[(*i)++] == '"');
 }
 
 void	reparse_squote(t_ast_node *ret, int *i, t_token t)
 {
 	int	prev_start;
 
-	assert(t.start[(*i)++] == '\'');
+	ft_assert(t.start[(*i)++] == '\'');
 	prev_start = *i;
 	while (*i < t.len && t.start[*i] != '\'')
 		(*i)++;
 	vec_nd_push(&ret->children,
 		create_subtoken_node(t, prev_start, *i, TT_SQWORD));
-	assert(t.start[(*i)++] == '\'');
+	ft_assert(t.start[(*i)++] == '\'');
 }
 
 void	reparse_bs(t_ast_node *ret, int *i, t_token t)
 {
 	int	prev_start;
 
-	assert(t.start[(*i)++] == '\\');
+	ft_assert(t.start[(*i)++] == '\\');
 	prev_start = *i;
 	if (*i == t.len)
 		prev_start--;
@@ -100,7 +100,7 @@ t_ast_node	reparse_word(t_token t)
 		else if (t.start[i] == '$')
 			reparse_envvar(&ret, &i, t, TT_ENVVAR);
 		else if (is_space(t.start[i]))
-			assert("Unreachable" == 0);
+			ft_assert("Unreachable" == 0);
 		else
 			reparse_norm_word(&ret, &i, t);
 	}

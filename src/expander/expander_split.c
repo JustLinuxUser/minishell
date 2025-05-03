@@ -6,14 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 08:11:39 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:56:13 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:09 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../dsa/vec_env.h"
 #include "../libft/libft.h"
 #include "../minishell.h"
-#include <assert.h>
 
 void	expand_token(t_state *state, t_token	*curr_tt)
 {
@@ -36,7 +35,7 @@ void	expand_env_vars(t_state *state, t_ast_node *node)
 	i = 0;
 	while (i < node->children.len)
 	{
-		assert(node->children.buff[i].node_type == AST_TOKEN);
+		ft_assert(node->children.buff[i].node_type == AST_TOKEN);
 		curr_tt = &node->children.buff[i].token;
 		if (curr_tt->tt == TT_WORD || curr_tt->tt == TT_SQWORD
 			|| curr_tt->tt == TT_DQWORD)
@@ -47,7 +46,7 @@ void	expand_env_vars(t_state *state, t_ast_node *node)
 			expand_token(state, curr_tt);
 		}
 		else
-			assert("Unreachable" == 0);
+			ft_assert("Unreachable" == 0);
 		i++;
 	}
 }
@@ -103,7 +102,7 @@ t_vec_nd	split_words(t_state *state, t_ast_node *node)
 	i = -1;
 	while (++i < (int)node->children.len)
 	{
-		assert(node->children.buff[i].node_type == AST_TOKEN);
+		ft_assert(node->children.buff[i].node_type == AST_TOKEN);
 		curr_t = &node->children.buff[i].token;
 		if (curr_t->tt == TT_WORD || curr_t->tt == TT_SQWORD
 			|| curr_t->tt == TT_DQWORD || curr_t->tt == TT_DQENVVAR)
@@ -111,7 +110,7 @@ t_vec_nd	split_words(t_state *state, t_ast_node *node)
 		else if (curr_t->tt == TT_ENVVAR)
 			split_envvar(state, curr_t, &curr_node, &ret);
 		else
-			assert("Unreachable" == 0);
+			ft_assert("Unreachable" == 0);
 	}
 	if (curr_node.children.len)
 		vec_nd_push(&ret, curr_node);

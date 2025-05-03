@@ -6,13 +6,12 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 14:53:38 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 07:28:22 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:09:08 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft/libft.h"
 #include "minishell.h"
-#include <assert.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -66,7 +65,7 @@ void	dyn_str_append_fd(int fd, t_dyn_str *ret)
 
 void	forward_exit_status(t_exe_res res)
 {
-	assert(res.status != -1);
+	ft_assert(res.status != -1);
 	if (res.c_c)
 	{
 		default_signal_handlers();
