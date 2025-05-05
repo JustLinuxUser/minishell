@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/20 21:27:11 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:09:09 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:49:23 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 #include "../libft/utils/utils.h"
 #include "../minishell.h"
 #include <fcntl.h>
+#include <errno.h>
+#include <string.h>
 
 bool	create_redir(t_tt tt, char *fname, t_redir *ret)
 {
@@ -37,6 +39,16 @@ bool	create_redir(t_tt tt, char *fname, t_redir *ret)
 	return (true);
 }
 
+static void	print_redir_err(t_state *state, t_token_old full_token)
+{
+	if (errno == EISDIR)
+		ft_eprintf("%s: %.*s: %s\n", state->context,
+			full_token.len, full_token.start, strerror(EISDIR));
+	else
+		ft_eprintf("%s: %.*s: ambigous redirect\n",
+			state->context, full_token.len, full_token.start);
+}
+
 int	redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx)
 {
 	t_redir		new_redir;
@@ -55,8 +67,7 @@ int	redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx)
 	fname = expand_word_single(state, vec_nd_idx(&curr->children, 1));
 	if (!create_redir(tt, fname, &new_redir))
 	{
-		ft_eprintf("%s: %.*s: ambigous redirect\n",
-			state->context, full_token.len, full_token.start);
+		print_redir_err(state, full_token);
 		return (-1);
 	}
 	curr->redir_idx = state->redirects.len;

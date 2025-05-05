@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 13:59:13 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:10:11 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/05 13:42:24 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,10 @@ int	ft_mktemp(t_state *state, t_ast_node *node)
 	free(temp);
 	wr_fd = open(ret.fname, O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	if (wr_fd < 0)
-		critical_error_errno();
+		critical_error_errno_context(ret.fname);
 	ret.fd = open(ret.fname, O_RDONLY);
 	if (ret.fd < 0)
-		critical_error_errno();
+		critical_error_errno_context(ret.fname);
 	vec_redir_push(&state->redirects, ret);
 	node->redir_idx = state->redirects.len - 1;
 	node->has_redirect = true;

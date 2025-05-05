@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:54:06 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 23:53:50 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/05 13:41:29 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ bool	check_is_a_dir(char *path, bool *enoent)
 			*enoent = true;
 			return (false);
 		}
-		critical_error_errno();
+		critical_error_errno_context(path);
 	}
 	return (S_ISDIR(info.st_mode));
 }

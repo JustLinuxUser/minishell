@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 14:53:38 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:09:08 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/05 13:42:45 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ void	dyn_str_append_fd(int fd, t_dyn_str *ret)
 		if (len > 0)
 			dyn_str_pushnstr(ret, buff, len);
 		else
-			critical_error_errno();
+			critical_error_errno_context("read");
 	}
 }
 

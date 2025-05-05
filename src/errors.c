@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:39:44 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/19 07:40:48 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/05 13:40:06 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,12 @@ void	critical_error(char *error)
 void	critical_error_errno(void)
 {
 	ft_eprintf("[ERROR] %s\n", strerror(errno));
+	exit(1);
+}
+
+void	critical_error_errno_context(char *context)
+{
+	ft_eprintf("[ERROR] %s: %s\n", context, strerror(errno));
 	exit(1);
 }
 

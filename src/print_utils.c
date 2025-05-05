@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 21:24:06 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:11:13 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/03 16:12:15 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ char	*node_name(t_ast_t tn)
 	if (tn == AST_ASSIGNMENT_WORD)
 		return ("AST_ASSIGNMENT_WORD");
 	ft_assert("Unreachable" == 0);
+	return (0);
 }
 
 void	print_node(t_ast_node node)

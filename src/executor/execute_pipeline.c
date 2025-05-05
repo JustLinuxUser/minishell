@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:45:10 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:09:26 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/05 13:41:42 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ void	set_up_redir_pipeline_child(bool is_last, t_executable_node *exe,
 	if (!is_last)
 	{
 		if (pipe(*pp))
-			critical_error_errno();
+			critical_error_errno_context("pipe");
 		curr_exe->outfd = (*pp)[1];
 		curr_exe->next_infd = (*pp)[0];
 	}

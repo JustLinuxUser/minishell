@@ -1,9 +1,4 @@
 %%
-
-
-{ } opcional
-('a' | 'b') uno de
-
 // LL(1) grammar
 // LL(1) parsers
 
@@ -37,6 +32,7 @@ simple_command_element: {(WORD | ASSIGNMENT_WORD | redirection)}+;
    It must end with a newline or semicolon.
    Lists are used within commands such as if, for, while.  */
 
-r_compound_list 	: {\n+} r_pipeline {('&&' | '||' | ';' | '\n') {\n+} r_pipeline} {;}{\n+}
+r_compound_list 	: {\n+} r_pipeline {('&&' | '||' | ';' | '\n') {\n+} r_pipeline} {;}{\n+} ')'
 				 													    or ), meaning end of list
+// Currently my parser can't really parse a compound list, without knowing that ')' is a terminator
 %%

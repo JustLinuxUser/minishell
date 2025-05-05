@@ -21,15 +21,17 @@
 [x] When executing a scope, the inner redirection wins, e.g (./test.sh < test.sh) <test2 will recieve the input from test.sh
 
 [x] Execution of commands
-[ ] Builtins
+[x] Builtins
     [x] echo
     [x] exit
         [x] properly free all memory
     [x] export
-    [-] cd
-        [ ] cd -
-        [ ] PWD, OLDPWD
-    [ ] unset
+    [x] cd
+        [x] cd -
+        [x] PWD, OLDPWD
+    [x] unset
+    [ ] easter egg builtin with cool ascii art
+        - Make it a list of all the things done here
 
 [x] Special envvars
     [x] $$ -> /proc/self/stat, ft_split()[0]
@@ -53,7 +55,7 @@
     [x] <<-
     [x] quoted
     [x] unquoted
-    [ ] errors while writing
+    [x] errors while writing
     [x] Expand separator, without envvars -
         [ ] Proper error handling
     [x] \char, should have it's own type, not just sqword, or mb normal word
@@ -66,6 +68,7 @@
 [x] a=b bash, env var assignments before command
 [x] Ambiguous redirect better error messages
 [ ] All open / write calls should be error protected
+    - Almost all of them are, too lazy to search though
 
 [x] return proper exit status when executing, and getting a directory
 
@@ -95,21 +98,21 @@
     - C-c gets forwarded to the cmd in the interactive shell
     - SIGQUIT is ignored by bash
 
-[ ] Signals (including Ctrl-\)
+[x] Signals (including Ctrl-\)
     [x] Fix signals with (sleep 10); echo lol
     [x] For expansion, it should stop when recieving a signal
-    [ ] print newline on C-c somewhere central, mb (stdout)
-        [ ] only if not actually exiting, because then the parrent shell will do it
-    [ ] don't print it in case of not readline
+    [x] print newline on C-c somewhere central, mb (stdout)
+        [x] only if not actually exiting, because then the parrent shell will do it
+    [x] don't print it in case of not readline
     [x] Restart syscalls after a signal handler stopped
         - impossible, probably
         - possible lol!! SA_RESTART
 
 [x] prompt, change inv char to some other char
 
-[ ] Ctrl-D / Ctrl-C management in tokenizer additional input
-    - [ ] '<Ctrl-D>, print unexpected EOF error
-    - [ ] <Ctrl-D> should print `exit`, before exiting
+[x] Ctrl-D / Ctrl-C management in tokenizer additional input
+    - [x] '<Ctrl-D>, print unexpected EOF error
+    - [x] <Ctrl-D> should print `exit`, before exiting
 
 - Detect C-c when executing a command, and don't execute the next one.
 e.g: sleep 10; sleep 10; sleep 10
@@ -145,7 +148,7 @@ e.g: sleep 10; sleep 10; sleep 10
 
 [x] Subshell bug
 
-# Memory model
+# Memory model (to be expanded)
 
 Tokenizer: 1 string
 |> tokens: a ref to str of tokenizer
@@ -159,6 +162,13 @@ Tokenizer: 1 string
 
 case: 
 
+- [ ] Delete prohibited functions
+    - [x] assert -> ft_assert
+    - [ ] fopen, fprintf -> open, ft_fdprintf
+
+- [ ] print_ast_dot should be a compile time define
+    - [ ] figure out a good way to manage compile time defines with make
+
 # bugs:
 - unexpected EOF, for lexer,
     - [x] Only sets the error code if there is no prev error code
@@ -167,7 +177,7 @@ case:
 - [x] printing exit on Ctrl-D, only when interactive though
 - printing exit on exit, only when interactive,
     - [x] on Ctrl-D
-    - [ ] exit builtin
+    - [x] exit builtin
 - [x] heredoc ctrl-d warning, (interactive and non interactive)
 - [x] heredoc doesn't work rn
 -   ```bash
@@ -196,15 +206,15 @@ case:
 
     - -c doesn't add a \n in the end,
     - buff_readline doesn't always expect a newline to be there
-    - [?] \ without any char afterwards is just a \
-    - parser doesn't expect a newline at the end to be there always, doesn't execute if the flag is already set
+    - [x] \ without any char afterwards is just a \
+    - [x] parser doesn't expect a newline at the end to be there always, doesn't execute if the flag is already set
     - [x] parser should not reset the status of the command unless there is at least one token
     - [x] `; ls` fails critically
-    - [ ] check all the parser code, to ensure that the unexpected is called everywere
+    - [-] check all the parser code, to ensure that the unexpected is called everywere
     - [x] ` ` fails critically, and the newline token gets printed, why?
     - [x] `echo hi | (echo hello | cat -e)`, cat, bad file desc
     - [x] close all unnesessary fds
-    - [ ] check if `echo '\''hello'`
+    - [x] check if `echo '\''hello'`
         - fails critically
     - [ ] Heredoc sep, in files, and in heredocs, related to searching for sep, when getting a newline terminated line
     - [ ] backslashes don't work well with newline additions
@@ -218,7 +228,7 @@ case:
     - [ ] redo the checking if the line is empty
     - [ ] extend bs behaves differently if there actually is a newline afterwards or not, and for some reason when reading a file, it assumes that one is always there
 
-    - [ ] syntax error for some reason
+    - [x] syntax error for some reason
     ```bash
     (ls -la
     
@@ -229,9 +239,9 @@ case:
     ```
 
 
-    - [ ] heredocs, are reversed, the last redir in should count only, same with hrdocs
+    - [x] heredocs, are reversed, the last redir in should count only, same with hrdocs
     - [ ] don't segfault on ft_assert, do an exit, only segfault with an option set
-    - [ ] `cat /dev/urandom > /dev/null | cat` dies
+    - [x] `cat /dev/urandom > /dev/null | cat` dies
 
 
 ## Handling of Ctrl-D
@@ -241,8 +251,12 @@ case:
 - On bs, we execute on Ctrl-D
     - By checking if input is empty? Mb?
 
-- [ ] better error handling
+- [x] better error handling
+- [x] redirect special error when redirect points t o a directory
+- [ ] the expansion of globs takes too much memory, and that means that I need to do something about it, for example run it in a different process, or use bigger arenas so I get the whole pages a time
+    - Ignore that, I think, in release mode it takes a long time to slow down enough for it to be painfull
 
+- 
 ```bash
 andrii@arch> echo hello\<Return>
 > <Ctrl-d>
@@ -260,8 +274,8 @@ hello
 ```
 
 - Ok, the bash bug is a problem, and my flag idea is also a problem,
-because you can terminate heredocs, and it's fine
-
+because you can terminate heredocs
+    - Fixed by resetting the flag when reading heredocs
 
 ```bash
 andrii@arch> echo hello\<Return>

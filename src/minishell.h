@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:46:59 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/30 22:26:29 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/05 13:40:17 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -368,6 +368,7 @@ void		set_cmd_status(t_state *state, t_exe_res res);
 // error.c
 void		critical_error(char *error);
 void		critical_error_errno(void);
+void		critical_error_errno_context(char *context);
 void		warning_error(char *error);
 void		warning_error_errno(void);
 void		err_1_errno(t_state *state, char *p1);

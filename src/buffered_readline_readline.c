@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 10:27:10 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/28 10:27:43 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/05 13:41:03 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ int	get_more_input_readline(t_buff_readline *l, char *prompt)
 	int	pid;
 
 	if (pipe(pp))
-		critical_error_errno();
+		critical_error_errno_context("pipe");
 	pid = fork();
 	if (pid == 0)
 	{
@@ -78,7 +78,7 @@ int	get_more_input_readline(t_buff_readline *l, char *prompt)
 		bg_readline(pp[1], prompt);
 	}
 	else if (pid < 0)
-		critical_error_errno();
+		critical_error_errno_context("fork");
 	else
 	{
 		return (attach_input_readline(l, pp, pid));

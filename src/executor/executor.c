@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:09:34 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/05 13:41:58 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ t_exe_res	execute_subshell(t_state *state, t_executable_node *exe)
 		forward_exit_status(res);
 	}
 	if (pid < 0)
-		critical_error_errno();
+		critical_error_errno_context("fork");
 	free_executable_node(exe);
 	return (res_pid(pid));
 }
