@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 00:19:48 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/05 13:41:58 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/05 19:31:04 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,10 @@ t_exe_res	execute_subshell(t_state *state, t_executable_node *exe)
 		set_unwind_sig();
 		set_up_redirection(state, exe);
 		exe->node = &exe->node->children.buff[0];
-		res = execute_tree_node(state, exe);
 		free_executable_node(exe);
+		exe->outfd = 1;
+		exe->infd = 0;
+		res = execute_tree_node(state, exe);
 		forward_exit_status(res);
 	}
 	if (pid < 0)

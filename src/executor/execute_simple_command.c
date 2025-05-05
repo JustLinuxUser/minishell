@@ -6,12 +6,13 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:53:24 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:09:08 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/05 19:39:03 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 #include <stdbool.h>
+#include <stdio.h>
 #include <unistd.h>
 #include "../libft/libft.h"
 
@@ -56,7 +57,7 @@ void	set_up_redirection(t_state *state, t_executable_node *exe)
 			dup2(redir.fd, 0);
 		else
 			dup2(redir.fd, 1);
-		close(redir.fd);
+		close (redir.fd);
 	}
 }
 
