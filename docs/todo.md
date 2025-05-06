@@ -216,17 +216,19 @@ case:
     - [x] close all unnesessary fds
     - [x] check if `echo '\''hello'`
         - fails critically
-    - [ ] Heredoc sep, in files, and in heredocs, related to searching for sep, when getting a newline terminated line
-    - [ ] backslashes don't work well with newline additions
-    - [ ] multiline string should have nls
-    - [ ] ./minishell -c '\'
+    - [x] Heredoc sep, in files, and in heredocs, related to searching for sep, when getting a newline terminated line
+    - [x] backslashes don't work well with newline additions
+    - [x] multiline string should have nls
+    - [x] ./minishell -c '\'
         - does nothing
-    - [ ] ./minishell -c '\\'
+    - [x] ./minishell -c '\\'
         - fails critically
-    - [ ] ./minishell -c 'echo \' doesn't print anything
-    - [ ] ./minishell -c 'echo \\' fails
-    - [ ] redo the checking if the line is empty
-    - [ ] extend bs behaves differently if there actually is a newline afterwards or not, and for some reason when reading a file, it assumes that one is always there
+        - [x] fixed, now also command not found
+    - [x] ./minishell -c 'echo \' doesn't print anything
+        - [x] now prints \
+    - [x] ./minishell -c 'echo \\' fails
+    - [x] redo the checking if the line is empty
+    - [x] extend bs behaves differently if there actually is a newline afterwards or not, and for some reason when reading a file, it assumes that one is always there
 
     - [x] syntax error for some reason
     ```bash
@@ -253,6 +255,7 @@ case:
 
 - [x] better error handling
 - [x] redirect special error when redirect points t o a directory
+- [x] redirect special error when permission denied
 - [ ] the expansion of globs takes too much memory, and that means that I need to do something about it, for example run it in a different process, or use bigger arenas so I get the whole pages a time
     - Ignore that, I think, in release mode it takes a long time to slow down enough for it to be painfull
 
@@ -286,3 +289,11 @@ andrii@arch> <Up arrow>
 andrii@arch> echo helloworld <Return>
 helloworld
 ```
+- [ ] command not found with newlines
+
+- [x] doesn't append hello world more then once
+```bash
+(echo hello world) >> file1 && cat file1
+```
+- [x] double check all redirects, and that they start at the same thing
+- [ ] backslashes in double quotes

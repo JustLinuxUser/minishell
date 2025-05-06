@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/20 21:27:11 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/05 19:03:52 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/06 10:24:04 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,22 +31,20 @@ bool	create_redir(t_tt tt, char *fname, t_redir *ret)
 	else if (tt == TT_APPEND)
 		ret->fd = open(ret->fname, O_WRONLY | O_CREAT | O_APPEND, 0666);
 	if (ret->fd < 0)
-	{
-		free(ret->fname);
 		return (false);
-	}
 	ret->should_delete = false;
 	return (true);
 }
 
-static void	print_redir_err(t_state *state, t_token_old full_token)
+static void	print_redir_err(t_state *state,
+		t_token_old full_token, char *expanded_name)
 {
-	if (errno == EISDIR)
-		ft_eprintf("%s: %.*s: %s\n", state->context,
-			full_token.len, full_token.start, strerror(EISDIR));
-	else
+	if (!expanded_name)
 		ft_eprintf("%s: %.*s: ambigous redirect\n",
 			state->context, full_token.len, full_token.start);
+	else
+		ft_eprintf("%s: %s: %s\n", state->context,
+			expanded_name, strerror(errno));
 }
 
 int	redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx)
@@ -67,7 +65,8 @@ int	redirect_from_ast_redir(t_state *state, t_ast_node *curr, int *redir_idx)
 	fname = expand_word_single(state, vec_nd_idx(&curr->children, 1));
 	if (!create_redir(tt, fname, &new_redir))
 	{
-		print_redir_err(state, full_token);
+		print_redir_err(state, full_token, fname);
+		free(fname);
 		return (-1);
 	}
 	curr->redir_idx = state->redirects.len;

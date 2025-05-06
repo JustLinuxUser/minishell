@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:22:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/28 10:19:17 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/06 10:31:35 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,11 +58,11 @@ int	get_more_input_notty(t_state *state)
 		ret = read(0, buff, sizeof(buff));
 		if (ret < 0 && errno == EINTR)
 			status = 2;
-		if (ret < 0 && errno == EINTR)
-			break ;
-		if (ret < 0)
-			break ;
 		if (ret == 0)
+			state->readline_buff.has_finished = true;
+		if (ret == 0)
+			dyn_str_pushstr(&state->readline_buff.buff, "\n");
+		if (ret <= 0)
 			break ;
 		status = 0;
 		dyn_str_pushnstr(&state->readline_buff.buff, buff, ret);

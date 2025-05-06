@@ -6,43 +6,14 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/05 17:26:17 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:10:28 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/06 18:06:17 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 #include <stdbool.h>
-#include "../libft/libft.h"
+#include "../libft/utils/utils.h"
 #include <stddef.h>
-
-void	reparse_dquote(t_ast_node *ret, int *i, t_token t)
-{
-	int		prev_start;
-	char	prev;
-
-	ft_assert(t.start[(*i)++] == '"');
-	prev_start = *i;
-	prev = 0;
-	while (*i < t.len && (t.start[*i] != '"' || prev == '\\'))
-	{
-		if (t.start[*i] == '$')
-		{
-			vec_nd_push(&ret->children,
-				create_subtoken_node(t, prev_start, *i, TT_DQWORD));
-			reparse_envvar(ret, i, t, TT_DQENVVAR);
-			prev_start = *i;
-			continue ;
-		}
-		else if (t.start[*i] == '"')
-			vec_nd_push(&ret->children,
-				create_subtoken_node(t, prev_start, *i, TT_DQWORD));
-		prev = t.start[*i];
-		(*i)++;
-	}
-	vec_nd_push(&ret->children,
-		create_subtoken_node(t, prev_start, *i, TT_DQWORD));
-	ft_assert(t.start[(*i)++] == '"');
-}
 
 void	reparse_squote(t_ast_node *ret, int *i, t_token t)
 {

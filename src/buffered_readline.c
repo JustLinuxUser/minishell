@@ -6,12 +6,11 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:23:53 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/28 10:26:45 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/06 10:28:45 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft/dsa/dyn_str.h"
-#include "libft/ft_printf/ft_printf.h"
 #include "minishell.h"
 #include "libft/libft.h"
 #include <readline/readline.h>

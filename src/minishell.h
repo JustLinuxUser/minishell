@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:46:59 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/05 13:40:17 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/06 18:05:59 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -283,6 +283,7 @@ void		free_ast(t_ast_node *node);
 void		print_tokens(t_deque_tt tokens);
 
 // reparser.c
+void		reparse_dquote(t_ast_node *ret, int *i, t_token t);
 void		reparse_assignment_words(t_ast_node *node);
 void		reparse_envvar(t_ast_node *ret, int *i, t_token t, t_tt tt);
 void		reparse_words(t_ast_node *node);
@@ -445,5 +446,6 @@ void		parse_and_execute_input(t_state *state);
 // cmd_path
 int			find_cmd_path(t_state *state, char *cmd_name, char **path_of_exe);
 
-// parser
+// get more tokens
+void		get_more_tokens(t_state *state, char **prompt, t_deque_tt *tt);
 #endif

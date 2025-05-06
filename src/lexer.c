@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 14:56:57 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:09:08 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/06 12:00:37 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,14 +32,14 @@ bool	is_special_char(char c)
 
 int	advance_dquoted(char **str)
 {
-	char	prev;
+	bool	prev_bs;
 
 	ft_assert(**str == '\"');
 	(*str)++;
-	prev = 0;
-	while (**str && (**str != '\"' || prev == '\\'))
+	prev_bs = false;
+	while (**str && (**str != '\"' || prev_bs))
 	{
-		prev = **str;
+		prev_bs = **str == '\\' && !prev_bs;
 		(*str)++;
 	}
 	if (**str != '\"')
