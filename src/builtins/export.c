@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/29 23:25:17 by armgonza          #+#    #+#             */
-/*   Updated: 2025/05/01 23:23:25 by armgonza         ###   ########.fr       */
+/*   Updated: 2025/05/07 21:37:49 by armgonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,9 +79,9 @@ int	builtin_export(t_state *st, t_vec_str av)
 	status = 0;
 	if (av.len == 1)
 		return (builtin_env(st, av));
-	while (i < av.len && !status)
+	while (i < av.len)
 	{
-		status = process_arg(st, av, i);
+		status = process_arg(st, av, i) || status;
 		i++;
 	}
 	return (status);
