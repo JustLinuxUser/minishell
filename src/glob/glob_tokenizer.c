@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 15:25:40 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:09:08 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/06 19:22:55 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ bool	star_expandable(t_tt tt)
 		return (true);
 	else
 	{
-		printf("got unexpected: %s\n", tt_to_str(tt));
+		ft_printf("got unexpected: %s\n", tt_to_str(tt));
 		ft_assert("Unreachable" == 0);
 	}
 	return (true);

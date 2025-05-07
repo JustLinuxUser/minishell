@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 21:32:25 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 22:44:50 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/07 12:18:31 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ void	readline_bg_signals(void)
 void	set_unwind(int sig)
 {
 	(void)sig;
-	g_should_unwind = 1;
+	g_should_unwind = SIGINT;
 }
 
 void	set_unwind_sig(void)

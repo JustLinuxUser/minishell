@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:23:53 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/06 10:28:45 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/07 12:18:48 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-int	g_should_unwind = 0;
+uint32_t	g_should_unwind = 0;
 
 int	return_last_line(t_state *state, t_dyn_str *ret)
 {
@@ -79,7 +79,7 @@ int	buff_readline(t_state *state, t_dyn_str *ret, char *prompt)
 			return (state->readline_buff.has_finished = true, 0);
 		if (code == 2)
 		{
-			g_should_unwind = 1;
+			g_should_unwind = SIGINT;
 			set_cmd_status(state, (t_exe_res){.status = CANCELED, .c_c = true});
 			return (2);
 		}

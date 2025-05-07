@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:45:12 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:11:02 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/06 19:22:27 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,12 +65,12 @@ void	print_tokens(t_deque_tt tokens)
 	int		i;
 
 	i = 0;
-	printf("------- PRINTING TOKENS --------\n");
+	ft_printf("------- PRINTING TOKENS --------\n");
 	while (i < tokens.len)
 	{
 		curr = *deque_tt_idx(&tokens, i);
-		printf("%s: >%.*s<\n", tt_to_str(curr.tt), curr.len, curr.start);
+		ft_printf("%s: >%.*s<\n", tt_to_str(curr.tt), curr.len, curr.start);
 		i++;
 	}
-	printf("------- DONE --------\n");
+	ft_printf("------- DONE --------\n");
 }

@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/20 21:23:14 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:09:09 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/06 23:02:11 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ t_dyn_str	word_to_string(t_ast_node node)
 		}
 		else
 		{
-			printf("got unexpected: %s\n", tt_to_str(curr.tt));
+			ft_printf("got unexpected: %s\n", tt_to_str(curr.tt));
 			ft_assert("Unreachable" == 0);
 		}
 		i++;

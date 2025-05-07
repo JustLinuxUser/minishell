@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 00:07:42 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:10:20 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/06 19:22:49 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,9 +94,7 @@ t_ast_node	parse_tokens(t_state *state, t_parser *parser, t_deque_tt *tokens)
 	{
 		tt = deque_tt_pop_start(tokens).tt;
 		if (tt != TT_END)
-		{
-			printf("Got token: %s\n", tt_to_str(tt));
-		}
+			ft_printf("Got token: %s\n", tt_to_str(tt));
 		ft_assert(tt == TT_END);
 		ft_assert(tokens->len == 0);
 		reparse_words(&ret);

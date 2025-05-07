@@ -6,14 +6,16 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 21:24:06 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:12:15 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/06 19:22:15 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft/ft_printf/ft_printf.h"
 #include "libft/libft.h"
 #include "minishell.h"
+#include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
 
 char	*node_name(t_ast_t tn)
 {
@@ -47,17 +49,14 @@ void	print_node(t_ast_node node)
 
 	ft_printf(" (%s", node_name(node.node_type));
 	if (node.node_type == AST_TOKEN)
-	{
-		printf(" >%.*s<", node.token.len, node.token.start);
-		fflush(stdout);
-	}
+		ft_printf(" >%.*s<", node.token.len, node.token.start);
 	i = 0;
 	while (i < node.children.len)
 		print_node(*vec_nd_idx(&node.children, i++));
 	ft_printf(")");
 }
 
-void	print_token_str(t_ast_node node, FILE *out)
+void	print_token_str(t_ast_node node, int outfd)
 {
 	int		i;
 	char	c;
@@ -67,47 +66,49 @@ void	print_token_str(t_ast_node node, FILE *out)
 	{
 		c = node.token.start[i];
 		if (c == '\\')
-			fprintf(out, "\\\\");
+			ft_fdprintf(outfd, "\\\\");
 		else if (c == '"')
-			fprintf(out, "\\\"");
+			ft_fdprintf(outfd, "\\\"");
 		else if (c == '\'')
-			fprintf(out, "\\'");
+			ft_fdprintf(outfd, "\\'");
 		else
-			fprintf(out, "%c", c);
+			ft_fdprintf(outfd, "%c", c);
 		i++;
 	}
 }
 
-void	print_dot_node(t_ast_node node, int id, FILE *out)
+void	print_dot_node(t_state *state, t_ast_node node, uint32_t id, int outfd)
 {
-	size_t	i;
-	int		r;
+	size_t		i;
+	uint32_t	r;
 
-	fprintf(out, "	n%i [label=\"%s", id, node_name(node.node_type));
+	ft_fdprintf(outfd, "	n%u [label=\"%s", id, node_name(node.node_type));
 	if (node.node_type == AST_TOKEN)
 	{
-		fprintf(out, " %s: >", tt_to_str(node.token.tt));
-		print_token_str(node, out);
-		fprintf(out, "<");
+		ft_fdprintf(outfd, " %s: >", tt_to_str(node.token.tt));
+		print_token_str(node, outfd);
+		ft_fdprintf(outfd, "<");
 	}
-	fprintf(out, "\"];\n");
+	ft_fdprintf(outfd, "\"];\n");
 	i = 0;
 	while (i < node.children.len)
 	{
-		r = rand();
-		fprintf(out, "	n%i -> n%i;\n", id, r);
-		print_dot_node(*vec_nd_idx(&node.children, i), r, out);
+		r = random_uint32(&state->prng);
+		ft_fdprintf(outfd, "	n%u -> n%u;\n", id, r);
+		print_dot_node(state, *vec_nd_idx(&node.children, i), r, outfd);
 		i++;
 	}
 }
 
-void	print_ast_dot(t_ast_node node)
+void	print_ast_dot(t_state *state, t_ast_node node)
 {
-	FILE	*out;
+	int	outfd;
 
-	out = fopen("out", "w");
-	fprintf(out, "digraph G {\n");
-	print_dot_node(node, 0, out);
-	fprintf(out, "}\n");
-	fclose(out);
+	outfd = open("out", O_WRONLY | O_TRUNC | O_CREAT, 0666);
+	if (outfd < 0)
+		warning_error_errno();
+	ft_fdprintf(outfd, "digraph G {\n");
+	print_dot_node(state, node, 0, outfd);
+	ft_fdprintf(outfd, "}\n");
+	close(outfd);
 }

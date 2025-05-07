@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:39:33 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/05 22:34:40 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/06 19:16:58 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,4 +104,5 @@ void	init_setup(t_state *state, char **argv, char **envp)
 		init_stdin_notty(state);
 	else
 		init_history(state);
+	prng_initialize_state(&state->prng, 19650218UL);
 }

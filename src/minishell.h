@@ -6,17 +6,32 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 17:46:59 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/06 18:05:59 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/07 12:14:03 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
+// debug printing of the ast
+# ifndef PRINT_AST
+#  define PRINT_AST 0
+# else
+#  define PRINT_AST 1
+# endif
+
+// debug printing of the token queue
+# ifndef PRINT_TOKENS
+#  define PRINT_TOKENS 0
+# else
+#  define PRINT_TOKENS 1
+# endif
+
 # include "dsa/vec_exe_res.h"
 # include "dsa/vec_glob.h"
 # include "libft/dsa/dyn_str.h"
 # include "libft/dsa/vec_int.h"
+# include "libft/libft.h"
 # include <dirent.h>
 # include <stdbool.h>
 # include "dsa/vec_env.h"
@@ -39,7 +54,7 @@
 # define LEXER_SQUOTE_PROMPT "squote> "
 # define LEXER_DQUOTE_PROMPT "dquote> "
 
-extern int	g_should_unwind;
+extern uint32_t	g_should_unwind;
 
 typedef enum s_res_t
 {
@@ -191,6 +206,7 @@ typedef struct s_state
 	t_vec_redir		redirects;
 	int				heredoc_idx;
 	t_buff_readline	readline_buff;
+	t_prng_state	prng;
 }	t_state;
 
 // get next line (without \n).
@@ -272,7 +288,7 @@ t_ast_node	parse_subshell(t_state *state, t_parser *parser,
 
 // tree_utils.c
 void		print_node(t_ast_node node);
-void		print_ast_dot(t_ast_node node);
+void		print_ast_dot(t_state *state, t_ast_node node);
 void		ast_postorder_traversal(t_ast_node *node,
 				void (*f)(t_ast_node *node));
 void		free_ast(t_ast_node *node);

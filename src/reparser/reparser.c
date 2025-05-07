@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/05 17:26:17 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/06 18:06:17 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/07 12:11:13 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,9 @@ void	reparse_bs(t_ast_node *ret, int *i, t_token t)
 	if (*i == t.len)
 		prev_start--;
 	else
+	{
 		(*i)++;
+	}
 	vec_nd_push(&ret->children,
 		create_subtoken_node(t, prev_start, *i, TT_WORD));
 }
@@ -47,7 +49,7 @@ void	reparse_norm_word(t_ast_node *ret, int *i, t_token t)
 	int	prev_start;
 
 	prev_start = *i;
-	while (*i < t.len && !is_special_char(t.start[*i]))
+	while (*i < t.len && !is_special_char(t.start[*i]) && t.start[*i] != '\\')
 		(*i)++;
 	vec_nd_push(&ret->children,
 		create_subtoken_node(t, prev_start, *i, TT_WORD));
