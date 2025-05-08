@@ -10,9 +10,9 @@ HEADERS := ${wildcard src/**/*.h src/*.h}
 OBJS := ${SOURCES:%.c=${OUT_DIR}/%.o}
 
 ifdef OPT
-	CFLAGS := -fPIE -Wall -Wextra -O3 -flto
+	CFLAGS := -fPIE -Wall -Wextra -O3 -flto ${FLAGS}
 else
-	CFLAGS := -Wall -Wextra -g3 -ggdb -fsanitize=address,leak
+	CFLAGS := -Wall -Wextra -g3 -ggdb -fsanitize=address,leak ${FLAGS}
 endif
 
 LIBFT_A := src/libft/libft.a
@@ -43,7 +43,8 @@ clean:
 fclean: clean
 	rm -rf ${TARGET}
 
-re: fclean all
+re:: fclean
+re:: all
 
 run: all
 	./${TARGET}

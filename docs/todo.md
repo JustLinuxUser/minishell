@@ -164,10 +164,20 @@ case:
 
 - [ ] Delete prohibited functions
     - [x] assert -> ft_assert
-    - [ ] fopen, fprintf -> open, ft_fdprintf
+    - [x] fopen, fprintf -> open, ft_fdprintf
 
-- [ ] print_ast_dot should be a compile time define
-    - [ ] figure out a good way to manage compile time defines with make
+- [x] print_ast_dot should be a compile time define
+    - [x] figure out a good way to manage compile time defines with make
+
+- [ ] always expand assignment tokens separatelly, and join if needed
+    - [ ] case: a=~
+    - if a="   a b c"
+    - [ ] echo a=$a should expand properly to be a= a b c
+    - [ ] export a=$a should stay together withot splitting
+    - [ ] echo a=~ should do tilde expansion, as we are expanding the words separatelly
+    - The proper way to do this, would be to expand the value separatelly, and then perform word splitting like actions on the value,
+        - I have to make sure that it can only be an env var or a word
+    - [x] Ignore this
 
 # bugs:
 - unexpected EOF, for lexer,
@@ -240,7 +250,6 @@ case:
     )
     ```
 
-
     - [x] heredocs, are reversed, the last redir in should count only, same with hrdocs
     - [ ] don't segfault on ft_assert, do an exit, only segfault with an option set
     - [x] `cat /dev/urandom > /dev/null | cat` dies
@@ -290,10 +299,12 @@ andrii@arch> echo helloworld <Return>
 helloworld
 ```
 - [ ] command not found with newlines
+    - Won't do
 
 - [x] doesn't append hello world more then once
 ```bash
 (echo hello world) >> file1 && cat file1
 ```
 - [x] double check all redirects, and that they start at the same thing
-- [ ] backslashes in double quotes
+- [x] backslashes in double quotes
+- [x] export o2=hola 2 o3="que tal"
