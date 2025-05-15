@@ -1,6 +1,0 @@
-build/**
-compile_commands.json
-.cache
-out
-out.png
-minishell

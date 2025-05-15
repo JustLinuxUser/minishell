@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 09:39:34 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/06 23:03:48 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/14 23:53:50 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,6 @@ bool	is_empty_token_list(t_deque_tt *tokens)
 bool	try_parse_tokens(t_state *state, t_parser *parser,
 	t_deque_tt *tt, char **prompt)
 {
-	if (PRINT_TOKENS)
-		print_tokens(*tt);
 	if (is_empty_token_list(tt))
 	{
 		buff_readline_reset(&state->readline_buff);
@@ -84,8 +82,6 @@ void	parse_and_execute_input(t_state *state)
 	get_more_input_parser(state, &parser, &prompt, &tt);
 	if (parser.res == RES_OK)
 	{
-		if (PRINT_AST)
-			print_ast_dot(state, state->tree);
 		execute_top_level(state);
 		free_ast(&state->tree);
 	}

@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 21:31:30 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:09:08 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/14 23:51:03 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ void	parse_op(t_deque_tt *tokens, char **str)
 	operators[6] = (t_op_map){">", TT_REDIRECT_RIGHT};
 	operators[7] = (t_op_map){"<", TT_REDIRECT_LEFT};
 	operators[8] = (t_op_map){"&&", TT_AND};
-	operators[9] = (t_op_map){"&", TT_END};
+	operators[9] = (t_op_map){"&", TT_NONE};
 	operators[10] = (t_op_map){"||", TT_OR};
 	operators[11] = (t_op_map){";", TT_SEMICOLON};
 	operators[12] = (t_op_map){0, TT_END};

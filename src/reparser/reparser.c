@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/05 17:26:17 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/07 12:11:13 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/14 23:56:58 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ void	reparse_bs(t_ast_node *ret, int *i, t_token t)
 		(*i)++;
 	}
 	vec_nd_push(&ret->children,
-		create_subtoken_node(t, prev_start, *i, TT_WORD));
+		create_subtoken_node(t, prev_start, *i, TT_SQWORD));
 }
 
 void	reparse_norm_word(t_ast_node *ret, int *i, t_token t)

@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 00:07:42 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/06 19:22:49 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/14 23:54:18 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,9 +36,7 @@ t_ast_node	parse_subshell(t_state *state, t_parser *parser, t_deque_tt *tokens)
 	deque_tt_pop_start(tokens);
 	vec_nd_push(&ret.children, parse_compound_list(state, parser, tokens));
 	if (parser->res != RES_OK)
-	{
 		return (ret);
-	}
 	if (deque_tt_peek(tokens).tt != TT_BRACE_RIGHT)
 		return (unexpected(state, parser, ret, tokens));
 	deque_tt_pop_start(tokens);
@@ -100,5 +98,7 @@ t_ast_node	parse_tokens(t_state *state, t_parser *parser, t_deque_tt *tokens)
 		reparse_words(&ret);
 		reparse_assignment_words(&ret);
 	}
+	if (PRINT_AST)
+		print_ast_dot(state, ret);
 	return (ret);
 }
