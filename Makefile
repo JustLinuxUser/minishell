@@ -86,9 +86,9 @@ HEADERS := ./src/dsa/vec_glob.h\
 OBJS := ${SOURCES:%.c=${OUT_DIR}/%.o}
 
 ifdef OPT
-	CFLAGS := -fPIE -Wall -Wextra -O3 -flto ${FLAGS}
+	CFLAGS := -fPIE -Wall -Wextra -Werror -O3 -flto ${FLAGS}
 else
-	CFLAGS := -Wall -Wextra -g3 -ggdb -fsanitize=address,leak ${FLAGS}
+	CFLAGS := -Wall -Wextra -Werror -g3 -ggdb -fsanitize=address,leak ${FLAGS}
 endif
 
 LIBFT_A := src/libft/libft.a

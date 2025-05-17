@@ -99,7 +99,7 @@ OBJS := ${SOURCES:%.c=build/%.o}
 BUILD_DIR := build
 
 ifdef OPT
-	CFLAGS := -fPIE -Wall -Wextra -O3 -flto ${FLAGS}
+	CFLAGS := -fPIE -Wall -Wextra -Werror -O3 -flto ${FLAGS}
 else
 	CFLAGS := -Wall -Wextra -Werror -fPIE --std=c99 -pedantic -g3 -fsanitize=address,leak ${FLAGS}
 endif
