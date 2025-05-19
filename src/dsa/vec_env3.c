@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 21:16:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/25 22:54:01 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/19 17:19:11 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,14 +38,14 @@ int	env_set(t_vec_env *env, t_env new)
 	return (0);
 }
 
-void	env_extend(t_vec_env *dest, t_vec_env *src)
+void	env_extend(t_vec_env *dest, t_vec_env *src, bool export)
 {
 	t_env	curr;
 
 	while (src->len)
 	{
 		curr = vec_env_pop(src);
-		curr.exported = true;
+		curr.exported = export;
 		env_set(dest, curr);
 	}
 	free(src->buff);

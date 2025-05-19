@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 22:52:15 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/04/20 20:23:21 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/19 17:19:03 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,6 @@ int		vec_env_push(t_vec_env *v, t_env el);
 int		env_set(t_vec_env *v, t_env el);
 t_env	vec_env_pop(t_vec_env *v);
 t_env	*vec_env_idx(t_vec_env *v, size_t idx);
-void	env_extend(t_vec_env *dest, t_vec_env *src);
+void	env_extend(t_vec_env *dest, t_vec_env *src, bool export);
 char	*env_get_ifs(t_vec_env *v);
 #endif

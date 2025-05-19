@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:53:24 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/05 19:39:03 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/19 17:19:33 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ t_exe_res	execute_cmd_bg(t_state *state,
 	{
 		default_signal_handlers();
 		set_up_redirection(state, exe);
-		env_extend(&state->env, &cmd->pre_assigns);
+		env_extend(&state->env, &cmd->pre_assigns, true);
 		exit(actually_run(state, &cmd->argv));
 	}
 	free_executable_cmd(*cmd);
@@ -119,7 +119,7 @@ t_exe_res	execute_simple_command(t_state *state, t_executable_node *exe)
 	else
 	{
 		if (exe->modify_parent_context)
-			env_extend(&state->env, &cmd.pre_assigns);
+			env_extend(&state->env, &cmd.pre_assigns, false);
 		free_executable_cmd(cmd);
 		free_executable_node(exe);
 		return (res_status(0));

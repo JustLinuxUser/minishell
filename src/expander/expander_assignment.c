@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/20 21:23:14 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/06 23:02:11 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/19 17:16:47 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ t_env	assignment_to_env(t_state *state, t_ast_node *node)
 	t_vec_str	args;
 	t_env		ret;
 
-	ret = (t_env){};
+	ret = (t_env){.exported = false};
 	vec_str_init(&args);
 	ft_assert(node->children.len == 2);
 	expand_word(state, &node->children.buff[1], &args, true);
