@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/28 18:06:41 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/03 16:09:09 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/19 10:49:37 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,6 @@ int	process_dir(t_dir_matcher matcher)
 	diren = readdir(matcher.dir);
 	if (!diren)
 		return (0);
-	if (!ft_strcmp(diren->d_name, ".") || !ft_strcmp(diren->d_name, ".."))
-		return (1);
 	res = matches_pattern(diren->d_name, matcher.glob, matcher.offset, true);
 	dyn_str_init(&next_path);
 	if (res)

@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 15:28:46 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/03/30 15:28:48 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/19 10:49:13 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,10 @@ size_t	match_g_pattern(char *name, t_vec_glob patt, int offset)
 
 	curr = patt.buff[offset];
 	if (ft_strncmp(curr.start, name, curr.len) != 0)
+		return (0);
+	if ((!ft_strcmp(name, ".") || !ft_strcmp(name, ".."))
+		&& (patt.len - 1 == (size_t)offset
+			|| patt.buff[offset + 1].ty != G_SLASH))
 		return (0);
 	if (finished_pattern(patt, offset))
 	{
