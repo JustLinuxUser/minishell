@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/30 15:28:46 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/19 10:49:13 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/19 11:26:11 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,24 +27,30 @@ bool	finished_pattern(t_vec_glob patt, size_t offset)
 	return (false);
 }
 
-size_t	match_g_pattern(char *name, t_vec_glob patt, int offset)
+size_t	match_g_pattern(char *name, t_vec_glob patt, size_t offset, bool first)
 {
 	t_glob	curr;
+	char	*orig_name;
 
-	curr = patt.buff[offset];
-	if (ft_strncmp(curr.start, name, curr.len) != 0)
-		return (0);
-	if ((!ft_strcmp(name, ".") || !ft_strcmp(name, ".."))
-		&& (patt.len - 1 == (size_t)offset
-			|| patt.buff[offset + 1].ty != G_SLASH))
-		return (0);
-	if (finished_pattern(patt, offset))
+	orig_name = name;
+	while (offset < patt.len && patt.buff[offset].ty == G_PATTERN)
 	{
-		if (name[curr.len] == 0)
-			return (offset + 1);
-		return (0);
+		curr = patt.buff[offset];
+		if (ft_strncmp(curr.start, name, curr.len) != 0)
+			return (0);
+		if (finished_pattern(patt, offset))
+		{
+			if (name[curr.len] == 0)
+				return (offset + 1);
+			return (0);
+		}
+		offset++;
+		name += curr.len;
 	}
-	return (matches_pattern(name + curr.len, patt, offset + 1, false));
+	if (first && (!ft_strcmp(orig_name, "..") || !ft_strcmp(orig_name, "."))
+		&& offset != patt.len && patt.buff[offset].ty != G_SLASH)
+		return (0);
+	return (matches_pattern(name, patt, offset, false));
 }
 
 size_t	match_g_astrisk(char *name, t_vec_glob patt, int offset, bool first)
@@ -74,7 +80,7 @@ size_t	matches_pattern(char *name, t_vec_glob patt, size_t offset, bool first)
 
 	curr = patt.buff[offset];
 	if (curr.ty == G_PATTERN)
-		return (match_g_pattern(name, patt, offset));
+		return (match_g_pattern(name, patt, offset, first));
 	else if (curr.ty == G_ASTRISK)
 		return (match_g_astrisk(name, patt, offset, first));
 	return (0);
