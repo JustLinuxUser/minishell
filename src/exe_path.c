@@ -6,7 +6,7 @@
 /*   By: anddokhn <anddokhn@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 07:54:06 by anddokhn          #+#    #+#             */
-/*   Updated: 2025/05/05 13:41:29 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/25 18:00:17 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ char	*exe_path(char **path_dirs, char *exe_name)
 		return (0);
 	dyn_str_init(&temp);
 	i = -1;
-	while (path_dirs[++i])
+	while (path_dirs && path_dirs[++i])
 	{
 		dyn_str_clear(&temp);
 		dyn_str_pushstr(&temp, path_dirs[i]);
@@ -87,11 +87,12 @@ int	find_cmd_path(t_state *state, char *cmd_name, char **path_of_exe)
 	bool	enoent;
 
 	path = env_expand(state, "PATH");
-	if (!path)
-		return (cmd_not_found(state, cmd_name));
-	path_dirs = ft_split(path, ':');
+	path_dirs = 0;
+	if (path)
+		path_dirs = ft_split(path, ':');
 	*path_of_exe = exe_path(path_dirs, cmd_name);
-	free_tab(path_dirs);
+	if (path_dirs)
+		free_tab(path_dirs);
 	if (!*path_of_exe)
 		return (cmd_not_found(state, cmd_name));
 	if (check_is_a_dir(*path_of_exe, &enoent))

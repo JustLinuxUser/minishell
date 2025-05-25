@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/29 23:25:06 by armgonza          #+#    #+#             */
-/*   Updated: 2025/04/29 23:25:07 by armgonza         ###   ########.fr       */
+/*   Updated: 2025/05/19 19:32:52 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ void	parse_numeric_escape(char **str)
 	write(1, &c, 1);
 }
 
-static void	backslash_writer(char *s)
+static int	backslash_writer(char *s)
 {
 	if (*s == 'n')
 		write(1, "\n", 1);
@@ -79,6 +79,9 @@ static void	backslash_writer(char *s)
 		write(1, "\\", 1);
 	else if (*s == 'e')
 		write(1, "\033", 1);
+	else
+		return (0);
+	return (1);
 }
 
 int	e_parser(char *s)
@@ -88,7 +91,6 @@ int	e_parser(char *s)
 		if (*s == '\\' && s[1])
 		{
 			s++;
-			backslash_writer(s);
 			if (*s == 'c')
 				return (1);
 			else if (*s == '0' || *s == 'x')
@@ -96,7 +98,7 @@ int	e_parser(char *s)
 				parse_numeric_escape(&s);
 				continue ;
 			}
-			else
+			else if (!backslash_writer(s))
 			{
 				write(1, "\\", 1);
 				write(1, s, 1);

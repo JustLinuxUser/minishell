@@ -6,7 +6,7 @@
 /*   By: armgonza <armgonza@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/29 23:25:15 by armgonza          #+#    #+#             */
-/*   Updated: 2025/05/15 16:50:36 by anddokhn         ###   ########.fr       */
+/*   Updated: 2025/05/25 17:59:46 by anddokhn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,7 @@ int	builtin_exit(t_state *state, t_vec_str argv)
 	{
 		ft_eprintf("%s: %s: too many arguments\n", state->context,
 			argv.buff[0]);
-		free_all_state(state);
 		return (1);
 	}
 	exit(ret);
 }
-
-// exit no imprime ext si no estoy en readline
