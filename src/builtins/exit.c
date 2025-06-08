@@ -12,6 +12,20 @@
 
 #include "builtins.h"
 
+void	exit_clean(t_state *state, int code)
+{
+	char	*pid_s;
+
+	pid_s = getpid_hack();
+	if (pid_s && state->pid && ft_strcmp(state->pid, pid_s) == 0)
+	{
+		manage_history(state);
+		free_all_state(state);
+	}
+	free(pid_s);
+	exit(code);
+}
+
 int	builtin_exit(t_state *state, t_vec_str argv)
 {
 	int	ret;
@@ -19,16 +33,12 @@ int	builtin_exit(t_state *state, t_vec_str argv)
 	if (state->input_method == INP_READLINE)
 		ft_eprintf("exit\n");
 	if (argv.len == 1)
-	{
-		free_all_state(state);
-		exit(0);
-	}
+		exit_clean(state, 0);
 	if (ft_checked_atoi(argv.buff[1], &ret, 42))
 	{
 		ft_eprintf("%s: %s: %s: numeric argument required\n", state->context,
 			argv.buff[0], argv.buff[1]);
-		free_all_state(state);
-		exit(2);
+		exit_clean(state, 2);
 	}
 	if (argv.len >= 3)
 	{
@@ -36,5 +46,6 @@ int	builtin_exit(t_state *state, t_vec_str argv)
 			argv.buff[0]);
 		return (1);
 	}
-	exit(ret);
+	exit_clean(state, ret);
+	return (0);
 }
