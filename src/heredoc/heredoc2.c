@@ -12,6 +12,7 @@
 
 #include "../libft/libft.h"
 #include "../minishell.h"
+#include <unistd.h>
 
 bool	get_line_heredoc(t_state *state,
 		t_heredoc_req *req, t_dyn_str *alloc_line)
@@ -87,6 +88,7 @@ void	write_heredoc(t_state *state, int wr_fd, t_heredoc_req *req)
 	}
 	if (req->full_file.len)
 		ft_assert(write_to_file(req->full_file.buff, wr_fd) == 0);
+	close(wr_fd);
 	free(req->full_file.buff);
 }
 

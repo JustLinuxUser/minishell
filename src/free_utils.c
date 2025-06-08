@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft/libft.h"
 #include "minishell.h"
 #include <unistd.h>
 
@@ -25,6 +24,7 @@ void	free_redirects(t_vec_redir *v)
 		c = v->buff[i];
 		if (c.should_delete)
 			unlink(c.fname);
+		close(c.fd);
 		free(c.fname);
 		i++;
 	}
