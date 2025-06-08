@@ -30,7 +30,7 @@ int	partition(t_vec_str *vec, int low, int high)
 
 	p_idx = (high - low) / 2 + low;
 	swap_sort_point(&vec->buff[low], &vec->buff[p_idx]);
-	i = low + 1;
+	i = low;
 	j = high;
 	while (i < j)
 	{
@@ -41,7 +41,7 @@ int	partition(t_vec_str *vec, int low, int high)
 		if (i < j)
 			swap_sort_point(&vec->buff[i], &vec->buff[j]);
 	}
-	return (j);
+	return (i);
 }
 
 void	quicksort_inner(t_vec_str *vec, int low, int high)
