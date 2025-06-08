@@ -28,12 +28,6 @@ int	readline_cmd(t_state *state, char **prompt)
 	*prompt = 0;
 	if (stat == 0)
 	{
-		if (!state->input.len)
-		{
-			if (state->input_method == INP_READLINE)
-				ft_eprintf("exit\n");
-			state->should_exit = true;
-		}
 		return (1);
 	}
 	if (stat == 2)
@@ -88,24 +82,24 @@ void	get_more_tokens(t_state *state, char **prompt, t_deque_tt *tt)
 	while (*prompt)
 	{
 		stat = readline_cmd(state, prompt);
-		if (stat)
+		if (stat == 1)
 		{
-			if (stat == 1 && state->input.len)
-			{
-				ft_eprintf("%s: unexpected EOF while"
-					" looking for matching `%c'\n",
-					state->context, tt->looking_for);
-				if (state->input_method == INP_READLINE)
-					ft_eprintf("exit\n");
-				if (!state->last_cmd_status_res.status)
-					set_cmd_status(state, (t_exe_res){.status = SYNTAX_ERR});
-				state->should_exit = true;
-			}
-			return ;
+			if (tt->looking_for && state->input.len)
+				ft_eprintf("%s: unexpected EOF while looking for "
+					"matching `%c'\n", state->context, tt->looking_for);
+			else if (state->input.len)
+				ft_eprintf("%s: syntax error: unexpected end of file\n",
+					state->context);
+			if (state->input_method == INP_READLINE)
+				ft_eprintf("exit\n");
+			if (!state->last_cmd_status_res.status && state->input.len)
+				set_cmd_status(state, (t_exe_res){.status = SYNTAX_ERR});
+			state->should_exit = true;
 		}
-		extend_bs(state);
-		*prompt = tokenizer(state->input.buff, tt);
-		if (!stat && *prompt)
+		if (stat)
+			return ;
+		*prompt = (extend_bs(state), tokenizer(state->input.buff, tt));
+		if (*prompt)
 			*prompt = ft_strdup(*prompt);
 	}
 }

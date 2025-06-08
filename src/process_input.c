@@ -58,13 +58,6 @@ static void	get_more_input_parser(t_state *state,
 			set_cmd_status(state, (t_exe_res){.status = CANCELED, .c_c = true});
 		if (state->should_exit || g_should_unwind)
 			break ;
-		if (state->readline_buff.has_finished && parser->res == RES_MoreInput)
-		{
-			ft_eprintf("%s: syntax error: unexpected end of file\n",
-				state->context);
-			set_cmd_status(state, (t_exe_res){.status = SYNTAX_ERR});
-			break ;
-		}
 		if (!try_parse_tokens(state, parser, tt, prompt))
 			break ;
 	}
