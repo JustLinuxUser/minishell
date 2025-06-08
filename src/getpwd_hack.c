@@ -14,6 +14,7 @@
 #include "libft/libft.h"
 #include "minishell.h"
 #include <fcntl.h>
+#include <unistd.h>
 
 char	*getpid_hack(void)
 {
@@ -30,6 +31,7 @@ char	*getpid_hack(void)
 	}
 	dyn_str_init(&file);
 	dyn_str_append_fd(fd, &file);
+	close(fd);
 	temp = ft_split(file.buff, ' ');
 	free(file.buff);
 	ret = ft_strdup(temp[0]);
